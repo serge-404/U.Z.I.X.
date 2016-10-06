@@ -30,9 +30,9 @@ https://github.com/serge-404/HI-TECH-C-V3.09
     F000    +------------+       +------------+|+
             |    CP/M    |       |            |+|+
     E800    +------------+       |  Process   ||+|
-    Banked  |   Kernel   |       |    Code    |||+
-            |    Code    |       |   & Data   ||||
-            |            |       |            ||||
+    Banked  |    UZIX    |       |    Code    |||+
+            |   Kernel   |       |   & Data   ||||
+            |    code    |       |            ||||
     0100    +------------+       +------------+|||
             |  Reserved  |       |  Reserved  |+||
     0000    +------------+       +------------+|+|
