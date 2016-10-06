@@ -1,0 +1,269 @@
+/*
+ * UZIX - UNIX Implementation for MSX
+ * (c) 1997-2001 Arcady Schekochikhin
+ *		 Adriano C. R. da Cunha
+ *
+ * UZIX is based on UZI (UNIX Zilog Implementation)
+ * UZI is a UNIX kernel clone written for Z-80 systems.
+ * All code is public domain, not being based on any AT&T code.
+ *
+ * The author, Douglas Braun, can be reached at:
+ *	7696 West Zayante Rd.
+ *	Felton, CA 95018
+ *	oliveb!intelca!mipos3!cadev4!dbraun
+ *
+ * This program is under GNU GPL, read COPYING for details
+ *
+ */
+
+/**********************************************************
+ MSX TTY driver
+**********************************************************/
+
+/* an output to the VDP would be very fast, but we would need to
+ * control the cursor position and do the scroll ourselves
+ */
+
+#ifndef __KERNEL__
+
+#ifdef ORI_UTIL
+#define _xbdos(de, c)   bdos(c, de);
+#else
+uchar _xbdos(uint de, uchar c) { /* avoid conflict with UTILDOS xxbdos */
+	asm("	push bc");
+	asm("	call " __str1(BDOSADDR));
+	asm("	ld l,a");
+	asm("	pop bc");
+}
+#endif	/* ORI_UTIL */
+
+#else 							/* #ifdef __KERNEL__ */
+
+/* uchar prevch, prevticks; */
+
+GBL void _putc(uchar c) {
+		if (c==10) xbios(4,13);    /* 4=CONOUT */
+		xbios(4,c);
+}
+
+GBL uint _getc(VOID) {
+	register uchar ch=0;
+	if (/*(!VTY_ININT) && * / (runticks & 1) && */ xbios(2))	{	/* 2=CONSTAT */   
+/* inkey delayer */
+/*		if (((ch=xbios(3)) == prevch) &&					
+			((runticks-prevticks)<3)) {	
+			prevch=31;
+			ch=0;				
+		}
+		else {
+			prevch=ch;
+			prevticks=runticks;
+		} */
+		ch=xbios(3);				/* 3=CONIN */
+	}
+#if DEBUG > 0
+	if (ch==26) idump;	/* Control-Z, for debugging */
+#endif
+	return ch;
+}
+
+#ifndef ORION_HOSTED
+/* Turns cursor on  */
+void _displaycursor(void) {
+  if (!VTY_ININT) {
+   xbios(4,27);
+   xbios(4,':');
+  }
+}
+
+/* Turns cursor off */
+void _erasecursor(void) {
+  if (!VTY_ININT) {
+   xbios(4,27);
+   xbios(4,';');
+  }
+}
+#endif
+
+/* for kprintf */
+STATIC void __itoa (unsigned value, char *strP, uchar radix) {
+	char buf[34];
+	register char *_di = strP, *_si = buf;
+	uchar len;
+
+	do {
+		*_si++ = (char)(value % radix);
+		value /= radix;
+	} while (value != 0);
+	/* The value has now been reduced to zero and the
+	 * digits are in the buffer.
+	 */
+	/* The digits in the buffer must now be copied in reverse order into
+	 *  the target string, translating to ASCII as they are moved.
+	 */
+	len = (uchar)(_si-buf);
+	while (len != 0) {
+		--len;
+		radix = (uchar)*--_si;
+		*_di++ = (char)((uchar)radix + (((uchar)radix < 10) ? '0' : 'A'-10));
+	}
+	/* terminate the output string with a zero. */
+	*_di ='\0';
+}
+
+/*
+ */
+GBL char *itoa(value, strP, radix)
+	register int value;
+	char *strP;
+	int radix;
+{
+	char *p = strP;
+
+	if (radix == 0) {
+		if (value < 0) {
+			*p++ = '-';
+			value = -value;
+		}
+		radix = 10;
+	}
+	__itoa((unsigned)value,p,(unsigned)radix);
+	return strP;
+}
+
+/* Short version of printf for printing to kernel */
+GBL void kprintf(fmt)
+	char *fmt;
+{
+	register int base;
+	uchar l, w, c, pad, s[7], *p, *q, **arg = (uchar **)&fmt + 1;
+	int len = 0;
+
+	while ((w = (uchar)*fmt++) != 0) {
+		if (w != '%') {
+			kputchar(w);
+			continue;
+		}
+		pad = (uchar)(*fmt == '0' ? '0' : ' ');
+		w = 0;
+		while (*fmt >= '0' && *fmt <= '9') {
+			w = w*10; 
+			w += (uchar)(*fmt - '0');
+			++fmt;
+		}
+		s[1] = 0;
+		p = s;
+		len = 0x7FFF;
+		switch (c = (uchar)*fmt++) {
+		case 'c':
+			s[0] = *(uchar *)arg++;
+			break;
+		case 'd': base = 0;	goto prt;
+		case 'o': base = 8;	goto prt;
+		case 'b': base = 2;	goto prt;
+		case 'u': base = 10;	goto prt;
+		case 'p':
+			w = 4;
+			pad = '0';
+		case 'x':
+			base = 16;
+prt:			itoa(*(int *)arg++, (char *)s, base);
+			break;
+		case 'n':
+			p = *arg++;
+			len = *(int *)arg++;
+			break;
+		case 's':
+			p = *arg++;
+			break;
+		default:
+			s[0] = c;
+			break;
+		}
+		if (w) {
+			l = 0;
+			q = p;
+			while (--len != 0 && *q++ != 0)
+				++l;
+			w -= l;
+			while ((int)w-- > 0)
+				kputchar(pad);
+		}
+		kputs((char *)p);
+	}
+}
+#endif	/* __KERNEL__ */
+
+GBL void panic(s, a1, a2)
+	char *s;
+	void *a1, *a2;
+{
+	_di();
+	++inint;
+	kprintf("\a\nPANIC: \a");
+	kprintf(s,a1,a2);
+	kprintf("\a\n\a");
+#if 0
+	idump();
+#endif
+	_abort(99);
+}
+
+/* warning() prints warning message to console */
+GBL void warning(s, a1, a2)
+	char *s;
+	void *a1, *a2;
+{
+	kprintf("WARNING: ");
+	kprintf(s,a1,a2);
+	kputchar('\n');
+}
+
+
+#if DEBUG > 0
+/* _idump() dumps state of all inodes
+ */
+STATIC void _idump(VOID) {
+	register inoptr ip = i_tab;
+
+	kprintf("Inodes:\tMAGIC\tDEV\tNUM\tMODE\tNLINK\t(DEV)\tREFS\tDIRTY\n");
+	while (ip < i_tab + ITABSIZE) {
+		kprintf("#%d\t%d\t%p\t%u\t%06o\t%d\t%p\t%d\t%d\n",
+			ip - i_tab, ip->c_magic, ip->c_dev, ip->c_num,
+			ip->c_node.i_mode, ip->c_node.i_nlink,
+			DEVNUM(ip), ip->c_refs, ip->c_dirty);
+		++ip;
+	}
+}
+
+/* _pdump() dumps state of all processes
+ */
+STATIC void _pdump(VOID) {
+	register ptptr pp = ptab;
+
+	kprintf("Proc:\tSTATUS\tWAIT\tPID\tPPTR\tALARM\tPENDING\tIGNORED\tBREAK\tSP\n");
+	while (pp < ptab + PTABSIZE) {
+		kprintf("#%d\t%d\t%p\t%d\t%d\t%d\t%p\t%p\t%p\t%p\n",
+			pp - ptab, pp->p_status, pp->p_wait, pp->p_pid,
+			pp->p_pptr - ptab, pp->p_alarm, pp->p_pending,
+			pp->p_ignored, pp->p_break, pp->p_sp);
+		++pp;
+	}
+}
+
+/* idump() dumps state of all system datas
+ */
+GBL void idump(VOID) {
+	kprintf("%s: Errno %d, root #%d, Insys=%d, ptab #%d, callno=%d, cwd #%d, usp %p\n",
+		UDATA(u_name),
+		UDATA(u_error), root_ino - i_tab,
+		UDATA(u_insys), UDATA(u_ptab) - ptab,
+		UDATA(u_callno), UDATA(u_cwd) - i_tab,
+		UDATA(u_ptab)->p_sp);
+	_idump();
+	_pdump();
+	bufdump();
+}
+#endif
+
+

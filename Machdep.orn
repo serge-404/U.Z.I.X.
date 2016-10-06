@@ -1,0 +1,497 @@
+/*
+ * UZIX - UNIX Implementation for MSX
+ * (c) 1997-2001 Arcady Schekochikhin
+ *		 Adriano C. R. da Cunha
+ *
+ * UZIX is based on UZI (UNIX Zilog Implementation)
+ * UZI is a UNIX kernel clone written for Z-80 systems.
+ * All code is public domain, not being based on any AT&T code.
+ *
+ * The author, Douglas Braun, can be reached at:
+ *	7696 West Zayante Rd.
+ *	Felton, CA 95018
+ *	oliveb!intelca!mipos3!cadev4!dbraun
+ *
+ * This program is under GNU GPL, read COPYING for details
+ *
+ */
+
+/************************************************************
+Orion-128 additional machine dependent subroutines for kernel
+************************************************************/
+
+#define ARCH_INIT
+
+#define JP      ((uchar)0xC3)
+
+#ifdef NO_RTC
+static uchar tod_sec;
+#endif
+
+#ifdef __KERNEL__
+/*
+       dw  RETSTACK    ; <-return destination stack
+       dw  RETBANK     ; <-return destination bank
+       dw  BRET
+       dw  STACK       ; in driver.sys, skip it
+       dw  BANK        ; in driver.sys, skip it
+       dw  BRET        ; in driver.sys, skip it
+stack->                ; stack at a moment of __service entrance, interrupts are in dummy loop by CPM (acts like DI)
+	   dw ...... 
+*/
+
+uint dosstack;	/* stack pointer in CPM shared mem at a moment of __service entrance */
+uint *retstack;	/* address of address on stack: RETSTACK (see above) */
+uchar *retbank;	/* addres of byte on stack: RETBANK (see above) */
+
+/* interrupt service wrapper */
+#asm
+	psect   text
+	global  _service
+	global  __service
+	global  _inint
+__service:                    ; /* GBL void _service() */
+	di
+	ld      (_dosstack),sp    ; /* sp is in CPM shared mem (sp>0F300h) */
+	ld      hl,8
+	add     hl,sp
+	ld      (_retbank),hl
+	inc     hl
+	inc     hl
+	ld      (_retstack),hl
+	ld      hl,_inint
+	ld      a,(hl)
+	inc     (hl)              ; /* ++inint */
+	ld      sp, _SRV_STACK
+	or      a
+	call    z,_service        ; /* Executed with the interrupts disabled! */
+	ld      sp,(_dosstack)
+	ld      hl,_inint
+	dec     (hl)              ; /* --inint */
+	ld	a,(_OLDYINTVEC)
+	ld	hl,(_OLDYINTVEC+1)
+	ei
+	jp	BJMP
+#endasm
+
+/* prepare stack to switch context at exiting of ISR _service() - swap return_address and _save_context address */	
+/* задача: 1.выставить _RET_ADDR, _RET_SP, _RET_PAGE для текущего выполнявшегося процесса, взяв их по f3-стеку, */
+/*         2.выполнить xsavecontext выполнявшегося процесса вернувшись в него стеками (выравниваем F3-стек),     */
+/*         3.перейти на KERNEL_PAGE:swapin, который уже перейдет в do_swapin следующего процесса по значению _pp */
+/* */
+#asm						  
+	global _switch_context
+_switch_context:			; /* at this point _SWITH_PAGE allready initialized to next process page */
+		ld	a,KERNEL_PAGE
+		ld	hl,_RET_ADDR-1	; /* destination to copy: ret_page,ret_addr */
+		ex	af,af'
+		exx
+		ld	hl,(_retbank)
+		ld	a,(hl)			; /* A = ret_page = *retbank - it may be not equal to current process page !!! */
+		push af
+		ld	hl,(_retstack)	; /* ret_sp = *retstack;		/* retstack is in retbank page */
+		ld	c,(hl)
+		inc hl
+		ld	h,(hl)
+		ld	l,c
+		ld	bc,5
+		add hl,bc			; /* source - (A-register + return address) from interrupted process stack */
+		ld	c,3
+		push	hl			; /* hl=address on process stack where retaddr stored, stack is in common F0-area or in process page */
+		call BLDIR			; /* copy 3 bytes (regA,retaddr) to (ret_page,ret_addr) for later storing in context store */
+		ld	(_RET_SP),hl	; 
+;
+		ld	hl,(_UDATAADDR)	; /* HL = ptab_t *u_ptab  */
+		ld	c,PSWAP_OFFSET
+		add hl,bc			; /* 20150116 */
+		ld	a,(hl)			; /* A = page_t	p_swap  - current process 64k page index: 3..15 */
+		ld	(_FCALLTRAP+24),a
+		ld	a,(_RET_PAGE)		; /* here register A pop-backup copied from stack with previous 3 bytes BLDIR */
+		ld	(_FCALLTRAP+28),a
+		pop	hl				
+		inc hl				
+		pop	af				; /* destination to copy: return address in stack of process space or of F0-area */
+		ld	(_RET_PAGE),a	; /* ret_page = *retbank - it may be not equal to current process page index !!! */
+		ex	af,af'
+		exx
+		ld	a,KERNEL_PAGE
+		ld	hl,svcontaddr	; /* A:HL = src to copy */  
+		ld	bc,2
+		jp	BLDIR			; /* copy two bytes (return address) to stack retaddr for returning to xsavecontext */	
+svcontaddr:
+		defw	_FCALLTRAP+23	; /* ld a,PROC_PAGE ; out (PAGE_PORT),a ; ld a,A_BACKUP ; JP xsavecontext */
+#endasm
+
+extern void _service __P((void));
+unsigned short sublevel;
+
+#ifndef _di
+/* Totally disable interrupts */
+#asm
+        psect text
+        global __di
+;void _di(void)
+__di:	di
+		ret
+#endasm
+
+/* Enable interrupts if we are not in service routine */
+#asm
+        psect text
+        global __ei
+		global  _inint
+;void _ei(void)
+__ei:	ld a,(_inint)
+		or a
+		ret nz
+		ei			; /* if (!inint) ei; */
+		ret
+#endasm
+
+/* Enable interrupts */
+#asm
+        psect text
+        global ___ei
+;void __ei(void)
+___ei:	ei
+		ret
+#endasm
+
+#endif		/* _di */
+
+/* Get OS version */
+extern unsigned short OsLevel(unsigned short *SubLevel);
+#asm
+        psect text
+        global _OsLevel
+;ushort OsLevel(ushort *SubLevel)
+_OsLevel:ld	C,12
+		call	5	; /* call BDOS getversion(); return: hl=oslevel, hl`=sublevel */
+		pop af
+		pop de		; /* de=*SubLevel */
+        push de
+        push af
+		push hl		; /* store oslevel on stack */
+		exx
+		push hl
+		exx
+		pop	hl		; /* hl=sublevel */
+		ex de,hl	; /* hl=*SubLevel, de=sublevel */
+		ld (hl),e
+		inc hl
+		ld (hl),d	; /* *SubLevel=sublevel */
+		pop	hl		; /* hl=oslevel */
+		ret
+#endasm
+
+/*
+GBL int valadr(base, size)
+	void *base;
+	uint size;
+{
+	register uint i = base + size;
+	if (i < (uint)base ||
+	    i >= UZIXBASE) {				// kernel data problem 
+		UDATA(u_error) = EFAULT;
+		return 0;
+	}
+	return 1;
+}
+*/
+#asm
+    psect text
+	global	_valadr
+;int valadr(void *base, uint size)	
+_valadr:
+	pop hl
+    pop de	; base
+    pop bc	; size
+    push bc
+    push de
+    push hl
+	ld	h,d			; /* HL=DE=base */
+	ld	l,e
+	add	hl,bc		; /* HL=base+size */
+	xor	a
+	ld	b,h
+	ld	c,l
+	sbc	hl,de		; /* base+size < base? */
+	jr	c,1f
+	ld	h,b
+	ld	l,c
+	ld	bc,_UZIXBASE
+	xor	a
+	sbc	hl,bc		; /* base+size >= UZIXBASE? */
+	jr	c,2f
+1:	ld	h,a
+	ld	l,a			; /* hl=0 */
+	ld	a,0eh
+	ld	(_UDATAADDR+U_ERROR),a	; /* UDATA(u_error)=EFAULT */
+	ret
+2:	ld	hl,1
+	ret
+#endasm
+
+#else /* __KERNEL__ */
+
+GBL int valadr(base, size)
+	void *base;
+	uint size;
+{
+	NOTUSED(base);
+	NOTUSED(size);
+}
+#endif /* __KERNEL__ */
+
+/* Initialize system dependent parts */
+GBL void initsys(VOID) {
+	dtsize = 40;					/* TODO: dtsize = sizeof(disp_tab)/sizeof(disp_tab[0]); */
+#ifdef __KERNEL__
+	if ((OsLevel(&sublevel)!=0x22)||				/* CP/M 2.2 check */
+	    (sublevel<0xab30)||(sublevel>0xabff))		/* AltairDos check*/
+          panic("Altair Dos only");
+	if (! TotalDrives)
+          panic("No drives or IDEBDOS v2.x not installed");
+#endif   /* __ KERNEL__ */
+	/* initialize specific variables */
+	TICKSPERSEC = 50;
+#ifdef __KERNEL__
+#asm
+global _xinitsys
+_xinitsys:
+    ld      a,(_YINTVEC)			; /* save previos jmp chain interbank address */
+ 	ld	(_OLDYINTVEC),a
+    ld      hl,(_YINTVEC+1)
+	ld	(_OLDYINTVEC+1),hl
+#endasm
+#ifndef SINGLETASKED
+#asm
+    di
+    ld      a,(_BNKMARKER)			; /* insert our ISR within chain, chain continuing with BJMP OLDINTVEC */
+    ld      (_YINTVEC),a
+    ld      hl,__service
+    ld      (_YINTVEC+1),hl
+#endasm
+#endif	/* SINGLETASKED */
+#endif  /* __ KERNEL__ */
+}
+
+#ifdef __KERNEL__
+/* Initialize system call's vectors */
+/* GBL void setvectors(VOID) { */
+	/* system exit vector */
+/*	*(uchar *)(EXITADDR) = JP; */
+/*	*(uint *)(EXITADDR+1) = (uint)to_exit0;     /* (uint)exit0; */
+	/* system call vector */
+/*	*(uchar *)(SYSCADDR) = JP; */
+/*	*(uint *)(SYSCADDR+1) = (uint)to_unix;		/* (uint)unix; */
+/* } */
+
+/* doexec() starts program execution from addr PROGBASE */
+#ifdef ORI_UZIX
+
+#define arg ((uint*)TEMPDBUF)
+#define freefileentry(e)	((e) & 0x80)
+
+GBL void doexec(uint argc, uint argv, uint envp) {
+	register uchar j;
+
+	/* close all opened files (derived from parent while forking) except stdin\out\err */
+	j = UFTSIZE;		/* UFTSIZE - 1 */
+	while (j-- > 3) {
+		if (!freefileentry(UDATA(u_files)[j]))
+			doclose(j);
+	}
+	arg[4]=envp;
+	arg[3]=argv;
+	arg[2]=argc;
+	arg[1]=x_GoExit1;	/* UDATA(u_argn1) = ((int (*)())PROGBASE)(); sys_exit(); /* if program exited by RET */
+	arg[0]=PROGBASE-1;	/* address where to begin process execution with returning by stack: ei, org 100h, ... */
+	B_LDIRTON(10, arg, (uchar*)(argv-10));
+	*arg=argv-10;
+#asm	
+global	_fstack
+global	_doexec2
+_doexec2:
+	di
+	call _fstack			; /* A = page_t	p_swap  - current process 64k page index: 3..15, hl=F3_STACK, bc=_UDATAADDR+U_INSYS */
+	ld	h,b
+	ld	l,c
+	ld	(hl),0				; /* UDATA(u_insys) = 0;*/
+	ld	sp,(_TEMPDBUF)
+	jp	_FCALLTRAP+20		; /* continues with process image execution in process page */
+#endasm
+}
+#else
+GBL void doexec(sp)
+	uint sp;        /* argument in DE */
+{
+#asm
+		ex de,hl
+		ld sp,hl					
+#endasm
+	/* user stack ! */
+	UDATA(u_insys) = 0;     /* not in kernel */
+	UDATA(u_argn1) = ((int (*)())PROGBASE)();
+	sys_exit();             /* program exited by RET */
+	/* NORETURN */
+}
+#endif
+
+/* static int ret_err;     /* for error reloading */
+
+/* return syscall retval
+ * set carry flag if system call reports error
+ 
+LCL long unixret(VOID) {
+	if (0 != (ret_err = UDATA(u_error))) {
+#asm
+	   ld bc,(_ret_err)
+       scf
+#endasm
+	}
+	return *(long *)&(UDATA(u_retval));
+}
+*/
+
+#endif	/* __KERNEL__ */
+
+/* aborting - delay 5 seconds & reboot MSX	*/
+/* void _abort(int status);					*/
+#ifdef __KERNEL__
+#asm
+global __abort
+__abort:
+	pop	af
+	pop	bc
+	push bc		; bc=status
+	push af
+	/* disable _service() */
+	ld	a, 50*5
+	ld	(_inint), a
+1:	ei
+	halt		        ; /* wait 5 seconds (about 5*50 interrupts) */
+	ld	a,(_inint)
+	dec	a
+	jr	z,2f
+	ld	(_inint),a
+	jr	nz,1b	
+2:	ld	a,(_OLDYINTVEC)	; /* restore CP/M interrupt vector value */
+	ld	(_YINTVEC),a
+	ld	hl,(_OLDYINTVEC+1)
+	ld	(_YINTVEC+1),hl
+	ld	a,b
+	or	c
+	jp	z,0f800h			; /* reboot ORION */
+	ld	hl,(_xbioscold)
+	jp	(hl)				; /* reload CP/M */
+#endasm
+#endif	/* __KERNEL__ */
+
+/*
+ esc,'Z',0 - get time from console driver (h,m,s) - getch
+ esc,'Z',1,h,m,s - set time via console driver (h,m,s) - putch
+ esc,'Z',6 - d,m,y
+ esc,'Z',7,d,m,y - уст. дату в формате d,m,y
+
+ f3d8/d9 - time HHHHHmmm.mmmSSSSS
+ f3da/db - date YYYYYYYm.mmmDDDDD till 1980
+ f3dc	 - reserved
+ 
+*/
+
+#ifndef ORI_UZIX
+void rdtod(VOID) {
+	tod.t_time = bdoshl(BGETTM, 0);		/* HHHHHmmm.mmmSSSSS */
+	tod.t_date = bdoshl(BGETDT, 0);		/* YYYYYYYm.mmmDDDDD */
+}
+#endif	/* NO_RTC */
+
+void wrtod(time_t *pt) {
+#ifdef __KERNEL__
+	bdos(BSETTM, pt->t_time);		/* HHHHHmmm.mmmSSSSS */
+	bdos(BSETDT, pt->t_date);		/* YYYYYYYm.mmmDDDDD */
+#else
+	tod.t_time=pt->t_time;
+	tod.t_date=pt->t_date;
+#ifdef NO_RTC
+	tod_sec = (pt->t_time & 31) * 2;
+#endif
+#endif	/* __KERNEL__ */
+}
+
+
+/* Copy memory block */
+#asm
+        psect text
+        global _bcopy
+;void bcopy(void *src, void *dst, int count)
+_bcopy: pop af
+        pop hl	; /* hl=src */
+        pop de	; /* de=dst */
+        pop bc	; /* bc=count */
+        push bc
+        push de
+        push hl
+        push af
+        ld a,b
+        or c
+        ret z
+        ldir
+        ret
+#endasm
+
+/* Zeroing the memory area */
+#asm
+        psect text
+        global _bzero
+;bzero(char *ptr, int count)
+_bzero: pop de
+        pop hl	; /* ptr */
+        pop bc	; /* count */
+        push bc
+        push hl
+        push de
+        ld a,b
+        or c
+        ret z
+        ld (hl),0
+        ld e,l
+        ld d,h
+        inc de
+        dec bc
+        ld a,b
+        or c
+        ret z
+        ldir
+        ret
+#endasm
+
+/* Filling the memory area */
+#asm
+        psect text
+        global _bfill
+;bfill(char* ptr, uchar val, int count)
+_bfill: pop af
+        pop hl	; /* hl=ptr */
+        pop de	; /* e=val */
+        pop bc	; /* bc=count */
+        push bc
+        push de
+        push hl
+        push af
+        ld a,b
+        or c
+        ret z
+        ld (hl),e
+        ld e,l
+        ld d,h
+        inc de
+        dec bc
+        ld a,b
+        or c
+        ret z
+        ldir
+        ret
+#endasm
+

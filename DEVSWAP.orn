@@ -1,0 +1,173 @@
+/*
+ * UZIX - UNIX Implementation for MSX
+ * (c) 1997-2001 Arcady Schekochikhin
+ *		 Adriano C. R. da Cunha
+ *
+ * UZIX is based on UZI (UNIX Zilog Implementation)
+ * UZI is a UNIX kernel clone written for Z-80 systems.
+ * All code is public domain, not being based on any AT&T code.
+ *
+ * The author, Douglas Braun, can be reached at:
+ *	7696 West Zayante Rd.
+ *	Felton, CA 95018
+ *	oliveb!intelca!mipos3!cadev4!dbraun
+ *
+ * This program is under GNU GPL, read COPYING for details
+ *
+ */
+
+/**********************************************************
+  memory swapper
+**********************************************************/
+
+/* allocate memory in pages (2 pages per swap context) */
+/*static page_t mmlist[MAXSWAP/16]; /* # of page is this page available */
+/*static uint _ssp;		/* saved sp for swap_dup/swap_mmread */
+
+/* open swapper
+ * 1. Get free pages from bootstrap and fill in array 'mmlist[]'
+ *    with page numbers.
+ *    All non used entryes in mmlist must be zeroed (mapper pages
+ *    number 0 and 1 statically used by UZIX).
+ *    Bootstrap define the range of free pages in mapper and
+ *    MegaRAM.
+ * 2. Set the last allocatable page to 'total'. The total number of
+ *    allocatable pages must be not more than 1024/16=64 (limited
+ *    by size of 'mmlist[]' array).
+ *
+ * WARNING: by order, the first two pages allocated for swapping the first
+ *	    process are pages 2/3. SWAP_ALLOC DOESN'T select mapper pages.
+ *	    So, secondary bootstrap must already select mapper pages 2/3
+ *	    to RAM pages 0/1.
+ */
+#ifndef	ORI_UZIX
+GBL int swap_open(void) {
+	return 0;
+}
+
+/* close swapper */
+GBL int swap_close(void) {
+	return 0;
+}
+
+/* swapper read
+ * map memory to page 0/1
+ *  a. Pages for mapping passed throught page_t *mm.
+ */
+GBL int swap_read(mm)
+	page_t *mm;
+{
+	return 0;
+}
+#endif
+
+/* swapper dup context
+ * we taken two page context: mm and mmnew and must to
+ * copy old pages to new pages and then remap to new pages:
+ *  1. Page 0 = old[0], page 1 = new[0], copy page 0 to 1
+ *  2. Page 0 = old[1], page 1 = new[1], copy page 0 to 1
+ *  3. Page 0 = new[0]
+ *  a. Pages for dup passed throught (struct swap_mmdup *)ptr.
+ */
+#ifdef ORI_UZIX
+GBL int swap_dup(page_t mm, page_t mmnew)
+#else
+GBL int swap_dup(page_t *mm, page_t *mmnew)
+#endif
+{
+	B_LDIR((uint)BNK_MARKER, mm, 0, mmnew, 0);	/* interbank copy to process space */
+	return 0;
+}
+
+/*
+  Ф. 103 (67h)
+  Зарезервировать N последовательных сегментов.
+  Вход: D=количество сегментов
+        E=начальный сегмент (0FFh если любой)
+  Выход: A=начальный сегмент, если резервирование прошло
+         нормально, A=FF, если области такого размера нет
+
+  Ф. 104 (68h)
+  Oсвободить N последовательных сегментов
+  Вход: D=количество сегментов, Е=начальный сегмент
+  Выход: A=начальный сегмент, если освобождение прошло
+         нормально, A=FF, если была ошибка (освобождение
+         системного или отсутствующего ОЗУ)
+
+  Ф. 110 (6Eh)
+  Получить информацию о памяти
+  Выход: H=размер всего исправного ОЗУ в сегментах
+         L=размер свободного ОЗУ в сегментах
+
+  Ф. 111 (6Fh)
+  Пересчет физ. адреса в номер сегмента
+  Вход: DE = старший байт адреса (D) + банк (E)
+        Младший байт адреса считается равным нулю.
+  Выход: A = номер сегмента
+
+  Ф. 112 (70h)
+  Пересчет номера сегмента в физ. адрес
+  Вход: E = номер сегмента
+  Выход: HL = старший байт адреса (H) + банк (L)
+        Младший байт адреса считается равным нулю.
+
+*/
+
+
+/* allocate swapper pages
+ * locate two nonzeroed entryes in mmlist[] and take the page numbers
+ * from them.
+ *  a. Both pages must be of the same kind
+ *  b. Allocated entryes in mmlist[] must be zeroed.
+ *  c. Allocated numbers returned throught page_t *mm.
+ */
+GBL int swap_alloc(mm)
+	page_t *mm;
+{
+	register page_t mseg=bdos(103, 0x0eff);		/* malloc 14*4k=56k - DE: D=14, in any page - E=0FFh */
+	if (mseg!=0xff) {							/* returns 4k segment ordinal number or 0FFh if error */
+		*mm=mseg>>4;
+		return 0;
+	}
+	return -1;	/* no room */
+}
+
+/* deallocate swapper pages
+ * locate two zeroed entryes in mmlist[] and fill in this ones with
+ * numbers of freed pages.
+ *  a. Finds free entry from mmlist[0],
+ *  b. Freed numbers at page_t *mm must be zeroed.
+ *  c. If both page numbers is 0 - then do nothing
+ */
+GBL int swap_dealloc(mm)
+	page_t *mm;
+{
+	return (bdos(104, 0x0e00+(*mm<<4))!=0xff);	/* free 14*4k=56k - d=14 segments, starting segment - e=page<<4 */
+}
+
+/*
+ * we taken the pointer to struct swap_mmread
+ * containing the page context mm[], offset and size in this context
+ * and addres of user buffer and must copy data from page context to
+ * buffer.
+ *  a. Pages for read passed throught (struct swap_mmread *)ptr.
+ */
+GBL int swap_mmread(rp)
+	struct swap_mmread *rp;
+{
+	register uint bsize;
+	static uchar *addrd, *addrs;
+
+	addrd = rp->buf; 				/* data destination address */
+	addrs = (uchar *)rp->offset;	/* data source address */
+	bsize = rp->size;				/* data size to copy */
+	if (((uint)addrs!=(uint)UDATA_STASH)&&		/* UDATA_STASH>UZIXBASE but read allowed */
+	    ((uint)addrs > UZIXBASE ||
+	    bsize > UZIXBASE ||
+	    (uint)(addrs + bsize) > UZIXBASE))
+			return -1;
+	B_LDIR(bsize, rp->mm, addrs, *BNK_MARKER, addrd);	/* interbank copy */
+	return 0;
+}
+
+

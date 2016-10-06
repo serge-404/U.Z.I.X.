@@ -1,0 +1,422 @@
+#ucp 2: @filfs.sub
+
+cd /dev
+success :end
+mkdir /dev
+failure exit
+cd /dev
+umask 0
+# mknod -m 664 /dev/fd0 b 0 0
+# mknod /dev/rfd0 c 0 0
+# mknod -m 664 /dev/fd1 b 0 1
+# mknod /dev/rfd1 c 0 1
+# mknod -m 664 /dev/fd2 b 0 2
+# mknod /dev/rfd2 c 0 2
+# mknod -m 664 /dev/fd3 b 0 3
+# mknod /dev/rfd3 c 0 3
+# mknod -m 664 /dev/fd4 b 0 4
+# mknod /dev/rfd4 c 0 4
+# mknod -m 664 /dev/fd5 b 0 5
+# mknod /dev/rfd5 c 0 5
+# mknod -m 664 /dev/fd6 b 0 6
+# mknod /dev/rfd6 c 0 6
+# mknod -m 664 /dev/fd7 b 0 7
+# mknod /dev/rfd7 c 0 7
+# mknod -m 666 /dev/null c 1 0
+# mknod -m 666 /dev/zero c 1 1
+# mknod -m 222 /dev/lpr c 2 0
+# mknod -m 666 /dev/tty c 3 0
+# mknod -m 666 /dev/tty0 c 3 0
+# mknod -m 666 /dev/console c 3 0
+# mknod -m 666 /dev/tty1 c 3 1
+# mknod -m 666 /dev/tty2 c 3 2
+# mknod -m 644 /dev/mem c 4 0
+# mknod -m 600 /dev/kmem c 4 1
+
+mknod fd0       060664 0 0
+mknod rfd0      020644 0 0
+mknod fd1       060664 0 1
+mknod rfd1      020644 0 1
+mknod fd2       060664 0 2
+mknod rfd2      020644 0 2
+mknod fd3       060664 0 3
+mknod rfd3      020644 0 3
+mknod fd4       060664 0 4
+mknod rfd4      020644 0 4
+mknod fd5       060664 0 5
+mknod rfd5      020644 0 5
+mknod fd6       060664 0 6
+mknod rfd6      020644 0 6
+mknod fd7       060664 0 7
+mknod rfd7      020644 0 7
+mknod null      020666 1 0
+mknod zero      020666 1 1
+mknod lpr       020222 2 0
+mknod tty       020666 3 0
+mknod tty0      020666 3 0
+mknod console   020666 3 0
+mknod tty1      020666 3 1
+mknod tty2      020666 3 2
+mknod mem       020644 4 0
+mknod kmem      020600 4 1
+
+cd /
+mkdir /tmp
+chmod 040777    /tmp
+umask 022
+
+mkdir /bin
+mkdir /etc
+mkdir /usr
+mkdir /mnt
+mkdir /root
+mkdir /home
+mkdir /var
+
+cd /usr
+mkdir /usr/bin
+mkdir /usr/lib
+mkdir /usr/src
+mkdir /usr/man
+mkdir /usr/man/man1
+mkdir /usr/man/man6
+mkdir /usr/man/man8
+mkdir /usr/spool
+mkdir /usr/spool/lpd
+
+cd /home
+mkdir /home/user
+mkdir /home/guest
+
+cd /bin
+failure exit
+umask 022
+
+bget aal
+bget adduser
+bget banner
+bget basename
+bget bogomips
+bget cal
+bget cat
+bget cdiff
+bget cgrep
+bget chgcpu
+bget chgrp
+bget chmod
+bget chown
+bget cksum
+bget clear
+bget clone
+bget cmp
+bget cp
+bget cpir
+bget cr
+bget crc
+bget cron
+bget date
+bget dd
+bget df
+bget dhry
+bget diff
+bget dirname
+bget diskusag
+bget dosdel
+bget dosdir
+bget dosemu
+bget dosread
+bget doswrite
+bget dtree
+bget du
+bget echo
+bget ed
+bget false
+bget fgrep
+bget file
+bget find
+bget fld
+bget fortune
+bget grep
+bget gres
+bget head
+bget ic
+bget id
+bget init
+bget inodes
+bget key
+bget kill
+bget ln
+bget login
+bget lpd
+bget lpr
+bget ls
+bget man
+bget mkdir
+bget mknod
+bget more
+bget mount
+bget mv
+bget ncheck
+bget ncr
+bget od
+bget passwd
+bget pathchk
+bget pr
+bget printenv
+bget ps
+bget pwd
+bget readall
+bget reboot
+bget renice
+bget rm
+bget rmdir
+bget roff
+bget sash
+bget setclock
+bget sh
+bget sort
+bget split
+bget su
+bget sum
+bget tail
+bget tar
+bget tee
+bget termcap
+bget tget
+bget time
+bget top
+bget touch
+bget tr
+bget true
+bget umount
+bget uname
+bget uniq
+bget uudecode
+bget uuencode
+bget wc
+bget which
+bget whoami
+bget yes
+ 
+ 
+chmod 0755 aal
+chmod 0700 adduser
+chmod 0755 banner
+chmod 0755 basename
+chmod 0755 bogomips
+chmod 0755 cal
+chmod 0755 cat
+chmod 0755 cdiff
+chmod 0755 cgrep
+chmod 0700 chgcpu
+chmod 0755 chgrp
+chmod 0755 chmod
+chmod 0755 chown
+chmod 0755 cksum
+chmod 0755 clear
+chmod 0755 clone
+chmod 0755 cmp
+chmod 0755 cp
+chmod 0755 cpir
+chmod 0755 cr
+chmod 0755 crc
+chmod 0755 cron
+chmod 0755 date
+chmod 0755 dd
+chmod 4755 df
+chmod 0755 dhry
+chmod 0755 diff
+chmod 0755 dirname
+chmod 0755 diskusag
+chmod 0755 dosdel
+chmod 0755 dosdir
+chmod 0755 dosemu
+chmod 0755 dosread
+chmod 0755 doswrite
+chmod 0755 dtree
+chmod 0755 du
+chmod 0755 echo
+chmod 0755 ed
+chmod 0755 false
+chmod 0755 fgrep
+chmod 0755 file
+chmod 0755 find
+chmod 0755 fld
+chmod 0755 fortune
+chmod 0755 grep
+chmod 0755 gres
+chmod 0755 head
+chmod 0755 ic
+chmod 0755 id
+chmod 0755 init
+chmod 0755 inodes
+chmod 0755 key
+chmod 0755 kill
+chmod 0755 ln
+chmod 4755 login
+chmod 0755 lpd
+chmod 0755 lpr
+chmod 0755 ls
+chmod 0755 man
+chmod 0755 mkdir
+chmod 0755 mknod
+chmod 0755 more
+chmod 0755 mount
+chmod 0755 mv
+chmod 0755 ncheck
+chmod 0755 ncr
+chmod 0755 od
+chmod 0700 passwd
+chmod 0755 pathchk
+chmod 0755 pr
+chmod 0755 printenv
+chmod 0755 ps
+chmod 0755 pwd
+chmod 0755 readall
+chmod 0700 reboot
+chmod 0755 renice
+chmod 0755 rm
+chmod 0755 rmdir
+chmod 0755 roff
+chmod 0755 sash
+chmod 0755 setclock
+chmod 0755 sh
+chmod 0755 sort
+chmod 0755 split
+chmod 0755 su
+chmod 0755 sum
+chmod 0755 tail
+chmod 0755 tar
+chmod 0755 tee
+chmod 0755 termcap
+chmod 0755 tget
+chmod 0755 time
+chmod 0755 top
+chmod 0755 touch
+chmod 0755 tr
+chmod 0755 true
+chmod 0755 umount
+chmod 0755 uname
+chmod 0755 uniq
+chmod 0755 uudecode
+chmod 0755 uuencode
+chmod 0755 wc
+chmod 0755 which
+chmod 0755 whoami
+chmod 0755 yes
+
+
+cd /etc
+failure exit
+umask 022
+get group.etc   group
+get passwd.etc  passwd
+get termcap.etc termcap
+chmod 0644 group
+chmod 0644 passwd
+chmod 0644 termcap
+
+umask 0
+cd /root
+failure exit
+get aliasrc.rot .aliasrc
+get loginrc.rot .loginrc
+get uzixlogo.rot .uzixlogo
+chmod 0744 .loginrc
+
+cd /usr/lib
+failure exit
+umask 022
+get liberror.txt
+get fortune.dat
+
+
+cd /usr/man/man1
+failure exit
+umask 022
+
+get basename.1
+get bogomips.1
+get cal.1
+get cat.1
+get cdiff.1
+get cgrep.1
+get chgrp.1
+get chmod.1
+get chown.1
+get cksum.1
+get clear.1
+get cmp.1
+get cp.1
+get cpdir.1
+get crc.1
+get date.1
+get dd.1
+get df.1
+get dhry.1
+get diff.1
+get dirname.1
+get dosdel.1
+get dosdir.1
+get dosread.1
+get doswrite.1
+get du.1
+get echo.1
+get ed.1
+get false.1
+get fgrep.1
+get file.1
+get fld.1
+get grep.1
+get head.1
+get kill.1
+get ln.1
+get login.1
+get ls.1
+get man.1
+get mkdir.1
+get mknod.1
+get more.1
+get mv.1
+get passwd.1
+get printenv.1
+get ps.1
+get pwd.1
+get rm.1
+get rmdir.1
+get sash.1
+get su.1
+get sum.1
+get tail.1
+get tar.1
+get tee.1
+get time.1
+get top.1
+get touch.1
+get tr.1
+get true.1
+get uname.1
+get uniq.1
+get wc.1
+get whoami.1
+get yes.1
+
+cd /usr/man/man6
+failure exit
+umask 022
+get banner.6
+get fortune.6
+
+cd /usr/man/man8
+failure exit
+umask 022
+get adduser.8
+get init.8
+get mount.8
+get reboot.8
+get sync.8
+get umount.8
+
+:end
+
+exit

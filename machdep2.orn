@@ -1,0 +1,791 @@
+/* routines lives in process page - implementation section */
+/* and calls to its from kernel page - interface section   */
+/* see BIOS2.MAC for interbank low level routines details  */
+
+/* -6 -21 */
+
+/* absolute addresses - because dummy ZAS cannot compute expressions with labels in relocationable object file */
+#define xGoBDOS  _UZIXBASE+0	
+#define xSetVec	 _UZIXBASE+3
+#define xBDOS0   _UZIXBASE+068h
+#define xGoExit  _UZIXBASE+093h
+#define xgch	 _UZIXBASE+09fh
+#define xGoExit0 _UZIXBASE+0a0h
+#define x_GoExit1 UZIXBASE+0xa3
+#define xGoExit1 _UZIXBASE+0a3h
+#define xConSt   _UZIXBASE+0aah
+#define xConIn   _UZIXBASE+0d5h
+#define xConOut  _UZIXBASE+0e1h
+#define xGoUnix  _UZIXBASE+0f7h
+#define x_bzer   _UZIXBASE+147h
+#define x_bcop   _UZIXBASE+151h
+#define x_ssiz   _UZIXBASE+158h
+#define x_scop   _UZIXBASE+190h
+/* #define xforkcontext _UZIXBASE+1c6h */	/* see extern.h */
+/* #define xsavecontext _UZIXBASE+1c8h */
+/* #define xdoswapin    _UZIXBASE+21ch */
+/* #define xinitarg0	_UZIXBASE+265h */	/* see PROC_BUF in unix.h !!! */
+/* #define xinitarg1	_UZIXBASE+267h */	
+/* #define xbininit		_UZIXBASE+269h */
+#define xargarr	 _UZIXBASE+26eh
+/* #define xconsole _UZIXBASE+273h */		/* see extern.h */
+#define xareasize	281h					
+#define udatasize	120
+#define ConBufEmpty 31
+
+/* interface */
+
+#asm
+	psect text
+	global	_setvectors
+	global	_setcalltrap
+	global	_PCALL
+	global	_B_ZERO
+	global	_B_COPY
+	global	_R_COPY
+	global	_B_LDIR
+	global	_B_LDIRTON
+	global	_B_LDIRTO2
+	global	_R_LDIRTO2
+	global	_ssiz
+	global	_scop
+	global _jpunix
+	global _swapout
+	global _xswapout
+	global _xbios 
+	global _fstack
+;
+_jpunix:
+	ld	a,(_UDATAADDR+U_INSYS)
+	cp	2
+	jp	c,_jpunix1
+	ld	(_PRC_STACK2),sp	; /* at this moment stack is in F3-area because unix() called with BCALL() */
+	ld	sp,(_TRP_STACK)		; /* move stack to FAREA - F0FA..F000 */
+	jp	_unix				; /* second (recursive) unix() call */
+_jpunix1:
+	ld	(_PRC_STACK1),sp	; /* at this moment stack is in F3-area because unix() called with BCALL() */
+	ld	sp,_TRP_STACK		; /* move stack to FAREA - F0FA..F000 */
+	jp _unix				; /* first unix() call */
+;
+_swapout:
+	pop		hl
+	ld	(_RET_SP),sp 
+	push	hl			; /* HL = return from swapout address */
+	ld	(_RET_ADDR),hl 
+	ld	a,(_SWITCH_PAGE)	; /* if we in ISR do not double save context */
+	ld	hl,(_UDATAADDR)		; /* HL = ptab_t *u_ptab  */
+	ld	de,PSWAP_OFFSET
+	add	hl,de				; /* 20150116 */
+	or	a
+	ld	a,(hl)				; /* A = page_t	p_swap  - current process 64k page index: 3..15 */
+	ld	hl,xsavecontext
+	call z,BCALL			; /* save current context */
+	jp	_xswapout
+;
+_xbios:						; /* uchar xbios(int funcN, int bc) */
+global _xbioscold
+	pop	af
+	pop	hl					; /* funcN */
+	pop	bc					; /* bc    */ 
+	push bc
+	push hl
+	push af
+	ld	d,h
+	ld	e,l
+	add	hl,de
+	add	hl,de				; /*  funcN*3  */
+	ld	de,(_xbioscold)
+	add hl,de				; /* HL = actual BIOS entry point */
+	call xbioscall
+	ld	l,a
+	ld	h,0
+	ret
+xbioscall:
+	jp	(hl)
+;
+_fstack:					; /* _f3stack */
+	ld	hl,(_UDATAADDR)		; /* HL = ptab_t *u_ptab  */
+	ld	bc,PSWAP_OFFSET
+	add	hl,bc				; /* 20150116 */
+	ld	bc,_UDATAADDR+U_INSYS
+	ld	a,(bc)
+	cp	2
+	ld	a,(hl)				; /* A = page_t	p_swap  - process 64k page index: 3..N */
+	ld	hl,(_PRC_STACK1)	; /* correct RETSTACK in F3-stack for return to child process instead of parent continue - first return */
+	ret	c
+	ld	hl,(_PRC_STACK2)	; /* correct RETSTACK in F3-stack for return to child process instead of parent continue - second return (from recursive call) */
+	ret
+;
+_xcalltrap:					; /* INP: Z=do_ei, BC=cursig, HL=curvec, A = page_t	p_swap  - process 64k page index: 3..N  */
+	jp	(hl)
+	ld	sp,(_PRC_STACK1)	; /* here stack pointer +2 where process space was previously leaved */
+_ycalltrap:
+	out	(0f9h),a
+	push bc
+	jr nz, ctrap1
+	ei			
+ctrap1:	
+	call _FCALLTRAP			; /* _xcalltrap :  jp (hl) */
+	ld	sp,(_TRP_STACK)
+	ld	a,KERNEL_PAGE
+_zcalltrap:					; /* _xcalltrap+20=_FCALLTRAP+20 */
+	out	(0f9h),a
+	ret
+_ysavecontext:				; /* _xcalltrap+23=_FCALLTRAP+23 */
+	ld	a,0FFh				; /* 0FFh will be replaced to PROCESS_PAGE before _ysavecontext call */
+	out	(0f9h),a			; /* switch to process page */
+	ld	a,0FFh				; /* 0FFh will be replaced to pop-ed A before _ysavecontext call */
+	jp	xsavecontext
+_ecalltrap:
+;
+_setvectors:				; /* set jumps 0h, 5h, 8h in process page */
+	call _fstack			; /* A = page_t	p_swap  - process 64k page index: 3..N */
+	ld	hl,_UZIXBASE		; /* destination */
+	exx
+	ex	af,af'
+	ld	a,(_BNKMARKER)
+	ld	hl,_UBASE			; /* source */
+	ld	bc,xareasize		; /* _ESABU-_UBASE	; /* count */
+	call	BLDIR			; /* do copy */
+	ld	de,(3)
+	ld	hl, xSetVec
+	call _PCALL				; /* call to process space (page) */
+_setcalltrap:
+	ld	hl,_xcalltrap		; /* use special interbank call routine (not BCALL) to use stack at F0-area */
+	ld	de,_FCALLTRAP
+	ld	bc,_ecalltrap-_xcalltrap	; /* 32 bytes max */
+	ldir
+	ret
+;
+; /* void B_ZERO(void *ptr, uint count)					/* zero fill block within process space */
+_B_ZERO:pop	af
+	pop	de					; /* ptr */
+	pop	bc					; /* count */
+	push	bc
+	push	de
+	push	af
+	ld	hl, x_bzer			; /* _UZIXBASE-_UBASE+__bzer */
+	jr	_PCALL	; /* call to process space (page) */
+;
+; /* void B_COPY(void *src, void *dst, uint count)		/* copy block within process space */
+_B_COPY:pop	af
+	pop	hl					; /* src */
+	pop	de					; /* dst */
+	pop	bc					; /* count */
+	push	bc
+	push	de
+	push	hl
+	push	af
+_R_COPY:	
+	exx
+	ld	hl, x_bcop			; /* _UZIXBASE-_UBASE+__bcop */
+_PCALL:	
+	push	hl
+	push	bc
+	call _fstack			; /* A = page_t	p_swap  - process 64k page index: 3..N */
+	pop	bc
+	pop	hl
+	jp	BCALL				;  /* call to process space (page) */
+;
+; /* void B_LDIRTON(unsigned int count, void *src, void *dst);	/* send block from KERNEL_PAGE to process page */
+_B_LDIRTON:
+	call _fstack		; /* A = page_t	p_swap  - process 64k page index: 3..N */
+	ex	af,af'			; /* destination page */
+	pop	de
+	pop	bc				; /* count */
+	pop	hl				; /* src */
+	exx
+	pop	hl				; /* dst */
+	push hl
+	exx
+	push hl
+	push bc
+	push de
+	ld	a,KERNEL_PAGE
+	jp	BLDIR
+;
+; /* void B_LDIRTO2(unsigned int count, void *src, void *dst);	/* send block from process page to KERNEL_PAGE */
+_B_LDIRTO2:
+	pop	af
+	pop	bc		; /* count */
+	pop	hl		; /* src */
+	exx
+	pop	hl		; /* dst */
+	push hl
+	exx
+	push hl
+	push bc
+	push af
+_R_LDIRTO2:
+	ld	a,KERNEL_PAGE
+	ex	af,af'			; /* destination page */
+	exx
+	ex	de,hl
+	call _fstack		; /* A = page_t	p_swap  - process 64k page index: 3..N */
+	ex	de,hl
+	push hl
+	exx
+	call BLDIR
+	pop	hl				; /* return (int)dst */
+	ret
+;
+; /* void B_LDIR(uint count, uchar bnksrc, void *src, uchar bnkdst, void *dst)  /* interbank copy */
+_B_LDIR:pop	af
+		pop	bc		; /* count */
+		pop	de		; /* bnksrc */
+		pop	hl		; /* src */
+		exx
+		ex	af,af'
+		pop	de		; /* bnkdst */
+		ld	a,e
+		pop	hl		; /* dst */
+		push hl
+		push de
+		exx
+		ex	af,af'
+		push hl
+		push de
+		push bc
+		push af
+		ld	a,e
+		jp	BLDIR
+;
+; /* uint ssiz(register char **argv, uchar *cnt, char **smin) */
+_ssiz:	pop	af
+	pop	bc	; /* argv - адрес массива указателей (2-байтных чисел) */
+	pop	hl	; /* cnt - адрес счетчика (1 байт) */
+	pop	de	; /* smin - адрес переменной-указателя (адрес указателя границы памяти, при вызове = UZIXBASE) */
+	push	de
+	push	hl
+	push	bc
+	push	af
+	exx
+	push	ix
+	ld	hl, x_ssiz	; /* _UZIXBASE-_UBASE+__ssiz */
+	call	_PCALL	; /* call to process space (page) */
+	pop	ix
+	ret
+;
+;void *scop(register char **argv, uchar cnt, char *to, char *real)
+_scop:	pop	af
+	pop	bc			; /* argv - адрес массива указателей (2-байтных чисел) */
+	exx	
+	pop	hl			; /* cnt -  счетчик (1 байт) */
+	pop	de			; /* to - указатель на адрес */
+	pop	bc			; /* real - указатель на адрес */
+	push	bc
+	push	de
+	push	hl
+	exx
+	push	bc
+	push	af
+	ld	hl, x_scop	; /* _UZIXBASE-_UBASE+__scop */
+	jr	_PCALL		; /* call to process space (page) */
+#endasm
+
+/* implementation */
+
+#asm
+	psect text
+/*	org		_UZIXBASE		; /* TODO */
+	global	_UBASE
+	global	_SetVec
+	global	__bzer
+	global	__bcop
+	global	__ssiz
+	global	__scop
+	global  _bininit
+/*	global	_fork_context	*/
+/*	global	_save_context	*/
+	global	_do_swapin 		
+/*	global	_ESABU 			*/
+;
+; CP/M BDOS emulation (console IO only)
+;
+_UBASE:			
+_GoBDOS:jp	xBDOS0		; /*_UZIXBASE-_UBASE+_BDOS0		; /* fake BDOS entry */
+_SetVec:
+	xor	a
+	ld	(080h),a		; /* no command string */
+	ld	h,a
+	ld	l,a
+	ld	a,0c3h			; /* jp */
+	ld	(hl),a
+	ld	(5),a
+	ld	(8),a
+	inc hl
+	ld	(3),de			; /* CP/M IObyte, CP/M current disk */
+	ld	de, xGoExit		; /* _UZIXBASE-_UBASE+_GoExit */
+	ld	(hl),e
+	inc hl
+	ld	(hl),d
+	ld	hl, xGoBDOS		; /* _UZIXBASE-_UBASE+_GoBDOS */
+	ld	(6),hl 
+	ld	hl, xGoUnix		; /* _UZIXBASE-_UBASE+_GoUnix */
+	ld	(9),hl 
+	ld	a,0fbh			; /* ei */
+	ld	(0ffh),a
+	ret
+;
+BDOSF1:
+	call xConSt			; /* return A=0 and Z flag if no key pressed,  0FF and NZ otherwize */
+	jr	 z,BDOSF1
+	call xConIn
+	push af
+	ld	 c,a
+	call xConOut
+	pop	 af
+	jr	 BDOSLA
+;
+BF6NEXT:
+	call xConSt			; /* return A=0 and Z flag if no key pressed,  0FF and NZ otherwize */
+	call nz,xConIn
+	jr	BDOSLA
+;
+BDOSF7:
+	ld	a,(3)
+BDOSLA:
+	ld	l,a
+	ret
+;
+BDOSF9:
+	ld	a,(de)
+	cp	'$'
+	ret	z
+	ld	c,a
+	push de
+	call xConOut
+	pop	de
+	inc	de
+	jr	BDOSF9
+;	
+BCALL2:
+	ld	a,KERNEL_PAGE	; /* kernel page N */
+	jp	BCALL			; /* jump to kernel function */
+;
+BDOSF6:
+	ld	a,e
+	inc	a
+	jr  z,BF6NEXT
+	inc	a
+	jr  z,ConSt
+	ld	c,e
+	jr  ConOut
+;
+_BDOS0:											
+	ld  a,c
+	or	a
+	jr	z,_GoExit	; /* BDOSF0 */
+	dec	a
+	jr	z,BDOSF1	; /* console input with echo */
+	ld	c,e
+	dec	a
+	jr	z,ConOut	; /* console output */
+	sub	4			; /* direct input\output, no echo */
+	jr	z,BDOSF6
+	dec	a
+	jr	z,BDOSF7
+	sub	2
+	jr	z,BDOSF9	; /* print string */
+	ld	hl,5		; /* jp 2:0005 - jp BDOS (into TPA page) */
+	dec	a
+	jr	z,BCALL2	; /* BDOSFA /* TODO: Get string to buffer */
+	dec	a			; /* console status */
+	jr	z,ConSt
+	dec	a
+	ld	hl,022h		; /* version 2.2 */
+	ret	z
+	ld	a,0ffh
+	jr	BDOSLA
+;
+; CP/M BIOS emulation (console IO only)
+;
+	jp	xGoExit1	; /* _UZIXBASE-_UBASE+GoExit0	; /* BIOS CP/M coldstart=warmstart */
+_GoExit:
+	jp	xGoExit0	; /* _UZIXBASE-_UBASE+GoExit0 */
+	jp	xConSt		; /* _UZIXBASE-_UBASE+ConSt		; /* Console status */
+	jp	xConIn		; /* _UZIXBASE-_UBASE+ConIn		; /* Console input */
+	jp	xConOut		; /* Console output */
+;
+gch:defb	ConBufEmpty	; /* 31=buffer empty */
+;
+GoExit0:			; /* fake BIOS COLD/WARM start entry */
+	ld	hl,-1		; /* sys_exit(u_argn1=-1) */
+GoExit1:			; /* program (process) exited by RET*/
+	push hl			; /* retcode */
+	ld	hl,11	
+	push hl			; /* callno=11 : sys_exit(retcode) */
+	jr _GoUnix		; /* no return */									/* -2 */
+;
+; /* Returns its status in A; 0 if no character is ready, 0FFh if one is. */
+; /*	_getchar:  if (read(STDIN_FILENO, &ch, 1) == 1) return ch; else return EOF;  /* STDIN_FILENO=0; EOF=-1 */
+;
+ConSt:								
+	ld	a,(xgch)
+	sub	ConBufEmpty
+	jr	nz,ConStFF					; /* if symbol in buffer - then console already ready */
+	ld	hl,1						; /* arg3: 1 */ 
+	push hl
+	ld	hl,_UDATAADDR+U_ARGN4		; /* arg2: &ch */
+	push hl
+	ld	h,a							; /* arg1: STDIN_FILENO=0 */
+	ld	l,a							; /* HL=A=0*/
+	push hl
+	ld	l,23						; /* callno: 23=read */
+	push hl
+	call xGoUnix
+	pop	hl
+	pop	hl
+	pop	hl
+	pop	hl
+	ld	a,d
+	or	e							; /* (int)result==0 ? */
+	ld	hl,xgch
+	ld	(hl),ConBufEmpty
+	ret	z							; /* if DE==0; clear_gch_buf and return 0; else store_in_gch(ch) and return 0FFh */
+	ld	a,(_UDATAADDR+U_ARGN4)
+	ld	(hl),a						; /* if symbol readed, store it in buffer and return console_ready=0FFh */
+ConStFF:
+	ld	a,0FFh
+	ret								; 								/* ++4 = +2 */
+;
+; /* Wait until the keyboard is ready to provide a character, and return it in A. */
+;
+ConIn:
+	call xConSt
+	jr	z,ConIn
+	ld	hl,xgch
+	ld	a,(hl)
+	ld	(hl),ConBufEmpty
+	ret
+;
+; /* Write the character in C to the screen. */
+; /* _putchar:  return write(STDOUT_FILENO, &ch, 1); */
+;
+ConOut:					 			
+	push bc							; /* fake arg4: C=ch*/
+	ld	hl,1						; /* arg3: 1 */ 
+	push hl
+	ld	bc,_UDATAADDR+U_ARGN4		; /* arg2: &ch */
+	push bc
+	push hl							; /* arg1: STDOUT_FILENO=1 */
+	ld	l,36						; /* callno: 36=write */
+	push hl
+	call xGoUnix
+	ld	hl,10
+	add	hl,sp
+	ld	sp,hl						
+	ret								; 								/* ++5 = +7 */
+;
+_GoUnix:							; /* SP: WORD=retaddr, WORD=callno, WORD=ARGN1, WORD=ARGN2, WORD=ARGN3, WORD=ARGN4 */
+	ld	hl,2						; /* skip retaddr */
+	add hl,sp
+	ld	a,(hl)						; /* A=callno */
+	ld	de,_UDATAADDR+U_CALLNO
+	ld	bc,10
+	ldir							; /* fill UDATA(callno,ARGN1,ARGN2,ARGN3,ARGN4) */   -7
+	ld	hl,_COMMONMEM				; /* dtsize */
+	inc a
+	cp	(hl)	
+	ld hl,_UDATAADDR+U_ERROR
+	ld (hl), EINVFNC
+	jr	nc,_GU3						; /* if ((uchar)callno >= dtsize) { UDATA(u_error) = EINVFNC; return -1; } */
+	ld (hl),b						; /* UDATA(u_error)=0 */
+	ld	a,KERNEL_PAGE
+	push ix
+	push iy
+	di
+	ld	hl,_UDATAADDR+U_INSYS
+	inc (hl)						; /* ++UDATA(u_insys) */
+	ld	hl,_jpunix					; /* call into kernel */
+	call BJMP					; /* call unix() */
+	ei
+	pop	iy
+	pop	ix
+_GU2:
+	ld	de,(_UDATAADDR+U_RETVAL)
+	ld	hl,(_UDATAADDR+U_RETVAL+2) 	; /* return *(long *)&(UDATA(u_retval)); */
+	ld	b,0
+	ld  a,(_UDATAADDR+U_ERROR)
+	ld	c,a
+	or	a							; /* CF=0 */
+	ret	z							; /* no error */
+	scf								; /* CF=1 : error flag */
+	ret
+_GU3:
+	ld	hl,-1
+	ld	(_UDATAADDR+U_RETVAL),hl
+	ld	(_UDATAADDR+U_RETVAL+2),hl
+	jr	_GU2
+	nop
+	nop
+	nop
+	nop								; /* TODO : remove in later */
+;
+; /* zero fill memory block within process space
+;void B_ZERO(DE void *src, BC uint count) */
+__bzer:	ld	a,b
+	or	c
+	ret	z
+	ld	h,d
+	ld	l,e
+	ld	(hl),0
+	inc de
+	dec	bc
+	exx
+; /* copy memory block within process space
+;void B_COPY(HL' void *src, DE' void *dst, BC' uint count) */
+__bcop:	exx
+	ld	a,b
+	or	c
+	ret	z
+	ldir
+	ret
+;
+; /* uint ssiz(BC' char **argv, HL' uchar *cnt, DE' char **smin) */
+__ssiz:	exx		; /* input parameters is in alternate registers */
+	ld	(hl),1	; /* *cnt = 1; */
+	push	de
+	exx		
+	pop	hl
+	ld	e,(hl)
+	inc	hl
+	ld	d,(hl)	; /* de = mi = *smin */
+	ld	ix,0	; /* n=0 */
+	exx		
+sz3:push	bc	; /* while */
+	inc	bc
+	inc	bc		; /* argv++ */
+	exx
+	pop	hl		; /* argv */
+	ld	a,(hl)
+	ld	c,a
+	inc	hl
+	ld	b,(hl)	; /* bc = p = *argv */
+	or 	b
+	jr	z,sz5
+	ld	h,b
+	ld	l,c
+	sbc	hl,de	; /* p - mi */
+	jr	nc,sz4
+	ld	d,b
+	ld	e,c		; /* if (p < mi)	mi = p; */
+sz4:inc	ix
+	ld	a,(bc)
+	inc	bc
+	or	a
+	jr	nz,sz4
+	exx
+	inc	(hl)	; /* ++(*cnt) */
+	jr	sz3
+sz5:push	de
+	exx
+	ex	de,hl
+	pop	de
+	ld	(hl),e
+	inc	hl
+	ld	(hl),d	; /* *smin=mi */
+	push	ix
+	pop	hl		; /* hl = n */
+	ret			; /* return n */
+; /*
+;void *scop(BC char **argv, L' uchar cnt, DE' char *to, BC' char *real)
+;	p = (void *)PROGBASE;
+;	p = scop(argp, acnt, p, (char *)(UZIXBASE - 1 - et - asiz));
+;	scop(envp, ecnt, p, (char *)(UZIXBASE - 1 - esiz)); */
+__scop:	exx
+	xor	a
+	ld	h,a
+	adc	hl,hl	; /* hl' = sizeof(char *) * cnt = cnt * 2 */
+	adc	hl,de	; /* hl' = q = to + sizeof(char *) * cnt;   de' = a = to */
+	ex	de,hl
+	push	de	; /* de' = q ; hl' = a */
+	exx
+	pop	de		; /* de = q */
+sc6:ld	h,b
+	ld	l,c		; /* hl = argv */
+	inc	bc
+	inc	bc		; /* argv++ */
+	push	bc
+	ld	c,(hl)
+	ld	a,(hl)
+	inc	hl
+	or	(hl)
+	ld	h,(hl)
+	ld	l,c		; /* hl = s = *argv */
+	exx
+	jr	z,sc8	; /* if (s == NULL) */
+	ld	(hl),c	; /* bc' = real */
+	inc	hl
+	ld	(hl),b
+	inc	hl		; /* *a++ = real; */
+	push	bc
+	exx
+	pop	bc		; /* bc = real */
+sc7:inc	bc		; /* ++real */
+	ld	a,(hl)
+	ld	(de),a
+	inc	hl
+	inc	de		; /* *q++ = *s++ */
+	or 	a
+	jr	nz,sc7	; /* while (s != '\0') */
+	push bc
+	exx
+	pop	bc		; /* bc' = real */
+	exx
+	pop	bc		; /* bc = argv */
+	jr	sc6		; /* while */
+sc8:pop	bc		; /* ballance stack */
+	ld	(hl),a	; /* acc=0 */
+	inc	hl
+	ld	(hl),a	; /* *a = NULL; */
+	exx
+	ex	de,hl	; /* hl = q */
+	ret
+;
+; SWAPPING OUT (actually areas F000..F0FF, F162..F1DF backup and RAM pages switching)
+;
+_fork_context:
+	ld	h,d					; /* context restored with returned int value = HL */
+	ld	l,e
+_save_context:
+	di
+	ld	(_FSTACKBCKP-2),sp	; /* SP+22 =SP */
+	ld	sp,_FSTACKBCKP-2
+	push	iy				; /* SP+20	=IY */
+	push	ix				; /* SP+18	=IX */
+	exx
+	ex	af,af'
+	push	hl				; /* SP+16	=HL' */
+	push	de				; /* SP+14	=DE' */
+	push	bc				; /* SP+12	=BC' */
+	push	af				; /* SP+10	=AF' */
+	exx
+	ex	af,af'
+	push	de				; /* SP+8  =DE */
+	push	bc				; /* SP+6  =BC */
+	push	hl				; /* SP+4  =HL */
+	ld		hl,(_RET_ADDR)
+	push	hl				; /* SP+2  куда возвращаться стеками в самом финале _do_swapin - на адрес _RETPAGE:_ret_to */
+	push	af				; /* SP+0  =AF  (FSTACK_BCKP-24) */
+	ld	hl,ISR_RET			; /* а до того - сходим в ISR_RET чтобы восстановить AF и выполнить EI */
+	push hl
+	ld	sp,(_FSTACKBCKP-2)	; /* SP+22  */
+	ld	hl,(_RET_SP)
+	ld	(_FSTACKBCKP-2),hl	; /* SP+22 =SP */
+	ld	hl,_TRP_STACK-250	; ; /* stack 250 bytes + 3 variables (6 bytes) */
+	ld	de,_FSTACKBCKP
+	ld	bc,256
+	ldir					; /* DE=UDATA_STASH, HL=0F100h */
+	ld	a,(_RET_PAGE)		; /* a=page to return */
+	ld	(_RETPAGE),a		; /* this may be copied during ldir(udata) */
+	ld	l, .low._UDATAADDR
+	ld	c,udatasize
+	ldir
+	ld	a,(_SWITCH_PAGE)
+	or	a
+	jr	z,SC1
+	ld	a,KERNEL_PAGE		; /* (_FSTACKBCKP-2),sp	; /* *_SWITCH_PAGE!=0 -> it is return from ISR, so at next time this context will be continued on current stack */
+	ld  sp,_SRV_STACK
+	ld	hl,_swapin
+	jp	BJMP				; /* *_SWITCH_PAGE!=0 -> context musbe switched to pageN stored in *_SWITCH_PAGE */
+SC1:ei
+	ret
+;
+; SWAPPING IN (actually RAM pages switching and areas F000..F1FF, F162..F1DF restore)
+;
+_do_swapin:				
+	di
+	ld	hl,_FSTACKBCKP
+	ld	de,_TRP_STACK-250	; /* stack 250 bytes + 3 variables (6 bytes) */
+	ld	bc,256
+	ldir					; /* HL=UDATA_STASH, DE=0F100h */
+	ld	e, .low._UDATAADDR
+	ld	c,udatasize
+	ldir
+	ld sp,(F3STACK)			; /* BRET working with F3xx-stack only! */
+	ld 	hl,(_FSTACKBCKP-2)
+	ld	c,6
+	or	a
+	sbc	hl,bc				; /* Stack pointer in destination page */
+	push hl					; /* SP value for destination page (SP may be at common FAREA or in kernel local space or in process local space) */
+	ld	a,(_RETPAGE)		; /* a=page to return */
+	ld	c,a					; /* A=C=(_RETPAGE), B=0 - flag for BRET, shows what word is actually byte value of ret_pageN */
+	push bc					; /* save pageN_toreturn on F3xx-stack */
+	push bc					; /* fake return address - it will be skipped in BRET */
+	ld (F3STACK),sp
+	exx
+	ex	af,af'				; /* HL=destination_SP-6 ; A=destnation_page */
+	ld	a,(_BNKMARKER)
+	ld	hl,_FSTACKBCKP-26	; /* AF will be restored in destination page by executing ISR_RET */
+	ld	bc,6
+	call BLDIR				; /* store AF and RETADDR in destination stack */
+	ld	sp,hl
+	pop	hl					; /* HL */
+	pop	bc					; /* BC */
+	pop	de					; /* DE */
+	exx
+; /*	ex	af,af' */
+	pop	af					; /* AF' */
+	pop	bc					; /* BC' */
+	pop	de					; /* DE' */
+	pop	hl					; /* HL' */
+	exx
+	ex	af,af'
+	pop ix
+	pop iy
+	jp BRET					; /* trashes flags, but restore AF from destination page stack in ISR_RET, also does EI	*/
+;
+/*	static char *arg[2] = {"init", NULL}; */
+_initarg0:
+	defw	xargarr
+_initarg1:
+	defw	0
+_bininit:
+	defm	'/bin/init'
+	defb	0
+_devconsole:
+	defm	'/dev/console'
+	defb	0
+_ESABU:
+#endasm
+
+/* check for arguments size */
+/*
+LCL uint ssiz(argv, cnt, smin)
+	register char **argv;
+	uchar *cnt;
+	char **smin;
+{
+	char *p, *mi = *smin;
+	uint n = 0;
+
+	*cnt = 1;
+	while ((p = *argv++) != NULL) {
+		if (p < mi)	mi = p;
+		while (++n, *p++ != '\0')
+			;
+		++(*cnt);
+	}
+	*smin = mi;
+	return n;
+}
+*/
+/* copy arguments vector */
+/*
+LCL void *scop(argv, cnt, to, real)
+	register char **argv;
+	uchar cnt;
+	char *to, *real;
+{
+	char *s, **a = (char **)to, *q = to + sizeof(char *) * cnt;
+
+	while ((s = *argv++) != NULL) {
+		*a++ = real;
+		while (++real, (*q++ = *s++) != '\0')
+			;
+	}
+	*a = NULL;
+	return q;
+}
+*/

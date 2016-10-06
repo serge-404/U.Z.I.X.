@@ -1,0 +1,1155 @@
+;
+; Altair-DOS 3.5r BIOS services (TPA CP/M wrappers - BDOS/BIOS, interbank (MMU) and ISR routines)
+;
+;The IOBYTE lives at address 3 (in the Zero Page) and should be changed using 
+;BDOS calls 7 and 8 (get/set IOBYTE). The value is bitmapped:
+;
+;     Bits      Bits 6,7    Bits 4,5    Bits 2,3    Bits 0,1
+;     Device    LIST        PUNCH       READER      CONSOLE
+;
+;     Value
+;	00      TTY:        TTY:        TTY:        TTY:
+;	01      CRT:        PTP:        PTR:        CRT:
+;	10      LPT:        UP1:        UR1:        BAT:
+;	11      UL1:        UP2:        UR2:        UC1:
+;
+;* BAT = batch mode. Use the current Reader for console input, and the current 
+;  List (printer) device as the console output. 
+;
+;  * CRT = Standard console (keyboard and terminal screen). 
+;  * LPT = Standard line printer. 
+;  * PTP = Standard Paper Tape Punch. 
+;  * PTR = Standard Paper Tape Reader. 
+;  * TTY = Teletype device, eg a serial port. 
+;  * UC1 = User defined (ie implementation dependent) console device. 
+;  * UL1 = User defined (ie implementation dependent) printer device. 
+;  * UPn = User defined (ie implementation dependent) output device. 
+;  * URn = User defined (ie implementation dependent) input device. 
+;
+;========================= TTY values =======================
+;
+TTYBEG	EQU	0F120h		; IDEBDOS(F100..F11F), MTTY(F120..F13D), MOVEBUF(F162..F1E1)
+MTTY	EQU	TTYBEG
+TTYBUF	EQU	mttyend-mttybeg+TTYBEG	; LOW TTYBUF <= 255-TTYSIZE !!! because	
+					; H=const, L=incrementing -> mod 256 align
+TTYSIZE	EQU	MOVEBUF-TTYBUF	; TTY buffer size <= 126
+TTYPTR	EQU	0F3F4h		; offset of next free byte in tty buffer = TTYBUF[TTYPTR]
+				; (=0FFh if no_interrupts=poll mode)
+TTYCUR	EQU	0F3F3h		; current returned pointer from TTYBUF
+;
+;
+UART_DATA equ	0F764h
+UART_CTL  equ	0F765h
+;
+; нРОПЮБЙЮ АЮИРЮ - ГЮОХЯЭ Б ОНПР F764. 
+; оПХЕЛ АЮИРЮ - ВРЕМХЕ ОНПРЮ F764.
+; йНМРПНКЭ ЯНЯРНЪМХЪ ОЕПЕДЮВХ - ОНПР F765 МЮ ВРЕМХЕ: 
+;   D7     - TX_Ready (0 = ХДЕР НРОПЮБЙЮ АЮИРЮ, ОНПР МЕ ЦНРНБ. 1 = ЛНФМН ГЮОХЯШБЮРЭ ЯКЕДСЧЫХИ АЮИР ДКЪ НРОПЮБЙХ)
+;   D6     - RX_Status (0 = МЕР МНБНЦН ОПХМЪРНЦН АЮИРЮ. 1 = ОПХМЪР МНБШИ АЮИР. оНЯКЕ ЯВХРШБЮМХЪ АЮИРЮ ХГ F764 ЩРНР АХР ЯАПЮЯШБЮЕРЯЪ Б 0).
+; сОПЮБКЕМХЕ ПЕФХЛЮЛХ - ОНПР F765 МЮ ГЮОХЯЭ: 
+;   D0, D1 - яЙНПНЯРХ UART (0=4800, 1=9600, 2=19200, 3=38400)
+;   D6     - "1" = ПЮГПЕЬЮЕР ОПЕПШБЮМХЕ ОН ОПХЕЛС АЮИРЮ. мЮ ьд ЯРЮБХРЯЪ 0FDh.
+;
+; оЕПЕДЮВЮ АЮИРЮ Я ОПЕПШБЮМХЪЛХ МЕ ЯБЪГЮМЮ, Х ЙНМРПНКХПСЕРЯЪ ЯВХРШБЮМХЕЛ Я ОНПРЮ F765 ЯХЦМЮКЮ TX_Ready
+;
+; ===========================================================
+;
+; BDOS wrapper at page 2
+;
+BDOS:   JP      DOOR
+;
+; вектора ошибок BDOS
+XERR1:  DW      ERR1            ; bad sector
+XERR2:  DW      ERR2            ; select
+XERR3:  DW      ERR3            ; disk read/only
+XERR4:  DW      ERR4            ; file read/only
+BERR1:  DB      2
+        DW      MERR1
+BERR2:  DB      2
+        DW      MERR2
+BERR3:  DB      2
+        DW      MERR3
+BERR4:  DB      2
+        DW      MERR4
+
+DOOR:   CALL    ASKSEG2
+        LD      B,A
+        LD      A,(YBDOS)
+        LD      HL,(YBDOS+1)
+        CALL    BCALL
+        bit	7, c		; do not process BDOS functions over 128
+        ret     nz
+;
+; 20100412. Quicker process BDOS direct console functions - do not interbank calls to WORKPAGE
+;
+        ld      a,c
+	cp	11		; console status
+	jr	z, TDA06	; CONSTATUS
+        LD      HL, BDOS1
+	cp	6		; direct input\output, no echo
+	jp	nz, BCALL_1
+;
+BDOSF6: LD      A,E
+	INC     A
+	Jr      Z, BF6NEXT
+	INC     A
+	Jr      Z, TDA06	; CONSTATUS
+	ld	c, e
+	Jr      TDA0C		; CONOUT        
+;
+BF6NEXT:CALL    TDA06		; CONSTATUS
+	OR      A
+	CALL    NZ, TDA09	; CONIN
+	RET
+;
+MERR1:  LD      HL,(XERR1)
+        JP      (HL)
+ERR1:   LD      HL,R_BADS
+        JR      COMMERR
+;
+MERR2:  LD      HL,(XERR2)
+        JP      (HL)
+ERR2:   ld	a, DEFAULT_DISK
+        LD      (ACTDSK),A
+        LD      HL,R_SELD
+        JR      COMMERR
+;
+MERR3:  LD      HL,(XERR3)
+        JP      (HL)
+ERR3:   LD      HL,R_DSKRO
+        JR      COMMERR
+;
+MERR4:  LD      HL,(XERR4)
+        JP      (HL)
+ERR4:   LD      HL,R_FLRO
+COMMERR:LD      A,WORKPAGE
+        JP      BJMP
+;
+; BIOS wrapper at page 2
+;
+BIOS:
+TDA00:  JP      WARMSTART   ; хол. старт
+TDA03:  JP      WARMSTART   ; тепл. старт
+TDA06:  JP      CONSTATUS   ; статус консоли
+TDA09:  JP      CONIN       ; чтение с клавиатуры
+TDA0C:  JP      CONOUT      ; вывод на консоль
+TDA0F:  JP      LSTOUT      ; вывод на принтер
+TDA12:  JP      AUXOUT      ; вывод на устройство вывода
+TDA15:  JP      AUXIN       ; ввод с устройства ввода
+TDA18:  JP      SLTR00      ; установка дорожки 00
+TDA1B:  JP      SLDSK       ; выбрать диск
+TDA1E:  JP      SLTRK       ; установить дорожку
+TDA21:  JP      SLSEC       ; установить сектор
+TDA24:  JP      SLDMA       ; установить DMA
+TDA27:  JP      READS       ; чтение сектора
+TDA2A:  JP      WRITES      ; запись сектора
+TDA2D:  JP      LSTSTAT     ; статус принтера
+TDA30:  JP      TRANSSEC    ; перекодирока секторов
+;
+; Установка JUMPов в области связи CP/M (0-100h)
+SETJUMPS:
+        LD      A,0C3H
+        LD      (0),A
+        LD      HL,BIOS+3
+        LD      (1),HL
+        LD      (5),A
+        LD      HL,BDOS
+        LD      (6),HL
+        RET
+
+WARMSTART:
+        LD      SP,0F3C0H
+        CALL    SETJUMPS  ; Установка JUMPов в области
+                          ; связи CP/M (0-100h)
+        LD      BC,80h
+        CALL    SLDMA
+
+; Уст. портов FB, FA, F8 по ячейкам конфигурации
+; F3FB, F3FA, F3F8.
+
+        LD      A,(sysPFB)
+        OUT     (PFB),A
+
+WARM_S: LD      HL,CCPFLUSH     ; FLUSH ; сброс флажков и очистка
+        CALL    BCALL_1         ; буфера имен юзеров.,  C=WARMDISK
+        CALL    SLDSK
+        LD      A,H
+        OR      L
+        JR      Z,WARM_S
+; несущестующий диск -> цикл на Warm_S
+        JP      BEGCCP
+;
+CONSTATUS:
+	ld	a, (IO_BYTE)
+	and	3		; TTY=D1D0=00, CRT=D1D0=01	
+        LD      HL, YCONST
+        jr      nz, RETPROC
+;
+TTYSTATUS:			; 
+;
+; Out:  A=0FFH, if next char ready for read
+;       A=0 if buffer empty / no input char
+;
+; вРЕМХЕ Я ЙНМЯНКХ.
+;   оПХГМЮЙ МЮКХВХЪ ДЮММШУ (CONSTATUS): 
+;    - ПЕФХЛ INT (TTYPTR<>0FFh): TTYPTR<>TTYCUR   
+;    - ПЕФХЛ POLL (TTYPTR=0FFh): PF765.D6=1
+;
+	ld	a, (TTYPTR)
+	ld	hl, TTYCUR
+	inc	a
+	jr	z, pollstatus
+; INT
+	dec	a
+	bit	7, a
+	jr	nz, TTYST1
+	and	7Fh
+	cp	(hl)
+	jr	TTYST1
+; POLL
+pollstatus:
+	ld	a, (UART_CTL)
+	and	40h
+TTYST1:	ld	a, 0FFh
+	ret	nz		; D6=1 -> UART ready for read byte
+	xor	a
+	ret			; D6=0 -> UART not ready
+;
+LSTSTAT:LD      HL,YLSTST
+        JR      RETPROC
+;
+AUXIN:  LD      HL,YAUXIN
+        JR      RETPROC
+
+AUXOUT: LD      HL,YAUXOUT
+        JR      YPROC
+;
+LSTOUT: LD      HL,YLSTOUT
+;
+; параметры ф-циям передаются/получаются в BC, указатель на
+; шлюз(GATE) - HL, вызывающий сегмент - E
+YPROC:  LD      A,(HL)
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      H,(HL)
+        LD      L,E
+        JP      BCALL           ; вызвать цепочку шлюзов
+;
+CONIN:  ld	a, (IO_BYTE)
+	and	3		; TTY=D1D0=00, CRT=D1D0=01	
+        jr      z, TTYIN
+	LD      HL, YCONIN
+RETPROC:CALL    YPROC
+        LD      A,C
+        RET
+;
+TTYIN:
+;
+; Out: A=readed_char.  Does infinitive wait for input char if input queue is empty
+;
+; вХРЮЕЛ АЮИР (НФХДЮЕЛ ДЮММШУ Б МЮКХВХХ):
+;    - ПЕФХЛ INT: БНГБПЮЫЮЕЛ TTYBUF[TTYCUR], TTYCUR:=(TTYCUR+1) mod TTYSIZE
+;                 ЕЯКХ TTYPTR and 80h <> 0 (buf full), РН
+;                     TTYPTR=TTYPTR and 7Fh, ДЮММШЕ ХГ PF764 ОХЬЕЛ Б TTYBUF[TTYPTR]
+;    - ПЕФХЛ POLL: БНГБПЮЫЮЕЛ ДЮММШЕ Я ОНПРЮ PF764
+;
+	call	TTYSTATUS	; hl=TTYCUR
+	jr	z, TTYIN	; wait for incoming char
+	ld	a, (TTYPTR)
+	inc	a
+	jr	nz, intread	; if non-interrupt mode
+pollread:
+	ld	a, (UART_DATA)
+	ret
+intread:
+	ld	a, (hl)		; A=TTYCUR
+	push	hl
+	ld	hl, TTYBUF
+	add	a, l
+	ld	l, a
+	ld	a, (hl)		; A=TTYBUF[TTYCUR]
+	pop	hl		; hl=TTYCUR
+	push	af	
+	inc	(hl)
+	ld	a, TTYSIZE
+	sub	(hl)
+	jr	nz, TTYIN1
+	ld	(hl), a		; TTYCUR:=(TTYCUR+1) mod TTYSIZE
+TTYIN1:	ld	hl, TTYPTR
+	bit	7, (hl)
+	jr	z, TTYIN2	; if buffer not full
+	ld	a, (hl)
+	and	7Fh
+	ld	(hl), a		; buffer not full now because TTYBUF[TTYCUR] readed
+	ld	hl, TTYBUF
+	add	a, l
+	ld	l, a
+	ld	a, (UART_DATA)
+	ld	(hl), a		; TTYBUF[TTYPTR]:=A
+TTYIN2:	pop	af		; A=TTYBUF[TTYCUR]
+	ret
+;
+;
+CONOUT: ld	a, (IO_BYTE)
+	and	3		; TTY=D1D0=00, CRT=D1D0=01	
+	LD      HL, YCONOUT
+	jr	nz, YPROC
+TTYOUT:			
+;
+; Inp: C=char for output.  Check (and wait) for queue ready before output the char
+;
+pollwrite:
+	ld	a, (UART_CTL)
+	rlc	a		; D7=1 -> ready for send data
+	jr	nc, pollwrite	; wait for output queue is empty
+	ld	a, c
+	ld	(UART_DATA), a
+	ret
+;
+DRVTAB:	
+IF BOOTFDD
+	defb	0		; Map fdd0 to drive "A"
+ELSE
+	defb	0FFh		
+ENDIF
+	defb	0FFh
+IF BOOTFDD
+	defb	0FFh		
+ELSE
+	defb	3		; Map IDE/SD slot 0 to drive "C" (0,1=floppy; 2=vdisk 3,4,5=IDE/SD)
+ENDIF
+	defs	13, 0FFh
+;
+SLDSK:  LD      HL,YSELDISK
+        CALL    YPROC
+        PUSH    HL
+        LD      HL,DRVTAB
+        ld      b,0
+        add     hl,bc           ; ПЕРЕКОДИРОВКА
+	ld	c, (hl)
+        POP     HL
+	ld	a, c
+        LD      (WDISK),A
+        CP      0FEH
+        RET     Z
+        LD      HL,SELDISK
+        JR      BCALL_1         ; ВЫБОР ДИСКА
+;
+SLTR00: LD      HL,YHOME
+        CALL    YPROC
+        LD      BC,0
+        JR      SLTRK0
+;
+SLTRK:  LD      HL,YSELTRK
+        CALL    YPROC
+SLTRK0:	LD      HL,SELTRK
+        JR      SLSEC0
+;
+SLSEC:  LD      HL,YSELSEC
+        CALL    YPROC
+        LD      HL,SELSEC
+SLSEC0: ld      a,(WDISK)
+        cp      0FEh
+        ret     z
+BCALL_1:LD      A, WORKPAGE
+        JP      BCALL
+;
+SLDMA:  LD      HL,YSETDMA
+        CALL    YPROC
+        LD      HL,SETDMA
+        JR      BCALL_1
+;
+READS:  CALL    ASKSEG2
+	LD      HL,READSEC
+	push	hl
+	LD      HL,YREAD
+RDWRCOM:push	hl
+        LD      A,(CALBANK)
+        LD      D,A
+	LD      HL,GETBANK      ; Сообразить, в какой банк
+        CALL    BCALL_1         ; выдать данные
+	pop	hl		; hl=YREAD/YWRITE
+        CALL    YPROC
+	pop	hl		; hl=READSEC/WRITESEC
+	LD      E,A
+        LD      A,(WDISK)
+        CP      0FEH
+        LD      A,E
+        RET     Z               ; ВНЕШНИЙ ДРАЙВЕР ДИСКА
+        JR      BCALL_1
+;
+WRITES: CALL    ASKSEG2
+	LD      HL,WRITESEC
+	push	hl
+        LD      HL,YWRITE
+        JR      RDWRCOM
+
+TRANSSEC:
+        LD      L,C
+        LD      H,0
+        INC     HL
+        RET
+;
+ASKSEG2:ld      hl,2
+ASKSEGM:add     hl,sp           ; ПРОПУСК АДРЕСА ВОЗВРАТА
+                                ; ИЗ П/П ASKSEGM
+        PUSH    DE              ; ОПРЕДЕЛЯЕМ ИЗ КАКОГО
+        PUSH    BC              ; СЕГМЕНТА ВЫЗВАНА BDOS
+        ld      e,(hl)
+        inc     hl
+        ld      d,(hl)          ; DE = АДРЕС ВОЗВРАТА
+
+        push    hl
+        ld      hl,BRET
+        or      a               ; проверка: каким CALL'ом
+        sbc     hl,de           ; была вызвана BDOS-простым
+        pop     hl              ; (BANK=2) или межбанковым
+
+        ld      a,TPAPAGE       ; BANK TPA
+        jp      nz,CALLER       ; if return <> 0F207h
+
+        inc     hl
+        ld      a,(hl)          ; A=PF9
+        inc     hl
+        inc     hl
+        ld      d,(hl)
+        inc     hl
+        ld      h,(hl)
+        ld      l,d             ; hl=stack pointer
+        inc     hl
+
+CALLER: PUSH    AF
+        LD      (CALBANK),A
+        CALL    BLDB            ; B=СТ.Б. АДРЕСА ВЫЗОВА
+        POP     AF
+        LD      C,B
+        LD      B,4
+CALLER1:RL      C
+        RLA
+        DJNZ    CALLER1
+        POP     BC
+        POP     DE
+        RET                     ; A=ВЫЗЫВАЮЩИЙ СЕГМЕНТ
+;
+CALBANK:DEFB    2
+WDISK:  DEFB    0
+;
+ENDDOSCODE:
+;
+DPH_A:  defw    0       ; XLT		; FLOPPY 0
+        defs    6h,0    ; WORK
+        defw    DIRBUF  ; DIRBUF
+        defw    DPB_A   ; DPB
+        defw    CSV_A   ; CSV
+        defw    ALV_A   ; ALV
+
+        defb    54h
+        defb    54h
+        defb    0
+        defb    7
+        defb    1
+        defb    3
+        defb    0
+        defb    10h
+DDAD0:  defb    0
+
+DPB_A:  defw    38h     ; SPT		; FLOPPY 0
+        defb    4       ; BSH
+        defb    0fh     ; BLM
+        defb    0       ; EXM
+        defw    228h    ; DSM
+        defw    7fh     ; DRM
+        defw    0c0h    ; AL0,AL1
+        defw    20h     ; CKS		; catalog 128 records
+        defw    02h     ; OFF
+
+DPH_B:  defw    0       ; XLT		; FLOPPY 1
+        defs    6h,0    ; WORK
+        defw    DIRBUF  ; DIRBUF
+        defw    DPB_B   ; DPB
+        defw    CSV_B   ; CSV
+        defw    ALV_B   ; ALV
+
+        defb    54h
+        defb    54h
+        defb    0
+        defb    7
+        defb    1
+        defb    3
+        defb    0
+        defb    11h
+DDAFC:  defb    0
+
+DPB_B:  defw    38h     ; SPT		; FLOPPY 1
+        defb    4       ; BSH
+        defb    0fh     ; BLM
+        defb    0       ; EXM
+        defw    228h    ; DSM
+        defw    7fh     ; DRM
+        defw    0c0h    ; AL0,AL1
+        defw    20h     ; CKS
+        defw    02h     ; OFF
+;
+; do not recompose PARIDE, DPH, DPB arrays for IDE/SD slots !
+;
+PARIDE0:defw	LBABUF0
+	defw	border0 
+	defw	IDEBUF0
+	defw	DPB_C
+
+DPH_C:  defw    0       ; XLT		; IDE/SD_0
+        defs    6h,0    ; WORK
+        defw    DIRBUF  ; DIRBUF
+        defw    DPB_C   ; DPB
+        defw    CSV_H0	; CSV
+        defw    ALV_C   ; ALV
+
+
+DPB_C:  defw    38h     ; SPT		; IDE/SD_0
+        defb    4       ; BSH
+        defb    0fh     ; BLM
+        defb    0       ; EXM
+        defw    228h    ; DSM
+        defw    7fh     ; DRM
+        defw    0c0h    ; AL0,AL1
+	defw    40h	; CKS		; catalog 256 records
+	defw    2       ; OFF
+
+PARIDE1:defw	LBABUF1
+	defw	border1 
+	defw	IDEBUF1
+	defw	DPB_D
+
+DPH_D:  defw    0       ; XLT		; IDE/SD_1
+        defs    6h,0    ; WORK
+        defw    DIRBUF  ; DIRBUF
+        defw    DPB_D   ; DPB
+        defw    CSV_H1	; CSV
+        defw    ALV_D   ; ALV
+
+DPB_D:  defw    127     ; SPT		; IDE/SD_1
+        defb    4       ; BSH
+        defb    0fh     ; BLM
+        defb    0       ; EXM
+        defw    253     ; DSM
+        defw    7fh     ; DRM
+        defw    0c0h    ; AL0,AL1
+	defw    40h	; CKS
+        defw    2       ; OFF
+
+PARIDE2:defw	LBABUF2
+	defw	border2 
+	defw	IDEBUF2
+	defw	DPB_X
+
+DPH_X:  defw    0       ; XLT		; IDE/SD_2
+        defs    6h,0    ; WORK
+        defw    DIRBUF  ; DIRBUF
+        defw    DPB_X   ; DPB
+        defw    CSV_H2	; CSV
+        defw    ALV_X   ; ALV
+
+DPB_X:  defw    127     ; SPT		; IDE/SD_1
+        defb    4       ; BSH
+        defb    0fh     ; BLM
+        defb    0       ; EXM
+        defw    253     ; DSM
+        defw    7fh     ; DRM
+        defw    0c0h    ; AL0,AL1
+	defw    40h	; CKS
+        defw    2       ; OFF
+
+DPH_E:  defw    0       ; XLT		; VDISK (RAMDISK)
+        defs    6h,0    ; WORK
+        defw    DIRBUF  ; DIRBUF
+        defw    DPB_E   ; DPB
+        defw    0       ; CSV
+        defw    ALV_E   ; ALV
+
+DPB_E:  defw    20H     ; SPT		; VDISK (RAMDISK)
+        defb    3       ; BSH
+        defb    7       ; BLM
+        defb    0       ; EXM
+        defw    255     ; DSM
+        defw    3fh     ; DRM
+        defw    0C0h    ; AL0,AL1
+        defw    0       ; CKS
+        defw    1       ; OFF
+
+DPH_R:  defw    0       ; XLT		; ROMDISK
+        defs    6h,0    ; WORK
+        defw    DIRBUF  ; DIRBUF
+        defw    DPB_R   ; DPB
+        defw    0       ; CSV
+        defw    ALV_R   ; ALV
+
+DPB_R:  defw    28H     ; SPT		; 40 sectors (5 kb per track)
+        defb    4       ; BSH
+        defb    0Fh     ; BLM		; 2048 bytes block
+        defb    0       ; EXM
+        defw    1D4h    ; DSM		; TOTAL=ORDOS+SYSTEM+DIR+DATA=64k+20k+4k+936k=1024k
+        defw    7fh     ; DRM		; catalog=128 records
+        defw    0C0h    ; AL0,AL1	; catalog=4kb
+        defw    0       ; CKS
+        defw    4       ; OFF		; system = 4 tracks = 20kb
+
+
+ENDBIOS EQU     MARKER-3	; EFFF=(byte)marker, EFFD=(word)stack_int
+ALV_C:	
+ALV_D   equ	ALV_C		; temporary, will be calculated in CALC_ALV_D
+ALV_X   equ	ALV_C		; temporary, will be calculated in CALC_ALV_D
+ALV_B   EQU     ENDBIOS-64h-3Bh-21h-64h
+ALV_E   EQU     ENDBIOS-64h-3Bh-21h	; LBA-номер последнего прочитанного IDE сектора
+ALV_R   EQU     ENDBIOS-64h-3Bh
+ALV_A   equ	ENDBIOS-64h
+;
+; (ALV_E-ALV_C) recommended value = 800 bytes (100Mb limit for total IDE/SD capacity)
+;
+; работает после загрузчика из BOOT-SECTOR в 1 странице
+COLDSTART:
+	CALL	COLDINIT
+COLDST1:LD      HL, COLDINIT
+        LD      (HL),0		; ,0
+        LD      d, h
+	ld	e, l
+	inc	de
+        LD      BC,ENDBIOS-COLDINIT-1
+        LDIR                    ; CLEAR ALV 
+        LD      HL,COLD
+        PUSH    HL
+        LD      A,TPAPAGE
+        LD      (RETT+1),A
+        EXX
+        EX      AF,AF'
+        POP     HL              ; HL=COLD
+        LD      BC,COLDSTART-COLD
+        CALL    BLDIRF1         ; LD A,WORKPAGE    ПЕРEКИНУЛИ ЭМУЛЯТОР BDOS
+        LD      A,TPAPAGE
+        LD	HL, coldbeg
+        JP      BJMP
+;
+COLDINIT:			; input: DE = IDE/SD port address
+        LD      A,80H
+        LD      (sysPFB),A
+        OUT     (PFB),A
+	ld	a, (12)		; a=drive_sign (D4..D0: 0=MasverIde, 10h=SlaveIDE, 1=SDC, 3=SDHC, 4=ROM, 5=FDD)
+	ld	hl, ide_8255	; IDE: source,compiled base address
+	ld	bc, port_tbl	; IDE: hlat table address
+	and	11101111b
+	jr	z, sport00	; if IDE mode
+	cp	4
+	jr	z, COLDROM	; if ROM-disk BOOT
+	ld	hl, SD_ADDR	; SD: source,compiled base address
+	ld	bc, portsd_tbl	; SD: hlat table address
+	cp	5
+	jr	z, cold_ide	; if FDD boot
+				; else SD boot
+sport00:ex	de, hl
+;
+; Correct IDE port addresses for PPA (IDE). 
+;  Input: hl=(destination base port address)
+;	  de=(source=compiled base port address)
+;         bc=hlat table address
+;
+	xor	a		; CY=0
+	sbc	hl, de		; hl=(destination port address)-(source/compiled base port address)=offset
+	ex	de, hl		; de=offset
+sport0:	ld	a, (bc)
+	ld	l, a		; hl=address of address to correct
+	inc	bc
+	ld	a, (bc)
+	ld	h ,a
+	or	l
+	jr	z, sport1	; end of port_tbl table 
+	ld	a, (hl)		; low part of value to correct
+	add	a, e
+	ld	(hl), a
+	inc	hl
+	ld	a, (hl)		; high part of value to correct
+	adc	a, d
+	ld	(hl), a
+	inc	bc
+	jr	sport0
+;
+port_tbl:
+	dw	@@P0+1, @@P1+1, @@P2+1, @@P3+1,  @@P4+1,  @@P5+1,  @@P6+1
+	dw	@@P14+1,@@P15+1
+	dw	@@P7+1, @@P8+1, @@P9+1, @@P10+1, @@P11+1, @@P12+1, @@P13+1, 0
+;
+portsd_tbl:
+	dw	@@SD1+1,  @@SD2+1,  @@SD3+1,  @@SD4+1,  @@SD5+1,  @@SD6+1,  @@SD7+1
+	dw	@@SD8+1,  @@SD9+1,  @@SD10+1, 0
+;
+COLDROM:
+	ld	a,6			; Device=ROM
+	ld 	(DRVTAB+2),a		; at 3-nd drive letter (drive C = ROM)
+	ld	de, DPB_R
+	jr	coldrom2
+sport1:
+	ld	de, DPB_C
+coldrom2:
+	ld	hl, 10h
+	ld	bc, 15
+	ldir         			; get ide HDD partition DPB where we are booting
+	ld	l, 12			; h=0
+	ld	de, BORDER0+9
+	ld	bc, 966h
+mvcrc:  ld	a, (hl)
+	ld	(de), a			; get partition offset (first LBA-addressed sector)
+	add	a, c
+	ld	c, a
+	dec	hl
+	dec	de
+	djnz	mvcrc
+	ld	(de), a			; put crc to BORDER0[0]
+;
+; ------------------- IDE drive init ---------------------------------
+;
+; Hard reset on the drive, by pulsing its reset pin.
+; this should usually be followed with a call to "ide_init".
+;
+cold_ide:
+        ld      a, rd_ide_8255
+@@P14:	ld      (ide_8255_cfg), a	; config 8255 chip, read mode
+@@P15:	ld	hl, ide_8255_ctl
+	ld      (hl), ide_rst_line	; hard reset the disk drive
+        call    delay10			; de=0
+	ld      (hl), d       		; no ide control lines asserted
+;
+; initialize the ide drive.
+;
+	ld	a, (12)		; a=drive_sign (D4..D0: 0=MasverIde, 10h=SlaveIDE, 1=SDC, 3=SDHC, 4=ROM)
+	and	10h
+	or	10100000b
+        ld      e, a
+        ld      a, ide_head
+        call    ide_wr_8                ; select the master device
+;        call    ide_wait_ready
+;
+;-------------------- SD-card cold init ------------------------------
+;
+cold_sd:call	sd_init
+	jr	z, coldsd2	; if card present & MSX scheme
+	ld	hl, sd_tab1	; 
+	ld	de, sd_tab0
+	ld	bc, sd_tab2-sd_tab1
+	ldir			; else switch to N8VEM scheme
+	call	sd_init
+	jr	nz, coldsd1	; if sd_init fail
+	ld	hl, sd_tab3
+	ld 	de, RDLOOP 
+	ld	bc, sd_tab4-sd_tab3
+	ldir
+	jr	coldsd2
+coldsd1:ld	hl, sd_tab2	; 
+	ld	de, sd_tab0
+	ld	bc, sd_tab3-sd_tab2
+	ldir			; both tests fail -> back to MSX scheme (default scheme)
+coldsd2:
+;
+;---------------
+;
+        LD      HL,ACPMVEC
+        ld      de,NTAB
+	push	de
+        ld      bc, AVECEND-AVECBEG+EE-EB+2
+        LDIR
+;
+	ld	hl, mttybeg
+	ld	de, MNTBUF
+	ld	c, mttyend-mttybeg
+	LDIR
+;
+        LD      HL,0F3CFH
+        LD      (HL),0C0H	; screen start at C000
+        INC     HL
+        LD      (HL),30H	; ширина экрана
+        INC     HL
+        LD      (HL),B		; B=0.  фонт на F000
+        INC     HL
+        LD      (HL),0F0H
+        inc     hl
+        ld      (hl),B		; B=0.  откл. инверсию
+        CALL    0F82DH		; распаковать фонт
+ 	pop	hl		; HL=NTAB
+        LD      DE,BPROC
+        LD      BC,AVECEND-AVECBEG
+        LDIR                    ; МЕЖБАНКОВЫЙ СЕРВИС
+        ld      de,PRCC
+        ld      c,EE-EB
+        ldir                    ; СООБЩЕНИЯ ОБ ОШИБКАХ
+        CALL    FLUSH           ; SET RG.A=0
+        LD      (TIMBUF),A
+        LD      (BATVAR),A
+        LD      (REPLBUF),A
+        LD      (ETRACK0),A
+	LD      HL,0F3F5H
+	LD      (HL),a		; MONOCHROME
+	INC     HL
+	LD      (HL),00010111b
+; X,X,X, LPT F600, NO CCP, ECHO ON, PROMPT ON, WIDTH 8
+	INC	HL
+	LD      (HL),a		; "Выгрузка" драйвера консоли
+	INC	HL
+	LD      (HL),a		; F3F8 = 0
+	INC     HL
+	ld      (hl),TPAPAGE	; F3F9 = 2
+	INC	HL
+	LD      (HL),a		; F3FA = 0
+	dec	a		; A=0FFh
+	ld 	(BORDER1+9), a	; c=0/10h=master/slave, 1/3=SDcard, 0FFh=not used (free)
+	ld 	(BORDER2+9), a	; c=0/10h=master/slave, 1/3=SDcard, 0FFh=not used (free)
+        JP	MMTEST          ; MEMORY TEST
+;
+sd_tab1:
+	jp	sd_wiggle_n8vem
+	jp	sd_fini_n8vem
+	jp	sd_put_n8vem
+	jp	sd_get_n8vem
+sd_tab2:
+	jp	sd_wiggle_msx
+	jp	sd_fini_msx
+	jp	sd_put_msx
+	jp	sd_get_msx
+sd_tab3:
+;
+;RDLOOP: 		
+	ex	de, hl	; hl:=buffer address
+	call	sd_get	; data
+	ld	(hl), a
+	inc	hl
+	call	sd_get	; data
+	ex	de, hl	; de:=buffer address
+	jp	RDJNZ
+sd_tab4:
+;
+; аСТЕП ОСЯР, ЕЯКХ TTYCUR=TTYPTR
+; аСТЕП ГЮОНКМЕМ МЮ 100%, ЕЯКХ  TTYCUR=(TTYPTR+1) mod TTYSIZE
+;
+; бУНД Б ISR.
+;  - еЯКХ АСТЕП ГЮОНКМЕМ МЮ 100%, БШУНДХЛ АЕГ ОПНВХРШБЮМХЪ ЯХЛБНКЮ 
+;     Я PF764 (НЯРЮБКЪЕЛ ЮЙРХБМШЛ ЯХЦМЮК "МЕЦНРНБ" UART) Х ЯРЮБХЛ 
+;     TTYPTR=TTYPTR or 80h  (D7=1)
+;     (СЯРЮМЮБКХБЮЕЛ ДКЪ CONIN ОПХГМЮЙ ОНЯКЕДСЧЫЕИ БШВХРЙХ ЯХЛБНКЮ -
+;      ЩРН МЕНАУНДХЛН, Р.Й. ОПЕПШБЮМХЕ БШДЮЕРЯЪ РНКЭЙН НДМЮФДШ)
+;  - хМЮВЕ (ЕЯКХ Б АСТЕПЕ ЕЯРЭ ЯБНАНДМНЕ ЛЕЯРН), ЯВХРШБЮЕЛ АЮИР Я 
+;    PF764, ЯНУПЮМЪЕЛ ЕЦН Б TTYBUF[TTYPTR], TTYPTR:=(TTYPTR+1) mod TTYSIZE
+;
+mttybeg:			; TTY interrupt processor
+	di
+	push	af
+	ld	a, (TTYPTR)
+	inc	a
+	jr	z, TTYe		; if TTYPTR=0FFh (POLL mode)
+	push	hl
+	cp	TTYSIZE
+	jr	c, TTY0
+	xor	a		
+TTY0:	ld	hl, TTYCUR	; A=(TTYPTR+1) mod TTYSIZE
+	cp 	(hl)
+	jr	z, TTYfull	; if buffer full (TTYPTR=TTYCUR-1)
+	push	af
+	ld	a, (TTYPTR)
+	ld	hl, TTYBUF
+	add	a, l
+	ld	l, a
+	ld	a, (UART_DATA)
+	ld	(hl), a
+	pop	af		; A=(TTYPTR+1) mod TTYSIZE
+	jr	TTY1
+TTYfull:or	80h		; POLL read flag (buffer full flag)	
+TTY1:	ld	(TTYPTR), a
+	pop	hl
+TTYe:	pop	af
+	ei
+	reti			; 46 bytes
+mttyend:
+;
+ACPMVEC:
+        .DEPHASE
+        .PHASE  BPROC
+AVECBEG:
+;
+;   многостраничный сервис
+;
+BLDIR:  jp      MLDIR   ; f201 межб. ldir
+;
+; п/п передачи управления (межбанковый JMP).
+; Вход : <A>&<HL>=<page>&<adress>
+;
+BJMP:   out     (PF9),a
+	jp      (hl)	; jp      MJMP    ; f204       jump
+BCALL:  jp      MCALL   ; f207       call
+BRET:   jp      MRET    ; f20a       ret
+BLDB:   jp      MLDB    ; f20d       getbyte
+BSTB: ;  jp      MSTB    ; f210       setbyte
+;
+; п/п записи содержимого рег. В в ячейку по адресу {A+HL}
+;
+MSTB:   call    XDI
+	ld      (LASTSP),sp
+	ld      sp,FSP
+	ld      de,(MARKER)
+	out     (PF9),a
+	ld      (HL),b
+	jr      FRET
+;
+; п/п чтения в рег. В из ячейки по адресу {A+HL}
+;
+MLDB:   call    XDI
+	ld      (LASTSP),sp
+	ld      sp,FSP
+	ld      de,(MARKER)
+	out     (PF9),a
+	ld      b,(HL)
+	jr      FRET		; was JP
+;
+MOVEADR:OUT     (0F9H),A
+	LDIR
+	ex	af, af'
+	OUT     (0F9H),A
+	RET
+;
+; п/п пересылки (межбанковый LDIR)
+; Вход: А =банк-источник    А' =банк-приемник
+;       HL=адрес-источник   HL'=адрес-приемник
+;       BC=количество пересылаемых байт
+;
+MLDIR:  call    XDI
+	ld      (LASTSP),sp
+	ld      sp,FSP
+	ld      d,a
+	ld      a,(MARKER)
+	ld      e,a
+MLDIR1: ld      a,d
+	out     (PF9),a
+	ld      a,(hl)
+	inc     hl
+	ex      af,af'
+	exx
+	out     (PF9),a
+	ex      af,af'
+	ld      (hl),a
+	inc     hl
+	exx
+	dec     bc
+	ld      a,b
+	or      c
+	jr      nz,MLDIR1
+FRET:   ld      a,e
+	out     (PF9),a
+	defb    31h
+LASTSP: defs    2
+	jr      XEI
+;
+; обработчик программных прерываний
+INTPRG: ld      b,a
+	ld      hl,drv_kb_int
+BCALL0:	LD      A,0
+;
+; п/п вызова подпрограммы (межбанковый CALL).
+; Вход : <A>&<HL>=<page>&<adress>
+;
+MCALL:  CALL    XDI
+	push    af
+	ld      (PUSHHL),hl
+	ld      hl,2
+	add     hl,sp
+	ld      a,h
+	cp      0F3h
+	jr      nz,MCALL0
+	pop     af
+	jr      MCALL1
+MCALL0: pop     af
+	ld      sp,(F3STACK)
+MCALL1: push    hl
+	ld      hl,(MARKER)
+	out     (PF9),a
+	LD      H,0
+	push    hl              ; В СТЕКЕ СТЕК & БАНК
+	ld      hl,BRET         ; PFB не запоминается
+	push    hl              ; return addres
+	ld      (F3STACK),sp
+	defb    21h
+PUSHHL: defw    0
+	push    hl
+	jr      XEI
+;
+; п/п возврата управления (межбанковый ret)
+; НЕ портит ничего кроме флагов
+MRET:   CALL    XDI
+	ld      (FORAF),a
+	ld      (FORHL),hl
+	ld      hl,0
+	add     hl,sp
+	ld      a,h
+	sub     0F3h		; cp 0F3h
+	jr      nz,NOSKIPSP     ; не F3-стек - переход
+	pop     hl
+;	ld      a,h
+	or      h		; or a
+	jr      z,SKIPSP+1      ; переход, если порт  F9
+	jr      SKIPSP          ; переход, если адрес F207
+NOSKIPSP:defb   31h
+F3STACK:defw    0F3BFh
+	pop     hl              ; return addres
+SKIPSP: pop     hl              ; l=PF9
+	ld      a,l
+	out     (PF9),a
+	pop     hl
+	ld      (F3STACK),sp
+	ld      sp,hl
+	defb    3Eh
+FORAF:  defs    1
+	defb    21h
+FORHL:  defs    2
+
+XEI:    push    hl
+	ld      hl,MINT
+	ld      (IM2VEC),hl
+	pop     hl
+XEI1:   ret
+;
+MINT:   di
+	PUSH    AF
+	PUSH    HL
+	ld      a,0C9h
+	ld      (XEI1),a
+	ld      hl,drv_int_service
+	ld	(MARKER-2),sp
+	call    BCALL0
+; переход на промежуточный обработчик прерывания
+	POP     HL
+ISR_RET:
+	POP     AF
+	ei
+	ret
+;
+XDI:    push    hl
+	ld      hl,DIINT
+	ld      (IM2VEC),hl
+	pop     hl
+	RET
+;
+DIINT:  ld      (SAVEA),a
+	ld      a,0
+	ld      (XEI1),a
+	db      3Eh             ; ld  a,...
+SAVEA:  ds      1
+	ret
+;
+MMM:    DEFS    0F2FDH-MMM, 0		; IM2VEC_2 - reserved for UART
+;
+TTYVEC: defw	MTTY	; 0f2fdh..0f2feh - ISR vertor for TTY read
+IM2VEC: defw    MINT    ; 0f2ffh..0f300h - ISR vector for 50Hz interrupts
+;
+;   вектора - дублеры BDOS & BIOS для драйверов во внешних
+;   банках ОЗУ и вектора п/п - обработчиков стандартных со-
+;   бытий от устройств ввода
+;                 структура вектора :
+;         DEFB <номер страницы> DEFW <адрес в странице>
+
+YBDOS:  db      0
+        dw      bret    ; вектор BDOS                     0
+;
+YWARM:  db      0
+        dw      BRET    ; теплый старт BIOS               1
+YCONST: db      0
+        dw      MCONST	;BRET    ; состояние клавиатуры            2
+YCONIN: db      0
+        dw      MCONIN	;BRET    ; ввод с клавиатуры               3
+YCONOUT:db      0
+        dw      MCONOUT	;BRET    ; вывод на дисплей                4
+YLSTOUT:db      0
+        dw      BRET    ; вывод на принтер                5
+YAUXOUT:DB      0
+        DW      BRET    ; ВЫВОД НА УСТРОЙСТВО ВЫВОДА      6
+YAUXIN: DB      0
+        DW      BRET    ; ВВОД С УСТРОЙСТВА ВВОДА         7
+YHOME:  db      0
+        dw      BRET    ; уст. дорожки 00                 8
+YSELDISK:db     0
+        dw      BRET    ; выбор диска                     9
+YSELTRK:db      0
+        dw      BRET    ; уст. номера дорожки            10
+YSELSEC:db      0
+        dw      BRET    ; уст. номера сектора            11
+YSETDMA:db      0
+        dw      BRET    ; уст. адреса буфера обмена      12
+YREAD:  db      0
+        dw      BRET    ; чтение сектора                 13
+YWRITE: db      0
+        dw      BRET    ; запись сектора                 14
+YLSTST: db      0
+        dw      BRET    ; состояние принтера             15
+;
+intvec: db      0       ; вектор вторичного обработчика
+        dw      BRET    ; прерывания INT 50 Гц           16
+intkey: db      0
+        dw      BRET    ; вектор программного прерывания 17
+;
+vreserv:db      0       ; вектор пользовательских событий (расширений:
+        dw      BRET    ;  клавиатура, мышь, оконные события и т.п.)
+FSP	equ	vreserv+5	; was     "EQU     0F2FFH"
+
+
+AVECEND:
+        .DEPHASE
+;
+; временные п/п, адреса F200_F27F
+;
+        .PHASE  PRCC
+EB:
+OUTSTR: XOR     A                               ; e8d8
+        OUT     (PF9),A
+        OUT     (PF8),A
+        OUT     (PFA),A
+        JP      MONMSG
+HARDERR:CALL    OUTSTR
+ESLOOP: CALL    MONSND           ; e8e5
+        JR      ESLOOP
+OUTMSG: CALL    OUTSTR
+        JR      RETT
+;
+; БЕЗВРЕДНЫЙ ТЕСТ ПАМЯТИ. ВХОД: HL = 0EFFFH - МАРКЕР БАНКА.
+; DE = НАЧАЛЬНЫЙ АДРЕС, BC = ДЛИНА ТЕСТИРУЕМОГО ФРАГМЕНТА
+; ВЫХОД: ФЛАГ Z=TRUE ЕСЛИ НОРМАЛЬНО, Z=FALSE(NZ) ЕСЛИ BAD
+;
+TESTMEM:OUT     (PF9),A
+        CP      (HL)
+        JR      Z,TESTM0
+        JR      NC,RETT         ; ПЕРЕХОД ЕСЛИ (MARKER)<AKK
+        LD      (HL),A          ; МЕНЯЕМ 0FFH НА НОМЕР СТР.
+TESTM0: EX      DE,HL
+TESTM1: LD      A,(HL)
+        CPL
+        LD      (HL),A
+        CP      (HL)
+        JR      NZ,RETT
+        CPL
+        LD      (HL),A
+        CP      (HL)
+        JR      NZ,RETT
+        INC     HL
+        DEC     BC
+        LD      A,B
+        OR      C
+        Jr      NZ,TESTM1
+RETT:   LD      A,WORKPAGE
+        OUT     (PF9),A
+        RET
+INITEST:OUT     (PF9),A
+        LD      (HL),C
+        INC     A
+        DJNZ    INITEST
+        JR      RETT
+;
+HERRMSG:DB      1FH,'0000',0
+NODRIV: DB      1FH,'WRONG DRIVER.SYS',13,0
+OUTMEM: DB      1FH,'YOU NEED 192'
+KRAM:   DB      'K RAM',0
+;
+EE:
+        .DEPHASE
+

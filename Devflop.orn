@@ -1,0 +1,76 @@
+/*
+ * UZIX - UNIX Implementation for MSX
+ * (c) 1997-2001 Arcady Schekochikhin
+ *		 Adriano C. R. da Cunha
+ *
+ * UZIX is based on UZI (UNIX Zilog Implementation)
+ * UZI is a UNIX kernel clone written for Z-80 systems.
+ * All code is public domain, not being based on any AT&T code.
+ *
+ * The author, Douglas Braun, can be reached at:
+ *	7696 West Zayante Rd.
+ *	Felton, CA 95018
+ *	oliveb!intelca!mipos3!cadev4!dbraun
+ *
+ * This program is under GNU GPL, read COPYING for details
+ *
+ */
+
+/**********************************************************
+ MSX floppy disk device driver version
+**********************************************************/
+
+/* If the __ONFILE if defined then we use the 
+ * conventional DOS file with the floppy image
+ */
+
+
+static uchar diskio_status;
+extern uchar fpage;
+
+#define dskinit(minor) (! init_drive(minor))     /* init_drive()=0=failed */
+
+/* low-level floppy read procedure for MSX - only one sector per time */
+STATIC int dskread(VOID) {
+#if DEBUG > 3
+printf("\ndskread(Sect:%d, FBUF: %x, DiskID: %x)",
+		firstblk, fbuf, fdrive);
+#endif
+	++inint;
+	diskio_status=disk_read(fdrive, fbuf, firstblk, 1
+#ifdef ORI_UZIX
+	, fpage);
+#else
+	); 
+#endif
+#if DEBUG > 3
+	if (diskio_status)
+		kprintf("Err: %d\n",diskio_status);
+#endif
+	--inint;
+	return diskio_status;		/* 0=operation ok */
+}
+
+/* low-level floppy write procedure - only one sector per time */
+/* !! ONLY existent sectors must be mentioned */
+STATIC int dskwrite(VOID) {
+#if DEBUG > 3
+	kprintf("\nWrite Sect:%d, FBUF: %x, DiskID: %x ",
+		firstblk, fbuf, fdrive);
+#endif
+	++inint;
+	diskio_status=disk_write(fdrive, fbuf, firstblk, 1
+#ifdef ORI_UZIX
+	, fpage);
+#else
+	); 
+#endif
+#if DEBUG > 3
+	if (diskio_status)
+		kprintf("Err: %d\n",diskio_status);
+#endif
+	--inint;
+	return diskio_status;
+}
+
+

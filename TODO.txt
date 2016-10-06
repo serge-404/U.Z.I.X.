@@ -1,0 +1,236 @@
+TODO
+
++++ sys_readwrite - НЕ ОБРАБОТАНА - пересылка буферов. Если адрес буфера больше F000h (CPMemu conout/conin), то пересылку не делать
+
+- заменить C-шные вызовы bdos(), bdoshl(), bios() на свои ассемблерные - чтобы ядро не прерывалось по ^C
+
+- выставить тип переменных register в процедурах 
+
++++ pr2.c: calltrap - вызовы из ядра в страницу процесса + обрабатывать стек
+
+- OPTIM: заменить __ei() на  #asm  ei  #endasm  ,  _di() на  #asm  di  #endasm  
+
+- OPTIM: может быть использовать call MEI ; call MDI ???
+
+- OPTIM: вызов-внутри-вызова ( int func() { return finc2(); } )  можно заменить на #define func func2
+
++++ вызов GBL long unix() надо сделать совместимо с нативным UZIX
++++ Параметры в странице процесса передаются на стеке: callno, arg1, arg2, arg3, arg4
++++ в unix() в страницу ядра параметры передаем уже в UDATA, результат возвращается в DEHL (long)
+  
+
+  
+В финальной чистке убрать все лишние printf, panic и global: nop, прочесать на предмет помеченного комментарием TODO
+
+  
+
++++ Не забыть пересобрать ps, renice, top !  (изменил ptab_t в unix.h)  
+  
+  
+??? AltairDOS v3.5r: что там с процедурами обработки TTY по прерыванию (mtty в 0f1xxh или где? почему не копируется при coldstart?)
+
+??? AltairDOS v3.5r: перераспределить буфера в области F120..F1FF - перенести дисковый буфер в начало, затем буфер TTY, затем все процедуры
+
++++ IDEBDOS: буфер процедур перенести с F100 на YLSTOUT (F3xx)
+
++++ IDEBDOS: добавить установку времени
+
+??? IDEBDOS: добавить запись/чтение N блоков (параметр) в указанную регистром-параметром станицу памяти (параметр)
+
+??? IDEBDOS: SD - единственный привод, SD=0 или SD=1 - выбор привода для SD, а остальной - для IDE.
+
+
+#ifdef ORI_UZIX
+	UDATA(u_argn1)=B_LDIRTO2(BUFSIZE/2, oldname, (void*)TEMPDBUF);
+	UDATA(u_argn2)=B_LDIRTO2(BUFSIZE/2, newname, (void*)TEMPDBUFX);
+#endif
+
+	ld	de,PSWAP_OFFSET
+	add	hl,de				; /* 20150116 */
+
+
+
+/* 
+== ORION AltairDos page 0 memory map
+   0000 ---------------------
+     |	 Screen0 - graphic
+   4000 ---------------------
+     |	 Screen1 - graphic
+   8000 ---------------------
+     |	 AltairDos ExtendedRAM: 4k segments 08,09,0a,0b	- planned for shared libc in future
+   C000 ---------------------
+     |	 CP/M crt driver 
+     |	 + base fonts (KOI8-R) 		LOCAL MEMORY (accessed driven by 0F9 port: pages port)
+   F000 ----------------------------------------------------------------------------------
+	 |		SEE BELOW				COMMON MEMORY (accesed from any page)
+
+
+== ORION AltairDos page 1 memory map
+   0000 ---------------------
+     |	 Screen0 - color attributes (16 color)
+   4000 ---------------------
+     |	 Screen1 - color attributes (16 color)
+   8000 ---------------------
+     |	 AltairDos ExtendedRAM: 4k segment 18			- planned for IDEBDOS driver
+   9000 ---------------------
+     |	 CP/M (AltairDOS) kernel	LOCAL MEMORY (accessed driven by 0F9 port: pages port) 
+   F000 ----------------------------------------------------------------------------------
+	 |		SEE BELOW				COMMON MEMORY (accesed from any page)
+
+
+== ORION UZIX kernel space map (page 2, e.i. CP/M TPA):
+   0000 ---------------------
+     |	   system vectors
+   0010 ---------------------
+     |	  reserved for CP/M
+   0100 ---------------------
+     |	    kernel code
+   E000 ---------------------
+     |		kernel heap
+   Eхxx ---------------------
+     |	    kernel stack
+   EDxx ---------------------
+     |	  kernel subroutines for ssiz/scop (argv/env services)
+   E860 ---------------------
+     |	  CP/M (AltairDOS) BDOS (actually wrapper calling to page1 code)
+   E8D0 ---------------------
+     |	  CP/M (AltairDOS) BIOS (actually wrapper calling to page1 code)
+   ED80 ---------------------
+     |     UZIX SRV_STACK (for ISR routine)
+   EDF9 ---------------------
+     |     UZIX TEMPDBUF  (for unplanned disk IO)
+   EFF8 ---------------------
+     |	  _OLDYINTVEC  byte:word (3b)  ^ ^ ^
+     |	  _PRCIMSTACK  word			   | | |
+     |	  _BNKMARKER   byte         LOCAL MEMORY (accessed driven by 0F9 port: pages port)
+   F000 ----------------------------------------------------------------------------------
+	 |		SEE BELOW				COMMON MEMORY (accesed from any page)
+
+
+== ORION UZIX process space map (pages 3..15):
+   0000 ---------------------
+     |	   system vectors
+   0010 ---------------------
+     |	reserved for CP/M emu
+   0100 ---------------------
+     |	 user process (TPA)
+   EBC0 ---------------------
+     |	CP/M BDOS/BIOS console functions emulator (BDOS 1..12, BIOS 1..4 functions)
+   ECxx ---------------------
+     |	  kernel subroutines for getc/putc
+   EDxx ---------------------
+     |	  kernel subroutines for ssiz/scop (argv/env services)
+   EDxx ---------------------
+     |	  kernel subroutines for GoUnix/GoExit
+   EExx ---------------------
+     |	  kernel subroutines for swapin/swapout
+   EE80 ---------------------
+     |     FSTACK_BCKP
+   EF80 ---------------------
+     |     UDATA_STASH
+   EFF8 ---------------------
+     |	  _RETPAGE 	   byte 
+     |	  _GOSWAPSTACK word
+     |	  _GOUNIXSTACK word			   ^ ^ ^
+     |	  _PRCIMSTACK  word			   | | |
+     |	  _BNKMARKER   byte         LOCAL MEMORY (accessed driven by 0F9 port: pages port)
+   F000 ----------------------------------------------------------------------------------
+     |	   FAREA_STACK             COMMON MEMORY (accesed from any page)
+   F100 ---------------------		 |  |  |
+     |	  IDEBDOS routines			 \/ \/ \/
+   F120 ---------------------
+     |	  CP/M tty routines
+   F14x ---------------------
+     |	  CP/M tty buffer
+   F162 ---------------------
+     |	  dtsize       byte
+	 |   _ret_page     byte
+	 |   _ret_addr	   word	     
+	 |   _ret_sp	   word	     
+	 |	_switch_page   byte	
+     |	  U_DATA   120 bytes
+   F1E2 ---------------------
+     |	  CP/M crt routines
+   F201 ---------------------
+     |	CP/M interbank routines: BLDIR, BJMP, BCALL, BRET, BLDB, BSTB 
+   F2xx ---------------------
+     |	CP/M int 50Hz ISRs: MINT, MDI, MEI;  ISR_RET=0f2e3h, F3STACK=0F2B5h
+   F2FB ---------------------
+     |	reserved int vector word
+     |	TTY IM2  int vector word
+     |	50Hz IM2 int vector word
+   F301 ---------------------
+     |	CP/M interbank vectors (page:addr, 3 bytes):
+     |	YBDOS			bank:addr=byte:word
+     |	YBIOSWARM		bank:addr=byte:word
+     |	YBIOSCONST		bank:addr=byte:word
+     |	YBIOSCONIN		bank:addr=byte:word
+     |	YBIOSCONOUT		bank:addr=byte:word
+     |	YBIOSLSTOUT		bank:addr=byte:word
+     |	YBIOSAUXOUT		bank:addr=byte:word
+     |	YBIOSAUXIN		bank:addr=byte:word
+     |	YBIOSHOME		bank:addr=byte:word
+     |	YBIOSSELDISK	bank:addr=byte:word
+     |	YBIOSSELTRK		bank:addr=byte:word
+     |	YBIOSSELSEC		bank:addr=byte:word
+     |	YBIOSSETDMA		bank:addr=byte:word
+     |	YBIOSREAD		bank:addr=byte:word
+     |	YBIOSWRITE		bank:addr=byte:word
+     |	YBIOSLSTST		bank:addr=byte:word
+     |	intvec (INT 50Hz)		  byte:word
+     |	intkey (ctrl+shft+key)    byte:word
+   F334 ---------------------
+     |	  F3-stack (for interbank routines)
+   F3C0 ---------------------
+     |	  ROM-BIOS Monitor vectors, variables and constants
+   F400 ---------------------
+   F500	  keyboard PPA 8255
+   F600	  romdisk  PPA 8255
+     |	  printer  PPA 8255
+   F700 ---------------------
+     |	  user devices ports
+   F800 ---------------------
+     |	  ROM-BIOS Monitor code (ROM)
+   FFFF ---------------------
+*/
+
+SWAPPING (actually RAM pages switching and areas F000..F1FF, F162..F1DF backup):
+
+SWAPOUT возможен в двух случаях:
+		1. Из системных процедур ядра (из unix() - стек установлен в F000-области)
+			Соответственно, для выключаемого процесса нужно:
+				а. Сохранить SP в переменную (FSTACK_BCKP-2) в страницу процесса
+				б. Скопировать (B_COPY) собственно область стека в массив FSTACK_BCKP в страницу процесса
+				в. скопировать (B_COPY) U_DATA в UDATA_STASH в страницу процесса
+				г. скопировать регистры, хотя для ядра это и не критично
+			Все - можно переключать на следующий процесс (выполнить swapin() - он провалится в искомый процесс),
+			      значение регистров вызывавшего unix() процесса безразлично
+				
+		2. Из обработчика прерываний в ядре (SP внутри обработчика ставится на _SRV_STACK 0edf6h, в странице ядра) -
+			когда нужно сохранить контекст и переключиться на следующий. Соответственно, для выключаемого процесса нужно:
+				а. Взять из стека "банк:адрес" прерванного процесса (может быть как в пространстве процесса, так и в ядре), 
+					из переменной PRC_IMSTACK значение SP, сохранить его в страницу процесса и 
+					если оно более F000, то выполнить 1.б ( B_COPY() )
+				б. скопировать (B_COPY) U_DATA в UDATA_STASH, FAREASTACK в FSTACK_BCKP в страницу процесса
+				в. Модифицируем адреса возврата на стеке:
+                    значение переменной retstack (куда возвращаться в процесс) запоминаем в static _old_retstack,
+						_ret_to=*(retstack+4 /*push af, push hl in proc page*/); *(retstack+4)=before_swapin;
+						_ret_to располагаем в F-области после dtsize - рядом с u_data
+						*(retstack+4) и процедура before_swapin - в странице процесса! Т.к. при INT50 push af, push hl делалось там!
+				г. Просто возвращаемся из прерывания (для баланса F300-стека) и попадаем в save_context() в странице процесса с тем 
+					значением стека	и регистров ЦПУ, которое было в момент прерывания в странице процесса, готовим контекст к выключению - 
+					сохраняем все что потом потребуется для включения контекста: страницу возврата, стек и регистры ниже FSTACK_BCKP:  
+
+
+						
+SWAPIN - включение контекста в работу. Вызывается извне для выключенного контекста с нормализованными стеками.
+Должен уметь возвращаться в указанную в _RETPAGE страницу памяти (процесса или ядра), т.к. swapout вызывается не только по прерыванию,
+но и в ядре - в unix(). Возвращаться нужно в точку ISR_RET с выставленным стеком процесса: в ISR_RET восстановятся AF и далее возврат
+по стеку. Завершение swapin - реальное переключение в следующий процесс, выполняется служебной процедурой в странице целевого процесса.
+				а. di
+				б. Скопировать 256 байт из (FSTACK_BCKP) в (FAREA_STACK) в странице процесса на который переключаемся (B_COPY)
+				в. скопировать 120 байт из (UDATA_STASH) в (U_DATA) в странице процесса
+				г. сформировать на стеке банк и адреса возврата чтобы сначало попадать в ISR_RET, а там уже в требуемую точку памяти по ret
+				д. вернуться по JP BRET.
+						
+

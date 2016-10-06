@@ -1,0 +1,61 @@
+.z80
+
+unix  equ       8
+BDOS  equ       5
+
+begin:
+      ld        hl,12         ; fork
+      push      hl
+      call      unix          ; de=PID
+      pop       hl
+      ld        hl,hellostr
+      jp        nc,printstr   ; if no error
+      ld        hl,errorstr
+      ld        e,c
+      ld        d,b           ; error code
+      ld        bc,50
+printstr:
+      push      bc
+      push      hl
+      push      de
+      ex        de,hl         ; de=str
+      ld	c,9
+      call	BDOS
+      pop       de
+      call      PRHEX
+      pop       hl
+      pop       bc
+      djnz      printstr
+      ret
+;
+PRHEX:  LD      A,D
+        CALL    HOUTF0
+        LD      A,D
+        CALL    HOUT0F
+        LD      A,E
+        CALL    HOUTF0
+        LD      A,E
+        JR      HOUT0F
+;
+HOUTF0: RRCA
+        RRCA
+        RRCA
+        RRCA
+HOUT0F: AND     0FH
+        ADD     A,'0'
+        CP      '9'+1
+        JR      C,HOUT
+        ADD     A,7
+HOUT:   PUSH    DE
+        LD      E,A
+        LD      C,2
+        call    BDOS
+        POP     DE
+        RET
+;
+hellostr:
+      db	13,10,'Hello world! I am INIT, pid=$'
+errorstr:
+      db	13,10,'Error $'
+END   begin
+
