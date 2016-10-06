@@ -1,0 +1,10 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int symlink(char *oldname, char *newname); */
+
+psect text
+global __sysint__
+global	_symlink
+_symlink:
+ld hl,38
+jp __sysint__
+

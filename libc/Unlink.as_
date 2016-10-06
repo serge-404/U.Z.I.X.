@@ -1,0 +1,12 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int unlink(char *path); */
+
+psect text
+global __sysint__
+global	_unlink
+_unlink:
+ld hl,33
+jp __sysint__
+
+
+

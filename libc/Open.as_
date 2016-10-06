@@ -1,0 +1,10 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int open(name, flag, ...); */
+;/* int open(name, flag, mode); */
+
+psect text
+global __sysint__
+global	_open
+_open:
+ld hl,20
+jp __sysint__

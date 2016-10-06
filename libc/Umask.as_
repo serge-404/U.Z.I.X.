@@ -1,0 +1,23 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int umask(int mask); */
+
+SET_UMASK	equ      10	; /* get/set umask - unix.h */
+
+psect text
+global __sysint__
+global	_umask
+_umask:
+pop	af
+pop	hl		; /* HL=mask */
+push	hl
+push	af
+push	hl		; /* parm1 */
+ld	hl,SET_UMASK
+push	hl		; /* what */
+ld	hl,7
+call __sysint__
+pop	bc
+pop	bc
+ret
+
+

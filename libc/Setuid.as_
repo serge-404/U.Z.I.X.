@@ -1,0 +1,21 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int setuid(int uid); */
+
+SET_UID		equ      3	; /* set user id - unix.h */
+
+psect text
+global __sysint__
+global	_setuid
+_setuid:
+pop	af
+pop	hl		; /* HL=uid */
+push	hl
+push	af
+push	hl		; /* parm1 */
+ld	hl,SET_UID
+push	hl		; /* what */
+ld	hl,7
+call __sysint__
+pop	bc
+pop	bc
+ret

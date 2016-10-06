@@ -1,0 +1,10 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int chmod(char *path, mode_t mode); */
+
+psect text
+global	__sysint__
+global	_chmod
+_chmod:
+ld hl,4
+jp __sysint__
+

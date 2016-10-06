@@ -1,0 +1,15 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int getprio(void); */
+
+GET_PRIO	equ	8	; /* get process priority - unix.h */
+
+psect text
+global	__sysint__
+global	_getprio
+_getprio:
+ld	de,GET_PRIO
+push	de
+ld	hl,7
+call	__sysint__
+pop	bc
+ret

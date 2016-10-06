@@ -1,0 +1,10 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int chown(char *path, int owner, int group); */
+
+psect text
+global	__sysint__
+global	_chown
+_chown:
+ld hl,5
+jp __sysint__
+

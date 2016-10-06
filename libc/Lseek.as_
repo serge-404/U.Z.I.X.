@@ -1,0 +1,11 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* long lseek(int file, off_t offset, int flag); */
+
+psect text
+global __sys__, __retlong__
+global	_lseek
+_lseek:
+ld hl,25
+ld de,__retlong__
+jp __sys__
+

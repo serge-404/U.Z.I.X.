@@ -1,0 +1,12 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int utime(char *path, struct utimbuf *buf); */
+
+psect text
+global __sysint__
+global	_utime
+_utime:
+ld hl,34
+jp __sysint__
+
+
+

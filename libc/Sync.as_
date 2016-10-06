@@ -1,0 +1,12 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int sync(void); */
+
+psect text
+global __sysint__
+global	_sync
+_sync:
+ld hl,29
+jp __sysint__
+
+
+

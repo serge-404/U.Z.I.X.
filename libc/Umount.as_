@@ -1,0 +1,12 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int umount(char *spec); */
+
+psect text
+global __sysint__
+global	_umount
+_umount:
+ld hl,32
+jp __sysint__
+
+
+

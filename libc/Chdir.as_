@@ -1,0 +1,10 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int chdir(char *dir); */
+
+psect text
+global	__sysint__
+global	_chdir
+_chdir:
+ld hl,3
+jp __sysint__
+

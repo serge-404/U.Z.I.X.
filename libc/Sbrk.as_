@@ -1,0 +1,12 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int sbrk(uint incr); */
+
+psect text
+global __sysint__
+global	_sbrk
+_sbrk:
+ld hl,24
+jp __sysint__
+
+
+

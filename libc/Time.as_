@@ -1,0 +1,38 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* time_t time(time_t *tvec); */
+
+psect bss
+rettime:defs 4
+
+psect text
+global __sysint__
+global _time
+_time:
+        pop     af
+        pop     hl            ; /* HL=tvec addr */
+        push    hl
+        push    af
+        ld      a,h
+        or      l
+        jr      nz,1f
+        ld      hl, rettime   ; /* get time to local structure if tvec=NULL*/
+1:      push    hl            ; /* param1 */
+        ld      hl,30
+        call __sysint__
+        pop     hl
+        ld      de,rettime
+        ld      bc,4
+        ldir
+        ld      hl,rettime
+        ret
+
+; /* time_t time(time_t *tvec) { */
+; /* 	time_t ttvec;            */
+; /* 	if (tvec == NULL) {      */
+; /* 		gtime(&ttvec);   */
+; /* 		return ttvec;    */
+; /* 	}                        */
+; /* 	gtime(tvec);             */
+; /* 	return *tvec;            */
+; /* }                           */
+

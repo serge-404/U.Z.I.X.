@@ -1,0 +1,16 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int getppid(void); */
+
+GET_PPID	equ	1	; /* get parent process id - unix.h */
+
+psect text
+global	__sysint__
+global	_getppid
+_getppid:
+ld	de,GET_PPID
+push	de
+ld	hl,7
+call	__sysint__
+pop	bc
+ret
+

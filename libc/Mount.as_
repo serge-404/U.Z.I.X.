@@ -1,0 +1,10 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int mount(char *spec, char *dir, int rwflag); */
+
+psect text
+global __sysint__
+global	_mount
+_mount:
+ld hl,19
+jp __sysint__
+

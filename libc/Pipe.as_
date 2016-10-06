@@ -1,0 +1,12 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int pipe(int fildes[]); */
+
+psect text
+global __sysint__
+global	_pipe
+_pipe:
+ld hl,22
+jp __sysint__
+
+
+

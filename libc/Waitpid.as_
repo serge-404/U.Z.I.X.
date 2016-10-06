@@ -1,0 +1,10 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int waitpid(int pid, int *statloc, int options); */
+
+psect text
+global __sysint__
+global	_waitpid
+_waitpid:
+ld hl,35
+jp __sysint__
+

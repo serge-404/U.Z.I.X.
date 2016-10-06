@@ -1,0 +1,12 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int read(int d, void *buf, uint nbytes); */
+
+psect text
+global __sysint__
+global	_read
+_read:
+ld hl,23
+jp __sysint__
+
+
+

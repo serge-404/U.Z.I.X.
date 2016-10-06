@@ -1,0 +1,10 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int execve(char *name, char *argv[], char *envp[]); */
+
+psect text
+global __sysint__
+global	_execve
+_execve:
+ld hl,10
+jp __sysint__
+

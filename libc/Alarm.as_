@@ -1,0 +1,10 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int alarm(uint secs); */
+
+psect text
+global	__sysint__
+global	_alarm
+_alarm:
+ld hl,1
+jp __sysint__
+

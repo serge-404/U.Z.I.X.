@@ -1,0 +1,11 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int ioctl(fd, req, data) */
+;/* int ioctl(fd, req, ...) */
+
+psect text
+global __sysint__
+global	_ioctl
+_ioctl:
+ld hl,15
+jp __sysint__
+

@@ -1,0 +1,23 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int setgid(int gid); */
+
+SET_GID		equ	6	; /* set group id - unix.h */
+
+psect text
+global __sysint__
+global	_setgid
+_setgid:
+pop	af
+pop	hl		; /* HL=gid */
+push	hl
+push	af
+push	hl		; /* parm1 */
+ld	hl,SET_GID
+push	hl		; /* what */
+ld	hl,7
+call __sysint__
+pop	bc
+pop	bc
+ret
+
+

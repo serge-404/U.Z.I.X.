@@ -1,0 +1,17 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int getegid(void); */
+
+GET_EGID	equ	7	; /* get effective group id - unix.h */
+
+psect text
+global	__sysint__
+global	_getegid
+_getegid:
+ld	de,GET_EGID
+push	de
+ld	hl,7
+call	__sysint__
+pop	bc
+ret
+
+

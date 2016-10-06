@@ -1,0 +1,10 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int close(int uindex); */
+
+psect text
+global	__sysint__
+global	_close
+_close:
+ld hl,6
+jp __sysint__
+

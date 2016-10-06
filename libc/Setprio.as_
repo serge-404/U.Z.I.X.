@@ -1,0 +1,29 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int setprio(int pid, char prio); */
+
+SET_PRIO	equ	9	; /* set process priority - unix.h */
+
+psect text
+global __sysint__
+global	_setprio
+_setprio:
+pop	af
+pop	hl		; /* HL=gid */
+pop	de
+push	de		; /* DE=prio */
+push	hl
+push	af
+ld	d,0
+push	de		; /* parm2 */
+push	hl		; /* parm1 */
+ld	hl,SET_PRIO
+push	hl		; /* what */
+ld	hl,7
+call __sysint__
+pop	bc
+pop	bc
+pop	bc
+ret
+
+
+

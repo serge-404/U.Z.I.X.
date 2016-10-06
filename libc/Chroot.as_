@@ -1,0 +1,10 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int chroot(char *dir); */
+
+psect text
+global	__sysint__
+global	_chroot
+_chroot:
+ld hl,39
+jp __sysint__
+

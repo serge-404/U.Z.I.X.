@@ -1,0 +1,10 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int mknod(char *name, mode_t mode, int dev); */
+
+psect text
+global __sysint__
+global	_mknod
+_mknod:
+ld hl,18
+jp __sysint__
+

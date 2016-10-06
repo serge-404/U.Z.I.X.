@@ -1,0 +1,10 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int dup2(int oldd, int newd); */
+
+psect text
+global	__sysint__
+global	_dup2
+_dup2:
+ld hl,9
+jp __sysint__
+

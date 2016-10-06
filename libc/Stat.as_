@@ -1,0 +1,12 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int stat(char *path, void *buf); */
+
+psect text
+global __sysint__
+global	_stat
+_stat:
+ld hl,27
+jp __sysint__
+
+
+

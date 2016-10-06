@@ -1,0 +1,12 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int pause(void); */
+
+psect text
+global	__sysint__
+global	_pause
+_pause:
+ld hl,21
+jp __sysint__
+
+
+

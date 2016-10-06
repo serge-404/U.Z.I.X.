@@ -1,0 +1,10 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int access(char *path, int mode); */
+
+psect text
+global __sysint__
+global _access
+_access:
+ld hl,0
+jp __sysint__
+

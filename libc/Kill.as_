@@ -1,0 +1,9 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int kill(int pid, int sig); */
+
+psect text
+global __sysint__
+global	_kill
+_kill:
+ld hl,16
+jp __sysint__

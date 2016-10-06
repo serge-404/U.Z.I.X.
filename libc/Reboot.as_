@@ -1,0 +1,12 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int reboot(char p1, char p2); */
+
+psect text
+global __sysint__
+global	_reboot
+_reboot:
+ld hl,37
+jp __sysint__
+
+
+

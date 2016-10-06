@@ -1,0 +1,38 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int creat(char *name, mode_t mode); */
+;/* int sys_open(char *name, int flag, mode_t mode); */
+
+;/*#include "syscalls.h"*/
+;/*#include "fcntl.h"*/
+
+;/*#ifdef L_creat*/
+;/*UNIX creat(char *name, mode_t mode) {*/
+;/*	return open(name,O_CREAT|O_WRONLY|O_TRUNC,mode);*/
+;/*}*/
+;/*#endif*/
+
+O_WRONLY	equ	1	; /* see fcntl.h */
+O_CREAT 	equ	100h	; /* create and open file */
+O_TRUNC 	equ	200h	; /* open with truncation */
+
+psect text
+global	__sysint__
+global	_creat
+_creat:
+pop	af	; /* ret addr */
+pop	bc	; /* BC=name */
+pop	de	; /* DE=mode */
+push	de
+push	bc
+push	af
+push	de	; /* mode */
+ld	hl, O_CREAT+O_WRONLY+O_TRUNC
+push	hl	; /* flag */
+push	bc	; /* name */
+ld hl,20
+call __sysint__
+pop	bc	; /* name */
+pop	bc	; /* flag */
+pop	bc	; /* mode */
+ret
+

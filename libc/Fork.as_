@@ -1,0 +1,10 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int fork(void); */
+
+psect text
+global __sysint__
+global	_fork
+_fork:
+ld hl,12
+jp __sysint__
+

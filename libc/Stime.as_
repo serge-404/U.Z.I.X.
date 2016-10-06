@@ -1,0 +1,12 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int stime(time_t *tvec); */
+
+psect text
+global __sysint__
+global	_stime
+_stime:
+ld hl,28
+jp __sysint__
+
+
+

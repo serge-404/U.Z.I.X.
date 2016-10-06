@@ -1,0 +1,12 @@
+;/********** ORION-UZIX version of syscalls ************/
+;/* int times(struct tms *tvec); */
+
+psect text
+global __sysint__
+global	_times
+_times:
+ld hl,31
+jp __sysint__
+
+
+
