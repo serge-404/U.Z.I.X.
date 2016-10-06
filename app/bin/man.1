@@ -1,0 +1,66 @@
+MAN(1)			   UZIX System Manual		   MAN(1)
+
+NAME
+       man - format and display the on-line manual pages
+
+USAGE
+       man -wqv [section] name
+
+DESCRIPTION
+       This manual documents the UZIX version  of man.	It's been
+       scaled  down  for  inclusion  in  the  UZIX  release,  and
+       doesn't have the help or version commands included  in the
+       GNU release. Also, some options are missing.
+
+       man formats and displays the on-line  manual  pages.  This
+       version knows about  the  MANPATH  and  PAGER  environment
+       variables, so you can have your own set(s) of personal man
+       pages and choose whatever program you like to display  the
+       formatted pages.If section is specified, man only looks in
+       that section of the manual.
+
+	You may also specify the order to search the sections for
+	entries and which preprocessors  to  run  on  the  source
+	files via command line options or environment variables.
+
+	If name contains  a  /	then  it  is  first  tried  as	a
+	filename, so  that  you  can  do  "man ./foo.5"  or  even
+	"man /cd/foo/bar.1.gz" .
+
+OPTIONS
+	-w
+	   Only display the files that match the section/name pair.
+
+	-v
+	   Verbose mode, complain about bad formatter commands.
+
+	-q
+	   Quiet mode, no complaints about bad formatter commands.
+
+ENVIRONMENT
+	MANPATH
+	   If MANPATH is set, its value is used as  the  path  to
+	   search for manual pages.
+
+	MANSECT
+	   If MANSECT is set,its value is used to determine which
+	   manual sections to search.
+
+	PAGER
+	   If PAGER is set, its value is used as the name of  the
+	   program to use to display the man page.  If not,  then
+	   /usr/bin/more is used.
+
+BUGS
+       This version  has  been	scaled	down  a  little  bit  for
+       inclusion in the UZIX. Many options are missing from  this
+       release, that many would expect from the GNU versions.
+
+       df doesn't show the mounting point of mounted filesystems,
+       except for the root fs.
+
+AUTHORS
+       Program :- Robert de Bath <rdebath@cix.compulink.co.uk>
+       Documentation :- Adriano Cunha <adrcunha@dcc.unicamp.br>
+
+MAN(1)			   UZIX System Manual		   MAN(1)

@@ -1,0 +1,1128 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+        "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <link rel="stylesheet" type="text/css" href="../../../style.css" title="style" />
+    <link rel="stylesheet" type="text/css" href="../style.css" title="style" />
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+
+    <title>fcntl(2) - Linux manual page</title>
+</head>
+
+<body>
+
+<div class="page-top"><a id="top_of_page"></a></div>
+<!--%%%TOP_BAR%%%-->
+    <div class="nav-bar">
+        <table class="nav-table">
+            <tr>
+                <td class="nav-cell">
+                    <p class="nav-text">
+                        <a href="../../../index.html">man7.org</a> &gt; Linux &gt; <a href="../index.html">man-pages</a>
+                    </p>
+                </td>
+                <td class="training-cell">
+                    <p class="training-text"><a class="training-link" href="http://man7.org/training/">Linux/UNIX system programming training</a></p>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+<hr class="nav-end" />
+
+<!--%%%PAGE_START%%%-->
+
+
+<table class="sec-table">
+<tr>
+    <td>
+        <p class="section-dir">
+<a href="#NAME">NAME</a> | <a href="#SYNOPSIS">SYNOPSIS</a> | <a href="#DESCRIPTION">DESCRIPTION</a> | <a href="#RETURN_VALUE">RETURN VALUE</a> | <a href="#ERRORS">ERRORS</a> | <a href="#CONFORMING_TO">CONFORMING TO</a> | <a href="#NOTES">NOTES</a> | <a href="#BUGS">BUGS</a> | <a href="#SEE_ALSO">SEE ALSO</a> | <a href="#COLOPHON">COLOPHON</a>
+        </p>
+    </td>
+    <td class="search-box">
+        <div class="man-search-box">
+
+            <form method="get" action="http://www.google.com/search">
+                <fieldset class="man-search">
+                    <input type="text" name="q" size="10" maxlength="255" value="" />
+                    <input type="hidden" name="sitesearch" value="man7.org/linux/man-pages" />
+                    <input type="submit" name="sa" value="Search online pages" />
+                </fieldset>
+            </form>
+
+        </div>
+    </td>
+    <td> </td>
+</tr>
+</table>
+
+<pre>
+<span class="headline">FCNTL(2)                  Linux Programmer's Manual                 FCNTL(2)</span>
+</pre>
+<h2><a id="NAME" href="#NAME"></a>NAME  &nbsp; &nbsp; &nbsp; &nbsp; <a href="#top_of_page"><span class="top-link">top</span></a></h2><pre>
+       fcntl - manipulate file descriptor
+</pre>
+<h2><a id="SYNOPSIS" href="#SYNOPSIS"></a>SYNOPSIS  &nbsp; &nbsp; &nbsp; &nbsp; <a href="#top_of_page"><span class="top-link">top</span></a></h2><pre>
+       <b>#include &lt;unistd.h&gt;</b>
+       <b>#include &lt;fcntl.h&gt;</b>
+
+       <b>int fcntl(int </b><i>fd</i><b>, int </b><i>cmd</i><b>, ... /* </b><i>arg</i> <b>*/ );</b>
+</pre>
+<h2><a id="DESCRIPTION" href="#DESCRIPTION"></a>DESCRIPTION  &nbsp; &nbsp; &nbsp; &nbsp; <a href="#top_of_page"><span class="top-link">top</span></a></h2><pre>
+       <b>fcntl</b>() performs one of the operations described below on the open
+       file descriptor <i>fd</i>.  The operation is determined by <i>cmd</i>.
+
+       <b>fcntl</b>() can take an optional third argument.  Whether or not this
+       argument is required is determined by <i>cmd</i>.  The required argument
+       type is indicated in parentheses after each <i>cmd</i> name (in most cases,
+       the required type is <i>int</i>, and we identify the argument using the name
+       <i>arg</i>), or <i>void</i> is specified if the argument is not required.
+
+       Certain of the operations below are supported only since a particular
+       Linux kernel version.  The preferred method of checking whether the
+       host kernel supports a particular operation is to invoke <b>fcntl</b>() with
+       the desired <i>cmd</i> value and then test whether the call failed with
+       <b>EINVAL</b>, indicating that the kernel does not recognize this value.
+
+   <b>Duplicating a file descriptor</b>
+       <b>F_DUPFD </b>(<i>int</i>)
+              Find the lowest numbered available file descriptor greater
+              than or equal to <i>arg</i> and make it be a copy of <i>fd</i>.  This is
+              different from <a href="../man2/dup2.2.html">dup2(2)</a>, which uses exactly the descriptor
+              specified.
+
+              On success, the new descriptor is returned.
+
+              See <a href="../man2/dup.2.html">dup(2)</a> for further details.
+
+       <b>F_DUPFD_CLOEXEC </b>(<i>int</i>; since Linux 2.6.24)
+              As for <b>F_DUPFD</b>, but additionally set the close-on-exec flag
+              for the duplicate descriptor.  Specifying this flag permits a
+              program to avoid an additional <b>fcntl</b>() <b>F_SETFD </b>operation to
+              set the <b>FD_CLOEXEC </b>flag.  For an explanation of why this flag
+              is useful, see the description of <b>O_CLOEXEC </b>in <a href="../man2/open.2.html">open(2)</a>.
+
+   <b>File descriptor flags</b>
+       The following commands manipulate the flags associated with a file
+       descriptor.  Currently, only one such flag is defined: <b>FD_CLOEXEC</b>,
+       the close-on-exec flag.  If the <b>FD_CLOEXEC </b>bit is 0, the file
+       descriptor will remain open across an <a href="../man2/execve.2.html">execve(2)</a>, otherwise it will be
+       closed.
+
+       <b>F_GETFD </b>(<i>void</i>)
+              Read the file descriptor flags; <i>arg</i> is ignored.
+
+       <b>F_SETFD </b>(<i>int</i>)
+              Set the file descriptor flags to the value specified by <i>arg</i>.
+
+       In multithreaded programs, using <b>fcntl</b>() <b>F_SETFD </b>to set the close-on-
+       exec flag at the same time as another thread performs a <a href="../man2/fork.2.html">fork(2)</a> plus
+       <a href="../man2/execve.2.html">execve(2)</a> is vulnerable to a race condition that may unintentionally
+       leak the file descriptor to the program executed in the child
+       process.  See the discussion of the <b>O_CLOEXEC </b>flag in <a href="../man2/open.2.html">open(2)</a> for
+       details and a remedy to the problem.
+
+   <b>File status flags</b>
+       Each open file description has certain associated status flags,
+       initialized by <a href="../man2/open.2.html">open(2)</a> and possibly modified by <b>fcntl</b>().  Duplicated
+       file descriptors (made with <a href="../man2/dup.2.html">dup(2)</a>, <b>fcntl</b>(F_DUPFD), <a href="../man2/fork.2.html">fork(2)</a>, etc.)
+       refer to the same open file description, and thus share the same file
+       status flags.
+
+       The file status flags and their semantics are described in <a href="../man2/open.2.html">open(2)</a>.
+
+       <b>F_GETFL </b>(<i>void</i>)
+              Get the file access mode and the file status flags; <i>arg</i> is
+              ignored.
+
+       <b>F_SETFL </b>(<i>int</i>)
+              Set the file status flags to the value specified by <i>arg</i>.  File
+              access mode (<b>O_RDONLY</b>, <b>O_WRONLY</b>, <b>O_RDWR</b>) and file creation
+              flags (i.e., <b>O_CREAT</b>, <b>O_EXCL</b>, <b>O_NOCTTY</b>, <b>O_TRUNC</b>) in <i>arg</i> are
+              ignored.  On Linux this command can change only the <b>O_APPEND</b>,
+              <b>O_ASYNC</b>, <b>O_DIRECT</b>, <b>O_NOATIME</b>, and <b>O_NONBLOCK </b>flags.  It is not
+              possible to change the <b>O_DSYNC </b>and <b>O_SYNC </b>flags; see BUGS,
+              below.
+
+   <b>Advisory record locking</b>
+       Linux implements traditional ("process-associated") UNIX record
+       locks, as standardized by POSIX.  For a Linux-specific alternative
+       with better semantics, see the discussion of open file description
+       locks below.
+
+       <b>F_SETLK</b>, <b>F_SETLKW</b>, and <b>F_GETLK </b>are used to acquire, release, and test
+       for the existence of record locks (also known as byte-range, file-
+       segment, or file-region locks).  The third argument, <i>lock</i>, is a
+       pointer to a structure that has at least the following fields (in
+       unspecified order).
+
+           struct flock {
+               ...
+               short l_type;    /* Type of lock: F_RDLCK,
+                                   F_WRLCK, F_UNLCK */
+               short l_whence;  /* How to interpret l_start:
+                                   SEEK_SET, SEEK_CUR, SEEK_END */
+               off_t l_start;   /* Starting offset for lock */
+               off_t l_len;     /* Number of bytes to lock */
+               pid_t l_pid;     /* PID of process blocking our lock
+                                   (set by F_GETLK and F_OFD_GETLK) */
+               ...
+           };
+
+       The <i>l_whence</i>, <i>l_start</i>, and <i>l_len</i> fields of this structure specify the
+       range of bytes we wish to lock.  Bytes past the end of the file may
+       be locked, but not bytes before the start of the file.
+
+       <i>l_start</i> is the starting offset for the lock, and is interpreted
+       relative to either: the start of the file (if <i>l_whence</i> is <b>SEEK_SET</b>);
+       the current file offset (if <i>l_whence</i> is <b>SEEK_CUR</b>); or the end of the
+       file (if <i>l_whence</i> is <b>SEEK_END</b>).  In the final two cases, <i>l_start</i> can
+       be a negative number provided the offset does not lie before the
+       start of the file.
+
+       <i>l_len</i> specifies the number of bytes to be locked.  If <i>l_len</i> is
+       positive, then the range to be locked covers bytes <i>l_start</i> up to and
+       including <i>l_start</i>+<i>l_len</i>-1.  Specifying 0 for <i>l_len</i> has the special
+       meaning: lock all bytes starting at the location specified by
+       <i>l_whence</i> and <i>l_start</i> through to the end of file, no matter how large
+       the file grows.
+
+       POSIX.1-2001 allows (but does not require) an implementation to
+       support a negative <i>l_len</i> value; if <i>l_len</i> is negative, the interval
+       described by <i>lock</i> covers bytes <i>l_start</i>+<i>l_len</i> up to and including
+       <i>l_start</i>-1.  This is supported by Linux since kernel versions 2.4.21
+       and 2.5.49.
+
+       The <i>l_type</i> field can be used to place a read (<b>F_RDLCK</b>) or a write
+       (<b>F_WRLCK</b>) lock on a file.  Any number of processes may hold a read
+       lock (shared lock) on a file region, but only one process may hold a
+       write lock (exclusive lock).  An exclusive lock excludes all other
+       locks, both shared and exclusive.  A single process can hold only one
+       type of lock on a file region; if a new lock is applied to an
+       already-locked region, then the existing lock is converted to the new
+       lock type.  (Such conversions may involve splitting, shrinking, or
+       coalescing with an existing lock if the byte range specified by the
+       new lock does not precisely coincide with the range of the existing
+       lock.)
+
+       <b>F_SETLK </b>(<i>struct flock *</i>)
+              Acquire a lock (when <i>l_type</i> is <b>F_RDLCK </b>or <b>F_WRLCK</b>) or release
+              a lock (when <i>l_type</i> is <b>F_UNLCK</b>) on the bytes specified by the
+              <i>l_whence</i>, <i>l_start</i>, and <i>l_len</i> fields of <i>lock</i>.  If a conflicting
+              lock is held by another process, this call returns -1 and sets
+              <i><a href="../man3/errno.3.html">errno</a></i> to <b>EACCES </b>or <b>EAGAIN</b>.  (The error returned in this case
+              differs across implementations, so POSIX requires a portable
+              application to check for both errors.)
+
+       <b>F_SETLKW </b>(<i>struct flock *</i>)
+              As for <b>F_SETLK</b>, but if a conflicting lock is held on the file,
+              then wait for that lock to be released.  If a signal is caught
+              while waiting, then the call is interrupted and (after the
+              signal handler has returned) returns immediately (with return
+              value -1 and <i><a href="../man3/errno.3.html">errno</a></i> set to <b>EINTR</b>; see <a href="../man7/signal.7.html">signal(7)</a>).
+
+       <b>F_GETLK </b>(<i>struct flock *</i>)
+              On input to this call, <i>lock</i> describes a lock we would like to
+              place on the file.  If the lock could be placed, <b>fcntl</b>() does
+              not actually place it, but returns <b>F_UNLCK </b>in the <i>l_type</i> field
+              of <i>lock</i> and leaves the other fields of the structure
+              unchanged.
+
+              If one or more incompatible locks would prevent this lock
+              being placed, then <b>fcntl</b>() returns details about one of those
+              locks in the <i>l_type</i>, <i>l_whence</i>, <i>l_start</i>, and <i>l_len</i> fields of
+              <i>lock</i>.  If the conflicting lock is a traditional (process-
+              associated) record lock, then the <i>l_pid</i> field is set to the
+              PID of the process holding that lock.  If the conflicting lock
+              is an open file description lock, then <i>l_pid</i> is set to -1.
+              Note that the returned information may already be out of date
+              by the time the caller inspects it.
+
+       In order to place a read lock, <i>fd</i> must be open for reading.  In order
+       to place a write lock, <i>fd</i> must be open for writing.  To place both
+       types of lock, open a file read-write.
+
+       When placing locks with <b>F_SETLKW</b>, the kernel detects <i>deadlocks</i>,
+       whereby two or more processes have their lock requests mutually
+       blocked by locks held by the other processes.  For example, suppose
+       process A holds a write lock on byte 100 of a file, and process B
+       holds a write lock on byte 200.  If each process then attempts to
+       lock the byte already locked by the other process using <b>F_SETLKW</b>,
+       then, without deadlock detection, both processes would remain blocked
+       indefinitely.  When the kernel detects such deadlocks, it causes one
+       of the blocking lock requests to immediately fail with the error
+       <b>EDEADLK</b>; an application that encounters such an error should release
+       some of its locks to allow other applications to proceed before
+       attempting regain the locks that it requires.  Circular deadlocks
+       involving more than two processes are also detected.  Note, however,
+       that there are limitations to the kernel's deadlock-detection
+       algorithm; see BUGS.
+
+       As well as being removed by an explicit <b>F_UNLCK</b>, record locks are
+       automatically released when the process terminates.
+
+       Record locks are not inherited by a child created via <a href="../man2/fork.2.html">fork(2)</a>, but
+       are preserved across an <a href="../man2/execve.2.html">execve(2)</a>.
+
+       Because of the buffering performed by the <a href="../man3/stdio.3.html">stdio(3)</a> library, the use
+       of record locking with routines in that package should be avoided;
+       use <a href="../man2/read.2.html">read(2)</a> and <a href="../man2/write.2.html">write(2)</a> instead.
+
+       The record locks described above are associated with the process
+       (unlike the open file description locks described below).  This has
+       some unfortunate consequences:
+
+       *  If a process closes <i>any</i> file descriptor referring to a file, then
+          all of the process's locks on that file are released, regardless
+          of the file descriptor(s) on which the locks were obtained.  This
+          is bad: it means that a process can lose its locks on a file such
+          as <i>/etc/passwd</i> or <i>/etc/mtab</i> when for some reason a library
+          function decides to open, read, and close the same file.
+
+       *  The threads in a process share locks.  In other words, a
+          multithreaded program can't use record locking to ensure that
+          threads don't simultaneously access the same region of a file.
+
+       Open file description locks solve both of these problems.
+
+   <b>Open file description locks (non-POSIX)</b>
+       Open file description locks are advisory byte-range locks whose
+       operation is in most respects identical to the traditional record
+       locks described above.  This lock type is Linux-specific, and
+       available since Linux 3.15.  For an explanation of open file
+       descriptions, see <a href="../man2/open.2.html">open(2)</a>.
+
+       The principal difference between the two lock types is that whereas
+       traditional record locks are associated with a process, open file
+       description locks are associated with the open file description on
+       which they are acquired, much like locks acquired with <a href="../man2/flock.2.html">flock(2)</a>.
+       Consequently (and unlike traditional advisory record locks), open
+       file description locks are inherited across <a href="../man2/fork.2.html">fork(2)</a> (and <a href="../man2/clone.2.html">clone(2)</a>
+       with <b>CLONE_FILES</b>), and are only automatically released on the last
+       close of the open file description, instead of being released on any
+       close of the file.
+
+       Open file description locks always conflict with traditional record
+       locks, even when they are acquired by the same process on the same
+       file descriptor.
+
+       Open file description locks placed via the same open file description
+       (i.e., via the same file descriptor, or via a duplicate of the file
+       descriptor created by <a href="../man2/fork.2.html">fork(2)</a>, <a href="../man2/dup.2.html">dup(2)</a>, <a href="../man2/fcntl.2.html">fcntl(2)</a> <b>F_DUPFD</b>, and so on)
+       are always compatible: if a new lock is placed on an already locked
+       region, then the existing lock is converted to the new lock type.
+       (Such conversions may result in splitting, shrinking, or coalescing
+       with an existing lock as discussed above.)
+
+       On the other hand, open file description locks may conflict with each
+       other when they are acquired via different open file descriptions.
+       Thus, the threads in a multithreaded program can use open file
+       description locks to synchronize access to a file region by having
+       each thread perform its own <a href="../man2/open.2.html">open(2)</a> on the file and applying locks
+       via the resulting file descriptor.
+
+       As with traditional advisory locks, the third argument to <b>fcntl</b>(),
+       <i>lock</i>, is a pointer to an <i>flock</i> structure.  By contrast with
+       traditional record locks, the <i>l_pid</i> field of that structure must be
+       set to zero when using the commands described below.
+
+       The commands for working with open file description locks are
+       analogous to those used with traditional locks:
+
+       <b>F_OFD_SETLK </b>(<i>struct flock *</i>)
+              Acquire an open file description lock (when <i>l_type</i> is <b>F_RDLCK</b>
+              or <b>F_WRLCK</b>) or release an open file description lock (when
+              <i>l_type</i> is <b>F_UNLCK</b>) on the bytes specified by the <i>l_whence</i>,
+              <i>l_start</i>, and <i>l_len</i> fields of <i>lock</i>.  If a conflicting lock is
+              held by another process, this call returns -1 and sets <i><a href="../man3/errno.3.html">errno</a></i>
+              to <b>EAGAIN</b>.
+
+       <b>F_OFD_SETLKW </b>(<i>struct flock *</i>)
+              As for <b>F_OFD_SETLK</b>, but if a conflicting lock is held on the
+              file, then wait for that lock to be released.  If a signal is
+              caught while waiting, then the call is interrupted and (after
+              the signal handler has returned) returns immediately (with
+              return value -1 and <i><a href="../man3/errno.3.html">errno</a></i> set to <b>EINTR</b>; see <a href="../man7/signal.7.html">signal(7)</a>).
+
+       <b>F_OFD_GETLK </b>(<i>struct flock *</i>)
+              On input to this call, <i>lock</i> describes an open file description
+              lock we would like to place on the file.  If the lock could be
+              placed, <b>fcntl</b>() does not actually place it, but returns
+              <b>F_UNLCK </b>in the <i>l_type</i> field of <i>lock</i> and leaves the other
+              fields of the structure unchanged.  If one or more
+              incompatible locks would prevent this lock being placed, then
+              details about one of these locks are returned via <i>lock</i>, as
+              described above for <b>F_GETLK</b>.
+
+       In the current implementation, no deadlock detection is performed for
+       open file description locks.  (This contrasts with process-associated
+       record locks, for which the kernel does perform deadlock detection.)
+
+   <b>Mandatory locking</b>
+       <i>Warning</i>: the Linux implementation of mandatory locking is unreliable.
+       See BUGS below.
+
+       By default, both traditional (process-associated) and open file
+       description record locks are advisory.  Advisory locks are not
+       enforced and are useful only between cooperating processes.
+
+       Both lock types can also be mandatory.  Mandatory locks are enforced
+       for all processes.  If a process tries to perform an incompatible
+       access (e.g., <a href="../man2/read.2.html">read(2)</a> or <a href="../man2/write.2.html">write(2)</a>) on a file region that has an
+       incompatible mandatory lock, then the result depends upon whether the
+       <b>O_NONBLOCK </b>flag is enabled for its open file description.  If the
+       <b>O_NONBLOCK </b>flag is not enabled, then the system call is blocked until
+       the lock is removed or converted to a mode that is compatible with
+       the access.  If the <b>O_NONBLOCK </b>flag is enabled, then the system call
+       fails with the error <b>EAGAIN</b>.
+
+       To make use of mandatory locks, mandatory locking must be enabled
+       both on the filesystem that contains the file to be locked, and on
+       the file itself.  Mandatory locking is enabled on a filesystem using
+       the "-o mand" option to <a href="../man8/mount.8.html">mount(8)</a>, or the <b>MS_MANDLOCK </b>flag for
+       <a href="../man2/mount.2.html">mount(2)</a>.  Mandatory locking is enabled on a file by disabling group
+       execute permission on the file and enabling the set-group-ID
+       permission bit (see <a href="../man1/chmod.1.html">chmod(1)</a> and <a href="../man2/chmod.2.html">chmod(2)</a>).
+
+       Mandatory locking is not specified by POSIX.  Some other systems also
+       support mandatory locking, although the details of how to enable it
+       vary across systems.
+
+   <b>Managing signals</b>
+       <b>F_GETOWN</b>, <b>F_SETOWN</b>, <b>F_GETOWN_EX</b>, <b>F_SETOWN_EX</b>, <b>F_GETSIG </b>and <b>F_SETSIG</b>
+       are used to manage I/O availability signals:
+
+       <b>F_GETOWN </b>(<i>void</i>)
+              Return (as the function result) the process ID or process
+              group currently receiving <b>SIGIO </b>and <b>SIGURG </b>signals for events
+              on file descriptor <i>fd</i>.  Process IDs are returned as positive
+              values; process group IDs are returned as negative values (but
+              see BUGS below).  <i>arg</i> is ignored.
+
+       <b>F_SETOWN </b>(<i>int</i>)
+              Set the process ID or process group ID that will receive <b>SIGIO</b>
+              and <b>SIGURG </b>signals for events on file descriptor <i>fd</i> to the ID
+              given in <i>arg</i>.  A process ID is specified as a positive value;
+              a process group ID is specified as a negative value.  Most
+              commonly, the calling process specifies itself as the owner
+              (that is, <i>arg</i> is specified as <a href="../man2/getpid.2.html">getpid(2)</a>).
+
+              If you set the <b>O_ASYNC </b>status flag on a file descriptor by
+              using the <b>F_SETFL </b>command of <b>fcntl</b>(), a <b>SIGIO </b>signal is sent
+              whenever input or output becomes possible on that file
+              descriptor.  <b>F_SETSIG </b>can be used to obtain delivery of a
+              signal other than <b>SIGIO</b>.  If this permission check fails, then
+              the signal is silently discarded.
+
+              Sending a signal to the owner process (group) specified by
+              <b>F_SETOWN </b>is subject to the same permissions checks as are
+              described for <a href="../man2/kill.2.html">kill(2)</a>, where the sending process is the one
+              that employs <b>F_SETOWN </b>(but see BUGS below).
+
+              If the file descriptor <i>fd</i> refers to a socket, <b>F_SETOWN </b>also
+              selects the recipient of <b>SIGURG </b>signals that are delivered
+              when out-of-band data arrives on that socket.  (<b>SIGURG </b>is sent
+              in any situation where <a href="../man2/select.2.html">select(2)</a> would report the socket as
+              having an "exceptional condition".)
+
+              The following was true in 2.6.x kernels up to and including
+              kernel 2.6.11:
+
+                     If a nonzero value is given to <b>F_SETSIG </b>in a
+                     multithreaded process running with a threading library
+                     that supports thread groups (e.g., NPTL), then a
+                     positive value given to <b>F_SETOWN </b>has a different
+                     meaning: instead of being a process ID identifying a
+                     whole process, it is a thread ID identifying a specific
+                     thread within a process.  Consequently, it may be
+                     necessary to pass <b>F_SETOWN </b>the result of <a href="../man2/gettid.2.html">gettid(2)</a>
+                     instead of <a href="../man2/getpid.2.html">getpid(2)</a> to get sensible results when
+                     <b>F_SETSIG </b>is used.  (In current Linux threading
+                     implementations, a main thread's thread ID is the same
+                     as its process ID.  This means that a single-threaded
+                     program can equally use <a href="../man2/gettid.2.html">gettid(2)</a> or <a href="../man2/getpid.2.html">getpid(2)</a> in this
+                     scenario.)  Note, however, that the statements in this
+                     paragraph do not apply to the <b>SIGURG </b>signal generated
+                     for out-of-band data on a socket: this signal is always
+                     sent to either a process or a process group, depending
+                     on the value given to <b>F_SETOWN</b>.
+
+              The above behavior was accidentally dropped in Linux 2.6.12,
+              and won't be restored.  From Linux 2.6.32 onward, use
+              <b>F_SETOWN_EX </b>to target <b>SIGIO </b>and <b>SIGURG </b>signals at a particular
+              thread.
+
+       <b>F_GETOWN_EX </b>(struct f_owner_ex *) (since Linux 2.6.32)
+              Return the current file descriptor owner settings as defined
+              by a previous <b>F_SETOWN_EX </b>operation.  The information is
+              returned in the structure pointed to by <i>arg</i>, which has the
+              following form:
+
+                  struct f_owner_ex {
+                      int   type;
+                      pid_t pid;
+                  };
+
+              The <i>type</i> field will have one of the values <b>F_OWNER_TID</b>,
+              <b>F_OWNER_PID</b>, or <b>F_OWNER_PGRP</b>.  The <i>pid</i> field is a positive
+              integer representing a thread ID, process ID, or process group
+              ID.  See <b>F_SETOWN_EX </b>for more details.
+
+       <b>F_SETOWN_EX </b>(struct f_owner_ex *) (since Linux 2.6.32)
+              This operation performs a similar task to <b>F_SETOWN</b>.  It allows
+              the caller to direct I/O availability signals to a specific
+              thread, process, or process group.  The caller specifies the
+              target of signals via <i>arg</i>, which is a pointer to a <i>f_owner_ex</i>
+              structure.  The <i>type</i> field has one of the following values,
+              which define how <i>pid</i> is interpreted:
+
+              <b>F_OWNER_TID</b>
+                     Send the signal to the thread whose thread ID (the
+                     value returned by a call to <a href="../man2/clone.2.html">clone(2)</a> or <a href="../man2/gettid.2.html">gettid(2)</a>) is
+                     specified in <i>pid</i>.
+
+              <b>F_OWNER_PID</b>
+                     Send the signal to the process whose ID is specified in
+                     <i>pid</i>.
+
+              <b>F_OWNER_PGRP</b>
+                     Send the signal to the process group whose ID is
+                     specified in <i>pid</i>.  (Note that, unlike with <b>F_SETOWN</b>, a
+                     process group ID is specified as a positive value
+                     here.)
+
+       <b>F_GETSIG </b>(<i>void</i>)
+              Return (as the function result) the signal sent when input or
+              output becomes possible.  A value of zero means <b>SIGIO </b>is sent.
+              Any other value (including <b>SIGIO</b>) is the signal sent instead,
+              and in this case additional info is available to the signal
+              handler if installed with <b>SA_SIGINFO</b>.  <i>arg</i> is ignored.
+
+       <b>F_SETSIG </b>(<i>int</i>)
+              Set the signal sent when input or output becomes possible to
+              the value given in <i>arg</i>.  A value of zero means to send the
+              default <b>SIGIO </b>signal.  Any other value (including <b>SIGIO</b>) is
+              the signal to send instead, and in this case additional info
+              is available to the signal handler if installed with
+              <b>SA_SIGINFO</b>.
+
+              By using <b>F_SETSIG </b>with a nonzero value, and setting <b>SA_SIGINFO</b>
+              for the signal handler (see <a href="../man2/sigaction.2.html">sigaction(2)</a>), extra information
+              about I/O events is passed to the handler in a <i>siginfo_t</i>
+              structure.  If the <i>si_code</i> field indicates the source is
+              <b>SI_SIGIO</b>, the <i>si_fd</i> field gives the file descriptor associated
+              with the event.  Otherwise, there is no indication which file
+              descriptors are pending, and you should use the usual
+              mechanisms (<a href="../man2/select.2.html">select(2)</a>, <a href="../man2/poll.2.html">poll(2)</a>, <a href="../man2/read.2.html">read(2)</a> with <b>O_NONBLOCK </b>set
+              etc.) to determine which file descriptors are available for
+              I/O.
+
+              By selecting a real time signal (value &gt;= <b>SIGRTMIN</b>), multiple
+              I/O events may be queued using the same signal numbers.
+              (Queuing is dependent on available memory).  Extra information
+              is available if <b>SA_SIGINFO </b>is set for the signal handler, as
+              above.
+
+              Note that Linux imposes a limit on the number of real-time
+              signals that may be queued to a process (see <a href="../man2/getrlimit.2.html">getrlimit(2)</a> and
+              <a href="../man7/signal.7.html">signal(7)</a>) and if this limit is reached, then the kernel
+              reverts to delivering <b>SIGIO</b>, and this signal is delivered to
+              the entire process rather than to a specific thread.
+
+       Using these mechanisms, a program can implement fully asynchronous
+       I/O without using <a href="../man2/select.2.html">select(2)</a> or <a href="../man2/poll.2.html">poll(2)</a> most of the time.
+
+       The use of <b>O_ASYNC </b>is specific to BSD and Linux.  The only use of
+       <b>F_GETOWN </b>and <b>F_SETOWN </b>specified in POSIX.1 is in conjunction with the
+       use of the <b>SIGURG </b>signal on sockets.  (POSIX does not specify the
+       <b>SIGIO </b>signal.)  <b>F_GETOWN_EX</b>, <b>F_SETOWN_EX</b>, <b>F_GETSIG</b>, and <b>F_SETSIG </b>are
+       Linux-specific.  POSIX has asynchronous I/O and the <i>aio_sigevent</i>
+       structure to achieve similar things; these are also available in
+       Linux as part of the GNU C Library (Glibc).
+
+   <b>Leases</b>
+       <b>F_SETLEASE </b>and <b>F_GETLEASE </b>(Linux 2.4 onward) are used (respectively)
+       to establish a new lease, and retrieve the current lease, on the open
+       file description referred to by the file descriptor <i>fd</i>.  A file lease
+       provides a mechanism whereby the process holding the lease (the
+       "lease holder") is notified (via delivery of a signal) when a process
+       (the "lease breaker") tries to <a href="../man2/open.2.html">open(2)</a> or <a href="../man2/truncate.2.html">truncate(2)</a> the file
+       referred to by that file descriptor.
+
+       <b>F_SETLEASE </b>(<i>int</i>)
+              Set or remove a file lease according to which of the following
+              values is specified in the integer <i>arg</i>:
+
+              <b>F_RDLCK</b>
+                     Take out a read lease.  This will cause the calling
+                     process to be notified when the file is opened for
+                     writing or is truncated.  A read lease can be placed
+                     only on a file descriptor that is opened read-only.
+
+              <b>F_WRLCK</b>
+                     Take out a write lease.  This will cause the caller to
+                     be notified when the file is opened for reading or
+                     writing or is truncated.  A write lease may be placed
+                     on a file only if there are no other open file
+                     descriptors for the file.
+
+              <b>F_UNLCK</b>
+                     Remove our lease from the file.
+
+       Leases are associated with an open file description (see <a href="../man2/open.2.html">open(2)</a>).
+       This means that duplicate file descriptors (created by, for example,
+       <a href="../man2/fork.2.html">fork(2)</a> or <a href="../man2/dup.2.html">dup(2)</a>) refer to the same lease, and this lease may be
+       modified or released using any of these descriptors.  Furthermore,
+       the lease is released by either an explicit <b>F_UNLCK </b>operation on any
+       of these duplicate descriptors, or when all such descriptors have
+       been closed.
+
+       Leases may be taken out only on regular files.  An unprivileged
+       process may take out a lease only on a file whose UID (owner) matches
+       the filesystem UID of the process.  A process with the <b>CAP_LEASE</b>
+       capability may take out leases on arbitrary files.
+
+       <b>F_GETLEASE </b>(<i>void</i>)
+              Indicates what type of lease is associated with the file
+              descriptor <i>fd</i> by returning either <b>F_RDLCK</b>, <b>F_WRLCK</b>, or
+              <b>F_UNLCK</b>, indicating, respectively, a read lease , a write
+              lease, or no lease.  <i>arg</i> is ignored.
+
+       When a process (the "lease breaker") performs an <a href="../man2/open.2.html">open(2)</a> or
+       <a href="../man2/truncate.2.html">truncate(2)</a> that conflicts with a lease established via <b>F_SETLEASE</b>,
+       the system call is blocked by the kernel and the kernel notifies the
+       lease holder by sending it a signal (<b>SIGIO </b>by default).  The lease
+       holder should respond to receipt of this signal by doing whatever
+       cleanup is required in preparation for the file to be accessed by
+       another process (e.g., flushing cached buffers) and then either
+       remove or downgrade its lease.  A lease is removed by performing an
+       <b>F_SETLEASE </b>command specifying <i>arg</i> as <b>F_UNLCK</b>.  If the lease holder
+       currently holds a write lease on the file, and the lease breaker is
+       opening the file for reading, then it is sufficient for the lease
+       holder to downgrade the lease to a read lease.  This is done by
+       performing an <b>F_SETLEASE </b>command specifying <i>arg</i> as <b>F_RDLCK</b>.
+
+       If the lease holder fails to downgrade or remove the lease within the
+       number of seconds specified in <i>/proc/sys/fs/lease-break-time</i>, then
+       the kernel forcibly removes or downgrades the lease holder's lease.
+
+       Once a lease break has been initiated, <b>F_GETLEASE </b>returns the target
+       lease type (either <b>F_RDLCK </b>or <b>F_UNLCK</b>, depending on what would be
+       compatible with the lease breaker) until the lease holder voluntarily
+       downgrades or removes the lease or the kernel forcibly does so after
+       the lease break timer expires.
+
+       Once the lease has been voluntarily or forcibly removed or
+       downgraded, and assuming the lease breaker has not unblocked its
+       system call, the kernel permits the lease breaker's system call to
+       proceed.
+
+       If the lease breaker's blocked <a href="../man2/open.2.html">open(2)</a> or <a href="../man2/truncate.2.html">truncate(2)</a> is interrupted
+       by a signal handler, then the system call fails with the error <b>EINTR</b>,
+       but the other steps still occur as described above.  If the lease
+       breaker is killed by a signal while blocked in <a href="../man2/open.2.html">open(2)</a> or
+       <a href="../man2/truncate.2.html">truncate(2)</a>, then the other steps still occur as described above.  If
+       the lease breaker specifies the <b>O_NONBLOCK </b>flag when calling <a href="../man2/open.2.html">open(2)</a>,
+       then the call immediately fails with the error <b>EWOULDBLOCK</b>, but the
+       other steps still occur as described above.
+
+       The default signal used to notify the lease holder is <b>SIGIO</b>, but this
+       can be changed using the <b>F_SETSIG </b>command to <b>fcntl</b>().  If a <b>F_SETSIG</b>
+       command is performed (even one specifying <b>SIGIO</b>), and the signal
+       handler is established using <b>SA_SIGINFO</b>, then the handler will
+       receive a <i>siginfo_t</i> structure as its second argument, and the <i>si_fd</i>
+       field of this argument will hold the descriptor of the leased file
+       that has been accessed by another process.  (This is useful if the
+       caller holds leases against multiple files).
+
+   <b>File and directory change notification (dnotify)</b>
+       <b>F_NOTIFY </b>(<i>int</i>)
+              (Linux 2.4 onward) Provide notification when the directory
+              referred to by <i>fd</i> or any of the files that it contains is
+              changed.  The events to be notified are specified in <i>arg</i>,
+              which is a bit mask specified by ORing together zero or more
+              of the following bits:
+
+              <b>DN_ACCESS   </b>A file was accessed (<a href="../man2/read.2.html">read(2)</a>, <a href="../man2/pread.2.html">pread(2)</a>, <a href="../man2/readv.2.html">readv(2)</a>,
+                          and similar)
+              <b>DN_MODIFY   </b>A file was modified (<a href="../man2/write.2.html">write(2)</a>, <a href="../man2/pwrite.2.html">pwrite(2)</a>,
+                          <a href="../man2/writev.2.html">writev(2)</a>, <a href="../man2/truncate.2.html">truncate(2)</a>, <a href="../man2/ftruncate.2.html">ftruncate(2)</a>, and
+                          similar).
+              <b>DN_CREATE   </b>A file was created (<a href="../man2/open.2.html">open(2)</a>, <a href="../man2/creat.2.html">creat(2)</a>, <a href="../man2/mknod.2.html">mknod(2)</a>,
+                          <a href="../man2/mkdir.2.html">mkdir(2)</a>, <a href="../man2/link.2.html">link(2)</a>, <a href="../man2/symlink.2.html">symlink(2)</a>, <a href="../man2/rename.2.html">rename(2)</a> into this
+                          directory).
+              <b>DN_DELETE   </b>A file was unlinked (<a href="../man2/unlink.2.html">unlink(2)</a>, <a href="../man2/rename.2.html">rename(2)</a> to
+                          another directory, <a href="../man2/rmdir.2.html">rmdir(2)</a>).
+              <b>DN_RENAME   </b>A file was renamed within this directory
+                          (<a href="../man2/rename.2.html">rename(2)</a>).
+              <b>DN_ATTRIB   </b>The attributes of a file were changed (<a href="../man2/chown.2.html">chown(2)</a>,
+                          <a href="../man2/chmod.2.html">chmod(2)</a>, <a href="../man2/utime.2.html">utime(2)</a>, <a href="../man2/utimensat.2.html">utimensat(2)</a>, and similar).
+
+              (In order to obtain these definitions, the <b>_GNU_SOURCE </b>feature
+              test macro must be defined before including <i>any</i> header files.)
+
+              Directory notifications are normally "one-shot", and the
+              application must reregister to receive further notifications.
+              Alternatively, if <b>DN_MULTISHOT </b>is included in <i>arg</i>, then
+              notification will remain in effect until explicitly removed.
+
+              A series of <b>F_NOTIFY </b>requests is cumulative, with the events
+              in <i>arg</i> being added to the set already monitored.  To disable
+              notification of all events, make an <b>F_NOTIFY </b>call specifying
+              <i>arg</i> as 0.
+
+              Notification occurs via delivery of a signal.  The default
+              signal is <b>SIGIO</b>, but this can be changed using the <b>F_SETSIG</b>
+              command to <b>fcntl</b>().  (Note that <b>SIGIO </b>is one of the nonqueuing
+              standard signals; switching to the use of a real-time signal
+              means that multiple notifications can be queued to the
+              process.)  In the latter case, the signal handler receives a
+              <i>siginfo_t</i> structure as its second argument (if the handler was
+              established using <b>SA_SIGINFO</b>) and the <i>si_fd</i> field of this
+              structure contains the file descriptor which generated the
+              notification (useful when establishing notification on
+              multiple directories).
+
+              Especially when using <b>DN_MULTISHOT</b>, a real time signal should
+              be used for notification, so that multiple notifications can
+              be queued.
+
+              <b>NOTE: </b>New applications should use the <i>inotify</i> interface
+              (available since kernel 2.6.13), which provides a much
+              superior interface for obtaining notifications of filesystem
+              events.  See <a href="../man7/inotify.7.html">inotify(7)</a>.
+
+   <b>Changing the capacity of a pipe</b>
+       <b>F_SETPIPE_SZ </b>(<i>int</i>; since Linux 2.6.35)
+              Change the capacity of the pipe referred to by <i>fd</i> to be at
+              least <i>arg</i> bytes.  An unprivileged process can adjust the pipe
+              capacity to any value between the system page size and the
+              limit defined in <i>/proc/sys/fs/pipe-max-size</i> (see <a href="../man5/proc.5.html">proc(5)</a>).
+              Attempts to set the pipe capacity below the page size are
+              silently rounded up to the page size.  Attempts by an
+              unprivileged process to set the pipe capacity above the limit
+              in <i>/proc/sys/fs/pipe-max-size</i> yield the error <b>EPERM</b>; a
+              privileged process (<b>CAP_SYS_RESOURCE</b>) can override the limit.
+              When allocating the buffer for the pipe, the kernel may use a
+              capacity larger than <i>arg</i>, if that is convenient for the
+              implementation.  The actual capacity that is set is returned
+              as the function result.  Attempting to set the pipe capacity
+              smaller than the amount of buffer space currently used to
+              store data produces the error <b>EBUSY</b>.
+
+       <b>F_GETPIPE_SZ </b>(<i>void</i>; since Linux 2.6.35)
+              Return (as the function result) the capacity of the pipe
+              referred to by <i>fd</i>.
+
+   <b>File Sealing</b>
+       File seals limit the set of allowed operations on a given file.  For
+       each seal that is set on a file, a specific set of operations will
+       fail with <b>EPERM </b>on this file from now on.  The file is said to be
+       sealed.  The default set of seals depends on the type of the
+       underlying file and filesystem.  For an overview of file sealing, a
+       discussion of its purpose, and some code examples, see
+       <a href="../man2/memfd_create.2.html">memfd_create(2)</a>.
+
+       Currently, only the <i>tmpfs</i> filesystem supports sealing.  On other
+       filesystems, all <a href="../man2/fcntl.2.html">fcntl(2)</a> operations that operate on seals will
+       return <b>EINVAL</b>.
+
+       Seals are a property of an inode.  Thus, all open file descriptors
+       referring to the same inode share the same set of seals.
+       Furthermore, seals can never be removed, only added.
+
+       <b>F_ADD_SEALS </b>(<i>int</i>; since Linux 3.17)
+              Add the seals given in the bit-mask argument <i>arg</i> to the set of
+              seals of the inode referred to by the file descriptor <i>fd</i>.
+              Seals cannot be removed again.  Once this call succeeds, the
+              seals are enforced by the kernel immediately.  If the current
+              set of seals includes <b>F_SEAL_SEAL </b>(see below), then this call
+              will be rejected with <b>EPERM</b>.  Adding a seal that is already
+              set is a no-op, in case <b>F_SEAL_SEAL </b>is not set already.  In
+              order to place a seal, the file descriptor <i>fd</i> must be
+              writable.
+
+       <b>F_GET_SEALS </b>(<i>void</i>; since Linux 3.17)
+              Return (as the function result) the current set of seals of
+              the inode referred to by <i>fd</i>.  If no seals are set, 0 is
+              returned.  If the file does not support sealing, -1 is
+              returned and <i><a href="../man3/errno.3.html">errno</a></i> is set to <b>EINVAL</b>.
+
+       The following seals are available:
+
+       <b>F_SEAL_SEAL</b>
+              If this seal is set, any further call to <a href="../man2/fcntl.2.html">fcntl(2)</a> with
+              <b>F_ADD_SEALS </b>will fail with <b>EPERM</b>.  Therefore, this seal
+              prevents any modifications to the set of seals itself.  If the
+              initial set of seals of a file includes <b>F_SEAL_SEAL</b>, then this
+              effectively causes the set of seals to be constant and locked.
+
+       <b>F_SEAL_SHRINK</b>
+              If this seal is set, the file in question cannot be reduced in
+              size.  This affects <a href="../man2/open.2.html">open(2)</a> with the <b>O_TRUNC </b>flag as well as
+              <a href="../man2/truncate.2.html">truncate(2)</a> and <a href="../man2/ftruncate.2.html">ftruncate(2)</a>.  Those calls will fail with
+              <b>EPERM </b>if you try to shrink the file in question.  Increasing
+              the file size is still possible.
+
+       <b>F_SEAL_GROW</b>
+              If this seal is set, the size of the file in question cannot
+              be increased.  This affects <a href="../man2/write.2.html">write(2)</a> beyond the end of the
+              file, <a href="../man2/truncate.2.html">truncate(2)</a>, <a href="../man2/ftruncate.2.html">ftruncate(2)</a>, and <a href="../man2/fallocate.2.html">fallocate(2)</a>.  These
+              calls will fail with <b>EPERM </b>if you use them to increase the
+              file size.  If you keep the size or shrink it, those calls
+              still work as expected.
+
+       <b>F_SEAL_WRITE</b>
+              If this seal is set, you cannot modify the contents of the
+              file.  Note that shrinking or growing the size of the file is
+              still possible and allowed.  Thus, this seal is normally used
+              in combination with one of the other seals.  This seal affects
+              <a href="../man2/write.2.html">write(2)</a> and <a href="../man2/fallocate.2.html">fallocate(2)</a> (only in combination with the
+              <b>FALLOC_FL_PUNCH_HOLE </b>flag).  Those calls will fail with <b>EPERM</b>
+              if this seal is set.  Furthermore, trying to create new
+              shared, writable memory-mappings via <a href="../man2/mmap.2.html">mmap(2)</a> will also fail
+              with <b>EPERM</b>.
+
+              Setting <b>F_SEAL_WRITE </b>via <a href="../man2/fcntl.2.html">fcntl(2)</a> with <b>F_ADD_SEALS </b>will fail
+              with <b>EBUSY </b>if any writable, shared mapping exists.  Such
+              mappings must be unmapped before you can add this seal.
+              Furthermore, if there are any asynchronous I/O operations
+              (<a href="../man2/io_submit.2.html">io_submit(2)</a>) pending on the file, all outstanding writes
+              will be discarded.
+</pre>
+<h2><a id="RETURN_VALUE" href="#RETURN_VALUE"></a>RETURN VALUE  &nbsp; &nbsp; &nbsp; &nbsp; <a href="#top_of_page"><span class="top-link">top</span></a></h2><pre>
+       For a successful call, the return value depends on the operation:
+
+       <b>F_DUPFD  </b>The new descriptor.
+
+       <b>F_GETFD  </b>Value of file descriptor flags.
+
+       <b>F_GETFL  </b>Value of file status flags.
+
+       <b>F_GETLEASE</b>
+                Type of lease held on file descriptor.
+
+       <b>F_GETOWN </b>Value of descriptor owner.
+
+       <b>F_GETSIG </b>Value of signal sent when read or write becomes possible, or
+                zero for traditional <b>SIGIO </b>behavior.
+
+       <b>F_GETPIPE_SZ</b>, <b>F_SETPIPE_SZ</b>
+                The pipe capacity.
+
+       <b>F_GET_SEALS</b>
+                A bit mask identifying the seals that have been set for the
+                inode referred to by <i>fd</i>.
+
+       All other commands
+                Zero.
+
+       On error, -1 is returned, and <i><a href="../man3/errno.3.html">errno</a></i> is set appropriately.
+</pre>
+<h2><a id="ERRORS" href="#ERRORS"></a>ERRORS  &nbsp; &nbsp; &nbsp; &nbsp; <a href="#top_of_page"><span class="top-link">top</span></a></h2><pre>
+       <b>EACCES </b>or <b>EAGAIN</b>
+              Operation is prohibited by locks held by other processes.
+
+       <b>EAGAIN </b>The operation is prohibited because the file has been memory-
+              mapped by another process.
+
+       <b>EBADF  </b><i>fd</i> is not an open file descriptor
+
+       <b>EBADF  </b><i>cmd</i> is <b>F_SETLK </b>or <b>F_SETLKW </b>and the file descriptor open mode
+              doesn't match with the type of lock requested.
+
+       <b>EBUSY  </b><i>cmd</i> is <b>F_SETPIPE_SZ </b>and the new pipe capacity specified in <i>arg</i>
+              is smaller than the amount of buffer space currently used to
+              store data in the pipe.
+
+       <b>EBUSY  </b><i>cmd</i> is <b>F_ADD_SEALS</b>, <i>arg</i> includes <b>F_SEAL_WRITE</b>, and there
+              exists a writable, shared mapping on the file referred to by
+              <i>fd</i>.
+
+       <b>EDEADLK</b>
+              It was detected that the specified <b>F_SETLKW </b>command would
+              cause a deadlock.
+
+       <b>EFAULT </b><i>lock</i> is outside your accessible address space.
+
+       <b>EINTR  </b><i>cmd</i> is <b>F_SETLKW </b>or <b>F_OFD_SETLKW </b>and the operation was
+              interrupted by a signal; see <a href="../man7/signal.7.html">signal(7)</a>.
+
+       <b>EINTR  </b><i>cmd</i> is <b>F_GETLK</b>, <b>F_SETLK</b>, <b>F_OFD_GETLK</b>, or <b>F_OFD_SETLK</b>, and the
+              operation was interrupted by a signal before the lock was
+              checked or acquired.  Most likely when locking a remote file
+              (e.g., locking over NFS), but can sometimes happen locally.
+
+       <b>EINVAL </b>The value specified in <i>cmd</i> is not recognized by this kernel.
+
+       <b>EINVAL </b><i>cmd</i> is <b>F_ADD_SEALS </b>and <i>arg</i> includes an unrecognized sealing
+              bit.
+
+       <b>EINVAL </b><i>cmd</i> is <b>F_ADD_SEALS </b>or <b>F_GET_SEALS </b>and the filesystem
+              containing the inode referred to by <i>fd</i> does not support
+              sealing.
+
+       <b>EINVAL </b><i>cmd</i> is <b>F_DUPFD </b>and <i>arg</i> is negative or is greater than the
+              maximum allowable value (see the discussion of <b>RLIMIT_NOFILE</b>
+              in <a href="../man2/getrlimit.2.html">getrlimit(2)</a>).
+
+       <b>EINVAL </b><i>cmd</i> is <b>F_SETSIG </b>and <i>arg</i> is not an allowable signal number.
+
+       <b>EINVAL </b><i>cmd</i> is <b>F_OFD_SETLK</b>, <b>F_OFD_SETLKW</b>, or <b>F_OFD_GETLK</b>, and <i>l_pid</i>
+              was not specified as zero.
+
+       <b>EMFILE </b><i>cmd</i> is <b>F_DUPFD </b>and the process already has the maximum number
+              of file descriptors open.
+
+       <b>ENOLCK </b>Too many segment locks open, lock table is full, or a remote
+              locking protocol failed (e.g., locking over NFS).
+
+       <b>ENOTDIR</b>
+              <b>F_NOTIFY </b>was specified in <i>cmd</i>, but <i>fd</i> does not refer to a
+              directory.
+
+       <b>EPERM  </b>Attempted to clear the <b>O_APPEND </b>flag on a file that has the
+              append-only attribute set.
+
+       <b>EPERM  </b><i>cmd</i> was <b>F_ADD_SEALS</b>, but <i>fd</i> was not open for writing or the
+              current set of seals on the file already includes <b>F_SEAL_SEAL</b>.
+</pre>
+<h2><a id="CONFORMING_TO" href="#CONFORMING_TO"></a>CONFORMING TO  &nbsp; &nbsp; &nbsp; &nbsp; <a href="#top_of_page"><span class="top-link">top</span></a></h2><pre>
+       SVr4, 4.3BSD, POSIX.1-2001.  Only the operations <b>F_DUPFD</b>, <b>F_GETFD</b>,
+       <b>F_SETFD</b>, <b>F_GETFL</b>, <b>F_SETFL</b>, <b>F_GETLK</b>, <b>F_SETLK</b>, and <b>F_SETLKW </b>are
+       specified in POSIX.1-2001.
+
+       <b>F_GETOWN </b>and <b>F_SETOWN </b>are specified in POSIX.1-2001.  (To get their
+       definitions, define either <b>_BSD_SOURCE</b>, or <b>_XOPEN_SOURCE </b>with the
+       value 500 or greater, or <b>_POSIX_C_SOURCE </b>with the value 200809L or
+       greater.)
+
+       <b>F_DUPFD_CLOEXEC </b>is specified in POSIX.1-2008.  (To get this
+       definition, define <b>_POSIX_C_SOURCE </b>with the value 200809L or greater,
+       or <b>_XOPEN_SOURCE </b>with the value 700 or greater.)
+
+       <b>F_GETOWN_EX</b>, <b>F_SETOWN_EX</b>, <b>F_SETPIPE_SZ</b>, <b>F_GETPIPE_SZ</b>, <b>F_GETSIG</b>,
+       <b>F_SETSIG</b>, <b>F_NOTIFY</b>, <b>F_GETLEASE</b>, and <b>F_SETLEASE </b>are Linux-specific.
+       (Define the <b>_GNU_SOURCE </b>macro to obtain these definitions.)
+
+       <b>F_OFD_SETLK</b>, <b>F_OFD_SETLKW</b>, and <b>F_OFD_GETLK </b>are Linux-specific (and
+       one must define <b>_GNU_SOURCE </b>to obtain their definitions), but work is
+       being done to have them included in the next version of POSIX.1.
+
+       <b>F_ADD_SEALS </b>and <b>F_GET_SEALS </b>are Lnux-specific.
+</pre>
+<h2><a id="NOTES" href="#NOTES"></a>NOTES  &nbsp; &nbsp; &nbsp; &nbsp; <a href="#top_of_page"><span class="top-link">top</span></a></h2><pre>
+       The errors returned by <a href="../man2/dup2.2.html">dup2(2)</a> are different from those returned by
+       <b>F_DUPFD</b>.
+
+   <b>File locking</b>
+       The original Linux <b>fcntl</b>() system call was not designed to handle
+       large file offsets (in the <i>flock</i> structure).  Consequently, an
+       <b>fcntl64</b>() system call was added in Linux 2.4.  The newer system call
+       employs a different structure for file locking, <i>flock64</i>, and
+       corresponding commands, <b>F_GETLK64</b>, <b>F_SETLK64</b>, and <b>F_SETLKW64</b>.
+       However, these details can be ignored by applications using glibc,
+       whose <b>fcntl</b>() wrapper function transparently employs the more recent
+       system call where it is available.
+
+       The errors returned by <a href="../man2/dup2.2.html">dup2(2)</a> are different from those returned by
+       <b>F_DUPFD</b>.
+
+   <b>Record locks</b>
+       Since kernel 2.0, there is no interaction between the types of lock
+       placed by <a href="../man2/flock.2.html">flock(2)</a> and <b>fcntl</b>().
+
+       Several systems have more fields in <i>struct flock</i> such as, for
+       example, <i>l_sysid</i>.  Clearly, <i>l_pid</i> alone is not going to be very
+       useful if the process holding the lock may live on a different
+       machine.
+
+       The original Linux <b>fcntl</b>() system call was not designed to handle
+       large file offsets (in the <i>flock</i> structure).  Consequently, an
+       <b>fcntl64</b>() system call was added in Linux 2.4.  The newer system call
+       employs a different structure for file locking, <i>flock64</i>, and
+       corresponding commands, <b>F_GETLK64</b>, <b>F_SETLK64</b>, and <b>F_SETLKW64</b>.
+       However, these details can be ignored by applications using glibc,
+       whose <b>fcntl</b>() wrapper function transparently employs the more recent
+       system call where it is available.
+
+   <b>Record locking and NFS</b>
+       Before Linux 3.12, if an NFSv4 client loses contact with the server
+       for a period of time (defined as more than 90 seconds with no
+       communication), it might lose and regain a lock without ever being
+       aware of the fact.  (The period of time after which contact is
+       assumed lost is known as the NFSv4 leasetime.  On a Linux NFS server,
+       this can be determined by looking at <i>/proc/fs/nfsd/nfsv4leasetime</i>,
+       which expresses the period in seconds.  The default value for this
+       file is 90.)  This scenario potentially risks data corruption, since
+       another process might acquire a lock in the intervening period and
+       perform file I/O.
+
+       Since Linux 3.12, if an NFSv4 client loses contact with the server,
+       any I/O to the file by a process which "thinks" it holds a lock will
+       fail until that process closes and reopens the file.  A kernel
+       parameter, <i>nfs.recover_lost_locks</i>, can be set to 1 to obtain the
+       pre-3.12 behavior, whereby the client will attempt to recover lost
+       locks when contact is reestablished with the server.  Because of the
+       attendant risk of data corruption, this parameter defaults to 0
+       (disabled).
+</pre>
+<h2><a id="BUGS" href="#BUGS"></a>BUGS  &nbsp; &nbsp; &nbsp; &nbsp; <a href="#top_of_page"><span class="top-link">top</span></a></h2><pre>
+   <b>F_SETFL</b>
+       It is not possible to use <b>F_SETFL </b>to change the state of the <b>O_DSYNC</b>
+       and <b>O_SYNC </b>flags.  Attempts to change the state of these flags are
+       silently ignored.
+
+   <b>F_GETOWN</b>
+       A limitation of the Linux system call conventions on some
+       architectures (notably i386) means that if a (negative) process group
+       ID to be returned by <b>F_GETOWN </b>falls in the range -1 to -4095, then
+       the return value is wrongly interpreted by glibc as an error in the
+       system call; that is, the return value of <b>fcntl</b>() will be -1, and
+       <i><a href="../man3/errno.3.html">errno</a></i> will contain the (positive) process group ID.  The Linux-
+       specific <b>F_GETOWN_EX </b>operation avoids this problem.  Since glibc
+       version 2.11, glibc makes the kernel <b>F_GETOWN </b>problem invisible by
+       implementing <b>F_GETOWN </b>using <b>F_GETOWN_EX</b>.
+
+   <b>F_SETOWN</b>
+       In Linux 2.4 and earlier, there is bug that can occur when an
+       unprivileged process uses <b>F_SETOWN </b>to specify the owner of a socket
+       file descriptor as a process (group) other than the caller.  In this
+       case, <b>fcntl</b>() can return -1 with <i><a href="../man3/errno.3.html">errno</a></i> set to <b>EPERM</b>, even when the
+       owner process (group) is one that the caller has permission to send
+       signals to.  Despite this error return, the file descriptor owner is
+       set, and signals will be sent to the owner.
+
+   <b>Deadlock detection</b>
+       The deadlock-detection algorithm employed by the kernel when dealing
+       with <b>F_SETLKW </b>requests can yield both false negatives (failures to
+       detect deadlocks, leaving a set of deadlocked processes blocked
+       indefinitely) and false positives (<b>EDEADLK </b>errors when there is no
+       deadlock).  For example, the kernel limits the lock depth of its
+       dependency search to 10 steps, meaning that circular deadlock chains
+       that exceed that size will not be detected.  In addition, the kernel
+       may falsely indicate a deadlock when two or more processes created
+       using the <a href="../man2/clone.2.html">clone(2)</a> <b>CLONE_FILES </b>flag place locks that appear (to the
+       kernel) to conflict.
+
+   <b>Mandatory locking</b>
+       The Linux implementation of mandatory locking is subject to race
+       conditions which render it unreliable: a <a href="../man2/write.2.html">write(2)</a> call that overlaps
+       with a lock may modify data after the mandatory lock is acquired; a
+       <a href="../man2/read.2.html">read(2)</a> call that overlaps with a lock may detect changes to data
+       that were made only after a write lock was acquired.  Similar races
+       exist between mandatory locks and <a href="../man2/mmap.2.html">mmap(2)</a>.  It is therefore
+       inadvisable to rely on mandatory locking.
+</pre>
+<h2><a id="SEE_ALSO" href="#SEE_ALSO"></a>SEE ALSO  &nbsp; &nbsp; &nbsp; &nbsp; <a href="#top_of_page"><span class="top-link">top</span></a></h2><pre>
+       <a href="../man2/dup2.2.html">dup2(2)</a>, <a href="../man2/flock.2.html">flock(2)</a>, <a href="../man2/open.2.html">open(2)</a>, <a href="../man2/socket.2.html">socket(2)</a>, <a href="../man3/lockf.3.html">lockf(3)</a>, <a href="../man7/capabilities.7.html">capabilities(7)</a>,
+       <a href="../man7/feature_test_macros.7.html">feature_test_macros(7)</a>
+
+       <i>locks.txt</i>, <i>mandatory-locking.txt</i>, and <i>dnotify.txt</i> in the Linux kernel
+       source directory <i>Documentation/filesystems/</i> (on older kernels, these
+       files are directly under the <i>Documentation/</i> directory, and <i>mandatory-</i>
+       <i>locking.txt</i> is called <i>mandatory.txt</i>)
+</pre>
+<h2><a id="COLOPHON" href="#COLOPHON"></a>COLOPHON  &nbsp; &nbsp; &nbsp; &nbsp; <a href="#top_of_page"><span class="top-link">top</span></a></h2><pre>
+       This page is part of release 3.79 of the Linux <i>man-pages</i> project.  A
+       description of the project, information about reporting bugs, and the
+       latest version of this page, can be found at
+       <a href="http://www.kernel.org/doc/man-pages/">http://www.kernel.org/doc/man-pages/</a>.
+
+<span class="footline">Linux                            2015-01-22                         FCNTL(2)</span>
+</pre>
+
+<hr class="end-man-text" />
+
+<p class="page-copyright"><a href="../man2/fcntl.2.license.html">Copyright and license for this manual page</a></p> 
+<hr class="start-footer" />
+
+<div class="footer"> 
+
+<table class="colophon-table">
+    <tr>
+    <td class="pub-info">
+        <p>
+            HTML rendering created 2015-02-01
+            by <a href="http://man7.org/mtk/index.html">Michael Kerrisk</a>, 
+            author of 
+            <a href="http://man7.org/tlpi/"><em>The Linux Programming Interface</em></a>, 
+            maintainer of the 
+            <a href="http://www.kernel.org/doc/man-pages/">Linux <em>man-pages</em> project</a>.
+        </p>
+        <p>
+            For details of in-depth
+            <strong>Linux/UNIX system programming training courses</strong>
+            that I teach, look <a href="http://man7.org/training/">here</a>.
+        </p>
+        <p>
+            Hosting by <a href="http://www.jambit.com/">jambit GmbH</a>.
+        </p>
+        <p>
+            <a href="http://validator.w3.org/check?uri=referer">
+            <img src="http://www.w3.org/Icons/valid-xhtml11"
+                alt="Valid XHTML 1.1" height="31" width="88" />
+            </a>
+        </p>
+    </td>
+    <td class="colophon-divider">
+    </td>
+    <td class="tlpi-cover">
+        <a href="http://man7.org/tlpi/"><img src="http://man7.org/tlpi/cover/TLPI-front-cover-vsmall.png" alt="Cover of TLPI" /></a>
+    </td>
+    </tr>
+</table>
+
+</div>
+
+<hr class="end-footer" />
+
+
+
+<!--BEGIN-SITETRACKING-->
+<!-- SITETRACKING.man7.org_linux_man-pages -->
+
+<!-- Start of StatCounter Code (xhtml) -->
+
+<script type="text/javascript">
+//<![CDATA[
+var sc_project=7422636; 
+var sc_invisible=1; 
+var sc_security="9b6714ff"; 
+//]]>
+</script>
+<script type="text/javascript"
+src="http://www.statcounter.com/counter/counter_xhtml.js"></script>
+<noscript><div class="statcounter"><a title="website
+statistics" href="http://statcounter.com/"
+class="statcounter"><img class="statcounter"
+src="http://c.statcounter.com/7422636/0/9b6714ff/1/"
+alt="website statistics" /></a></div></noscript>
+
+<!-- End of StatCounter Code -->
+
+
+<!-- Start of Google Analytics Code -->
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-9830363-8']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+<!-- End of Google Analytics Code -->
+
+<!--END-SITETRACKING-->
+
+</body>
+</html>

@@ -1,0 +1,34 @@
+MOUNT(8)		   UZIX Utilities		 MOUNT(8)
+
+
+NAME
+       mount - mount filesystems
+
+USAGE
+       mount [-r] device path
+
+DESCRIPTION
+       This manual documents the UZIX version of mount. It's been
+       significantly  shortened,   but	not  many  features  have
+       actually been removed. However, there may  be  differences
+       from the GNU version.
+
+       Mount will mount a filesystem  (device)	into  your  local
+       filesystem.  Mount  simply  makes  your	device/filesystem
+       accessable from your system, by placing the tree  of  that
+       filesystem into a subdirectory on your root filesystem.
+
+EXAMPLES
+       For example, I might make the directory /floppy, and  then
+       mount /dev/fd0 as /floppy. I will then be able  to  access
+       and manipulate files from that floppy, and as  soon  as	I
+       cd into /floppy, I know I am accessing the floppy disk.
+
+OPTIONS
+       -r Mount a filesystem in read-only mode.
+
+AUTHORS
+       Program :- David I. Bell <dbell@pdact.pd.necisa.oz.au>
+       Documentation :- Michael Strates <mstrates@croftj.net>
+
+MOUNT(8)		   UZIX Utilities		 MOUNT(8)

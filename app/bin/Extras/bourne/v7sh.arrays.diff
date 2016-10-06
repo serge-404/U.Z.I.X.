@@ -1,0 +1,69 @@
+diff -Naur v7sh-oldarrays/defs.h v7sh-newarrays/defs.h
+--- v7sh-oldarrays/defs.h	2005-03-07 12:14:27.000000000 +0100
++++ v7sh-newarrays/defs.h	2009-01-11 21:09:13.000000000 +0100
+@@ -137,7 +137,7 @@
+ extern MSG	synmsg;
+ 
+ /* name tree and words */
+-extern SYSTAB	reserved;
++extern SYSTAB	reserved[];
+ int wdval;
+ int wdnum;
+ ARGPTR	wdarg;
+@@ -363,7 +363,7 @@
+ void	stdsigs(void);
+ unsigned long stoi(STRING icp);
+ void	subst(int in, int ot);
+-int	syslook(STRING w, SYSTAB syswds);
++int	syslook(STRING w, SYSTAB syswds[]);
+ int	tmpfil(void);
+ void	trim(STRING at);
+ DOLPTR	useargs(void);
+diff -Naur v7sh-oldarrays/mode.h v7sh-newarrays/mode.h
+--- v7sh-oldarrays/mode.h	2005-03-07 08:45:19.000000000 +0100
++++ v7sh-newarrays/mode.h	2009-01-11 21:09:13.000000000 +0100
+@@ -33,7 +33,7 @@
+ typedef struct swnod *SWPTR;
+ typedef struct sysnod *SYSPTR;
+ typedef struct sysnod SYSNOD;
+-typedef struct sysnod SYSTAB[];
++typedef struct sysnod SYSTAB;
+ typedef struct trenod *TREPTR;
+ typedef struct whnod *WHPTR;
+ 
+diff -Naur v7sh-oldarrays/msg.c v7sh-newarrays/msg.c
+--- v7sh-oldarrays/msg.c	2003-06-09 09:26:21.000000000 +0200
++++ v7sh-newarrays/msg.c	2009-01-11 21:09:13.000000000 +0100
+@@ -108,7 +108,7 @@
+ MSG	export = "export";
+ MSG	readonly = "readonly";
+ 
+-SYSTAB	commands = {
++SYSTAB	commands[] = {
+ 	{ "cd", 	SYSCD },
+ 	{ "read", 	SYSREAD },
+ /*	{ "[", 		SYSTST},	*/
+diff -Naur v7sh-oldarrays/name.c v7sh-newarrays/name.c
+--- v7sh-oldarrays/name.c	2003-06-09 22:43:47.000000000 +0200
++++ v7sh-newarrays/name.c	2009-01-11 21:09:13.000000000 +0100
+@@ -24,7 +24,7 @@
+ /* ========	variable and string handling	======== */
+ 
+ int
+-syslook(STRING w, SYSTAB syswds)
++syslook(STRING w, SYSTAB syswds[])
+ {
+ 	char first;
+ 	STRING	s;
+diff -Naur v7sh-oldarrays/xec.c v7sh-newarrays/xec.c
+--- v7sh-oldarrays/xec.c	2003-11-10 23:45:25.000000000 +0100
++++ v7sh-newarrays/xec.c	2009-01-11 21:09:13.000000000 +0100
+@@ -8,7 +8,7 @@
+ #include "defs.h"
+ #include "sym.h"
+ 
+-extern SYSTAB commands;
++extern SYSTAB commands[];
+ 
+ static int parent;
+ 

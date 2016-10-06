@@ -1,0 +1,294 @@
+SASH(1) 	      UZIX Utility Utilities		  SASH(1)
+
+
+NAME
+       sash - stand-alone shell with built-in commands
+
+USAGE
+       sash
+
+DESCRIPTION
+       The  sash  program  is a stand-alone shell.
+
+       Sash  can  execute  external  programs,	as  in any shell.
+       There are no restrictions on these commands.Also, external
+       programs can be runned  in  background  if called with the
+       last argument being a "&".
+
+       More importantly, however, is that many	of  the  standard
+       system commands are built-in to sash.  These built-in com-
+       mands are:
+
+	    chgrp, chmod, chown, cmp, cp, dd, echo,
+	    ed, grep, kill, ln, ls, mkdir, mknod,
+	    more, mount, mv, printenv, pwd, rm, rmdir,
+	    sync, tar, touch, umount
+
+       These commands are generally similar to the standard  pro-
+       grams  with  similar names.  However, they are simpler and
+       cruder than the external programs,  and	so  many  of  the
+       options	are  not  implemented.	The restrictions for each
+       built-in command are described later.
+
+       For  any  command,   filenames	are   expanded	 so  that
+       asterisks, question marks, and characters inside of square
+       brackets  are  recognised  and  are expanded.  However, no
+       other command line processing is performed.  This includes
+       quoting	of arguments, specifying of file redirection, and
+       the specifying of a pipeline.
+
+       The "help" command will list all of the built-in  commands
+       in sash.Note that sash can be compiled only with a part of
+       all builtin commands, due to memory usage problems.Use the
+       "help"	command  to  know  what  built-in  commands   are
+       available.
+
+COMMANDS
+       alias [name [command] ]
+	      If name and command are provided, this defines an
+	      alias  for a command with the specified name, which
+	      executes the specified command, with possible argu-
+	      ments.   If just name is provided, then the defini-
+	      tion of the specified command alias  is  displayed.
+	      If nothing is provided, then the definitions of all
+	      aliases are displayed.   When  defining  an  alias,
+	      wildcards are not expanded.
+
+       cat filenames
+	      Type out the contents of the  specified  filenames.
+
+       cd [dirname]
+	      If dirname is provided, then the current directory
+	      is changed to the dirname.  If dirname is  absent,
+	      then the current directory is changed to the user's
+	      home directory  (value  of  the  $HOME  environment
+	      variable).
+
+       chgrp gid filename ....
+	      Change  the  group  id  for  the	specified list of
+	      files.  The gid can either be a group  name,  or	a
+	      decimal value.
+
+       chmod mode filename ....
+	      Change  the  mode  of  the specified list of files.
+	      The mode argument can only be an octal value.
+
+       chown uid filename ....
+	      Change the owner	id  for  the  specified  list  of
+	      files.   The uid can  either be a user name, or a
+	      decimal value.
+
+       cmp filename filename
+	      Determines whether or not the  specified	filenames
+	      have  identical data.  This says that the files are
+	      links to each other, are different sizes, differ at
+	      a particular byte number, or are identical.
+
+       cp srcname ... destname
+	      Copies  one  or  more files from the srcname to the
+	      destname.  If more than one srcname is given, or if
+	      destname	is a directory, then all the srcnames are
+	      copied into the destname directory  with	the  same
+	      names as the srcnames.
+
+       dd if=source of=dest [bs=n] [count=n] [skip=n] [seek=n]
+	      Copy  data from one file to another with the speci-
+	      fied parameters.	The if and of arguments  must  be
+	      provided,  so stdin and stdout cannot be specified.
+	      The bs argument is the block size, and is a numeric
+	      value  (which defaults to 512 bytes). Count is the
+	      number of blocks to be copied  (which  defaults  to
+	      end  of file for the input file).  Skip is the num-
+	      ber of blocks to ignore  before  copying	(seek  is
+	      used  if	possible, and the default is 0). Seek is
+	      the number of blocks to seek  in	the  output  file
+	      before  writing  (and  defaults  to 0).  Any of the
+	      numeric decimal values can have one or more  trail-
+	      ing  letters  from  the set 'kbw', which multiplies
+	      the value by 1024, 512, and  2  respectively.   The
+	      command  reports the number of full blocks read and
+	      written, and whether or not any partial  block  was
+	      read or written.
+
+       echo [args] ....
+	      Echo the arguments to the echo command.  Wildcards
+	      are expanded, so this is convenient to get a  quick
+	      list  of	filenames  in a directory.  The output is
+	      always terminated with a newline.
+
+       ed [filename]
+	      Edit the specified file using  line-mode	commands.
+	      The following ed commands are provided: = c r w i a
+	      d p l s f k z and q.   Line  numbers  can  be  con-
+	      stants,  ".", "$", "'x", /string/ and simple arith-
+	      metic combinations of these.  The  substitute  com-
+	      mand and the search expression can only use literal
+	      strings.	There are some small differences  in  the
+	      way that some commands behave.
+
+       exec filename [args]
+	      Execute  the  specified  program with the specified
+	      arguments.  This replaces sash completely  by  the
+	      executed program.
+
+       exit   Quit from sash
+
+       grep [-i] word filename ....
+	      Display  lines of the specified files which contain
+	      the given word.  If only	one  filename  is  given,
+	      then  only the matching lines are printed.  If mul-
+	      tiple filenames are given, then the  filenames  are
+	      printed  along  with the matching lines. Word must
+	      be a single word, (ie, not a  regular  expression).
+	      If -i is given, then case is ignored when doing the
+	      search.  If -n is given, then the line  numbers  of
+	      the matching lines are also printed.
+
+       help   Displays a list of available built-in commands.
+
+       kill [-signal] pid ....
+	      Sends the specified signal to the specified list of
+	      processes.  Signal is a numberic value, or  one  of
+	      the special values HUP, INT, QUIT, or KILL.
+
+       ln [-s] srcname .... destname
+	      Links  one  or  more  files from the srcname to the
+	      specified destname.  If  there  are  multiple  src-
+	      names, or destname is a directory, then the link is
+	      put in the destname directory with the same name as
+	      the source name.	The default links are hard links.
+	      Using -s makes symbolic links.  For symbolic links,
+	      only one srcname can be specified.
+
+       ls [-lid] filename ....
+	      Display information about the specified filesnames,
+	      which may be directories. sash can be compiled with
+	      two tipes os built-in ls command: a simple ls and a
+	      more complex ls. For  the  simple  ls,  the  normal
+	      listing is simply a list	of  filenames,	each  one
+	      followed by a classification character (* for execu
+	      tables, @ for soft links and / for directories).The
+	      only option available is -la, that produces a  long
+	      listing with size, permissions, links,  inode   and
+	      filename. Otherwise, for the more complex ls  built
+	      in command, the  normal  listing is simply  a  list
+	      of  filenames,  one per line. The options available
+	      are  -l,	-i,  and  -d.	The  -l  option  produces
+	      a  long  listing given the normal 'ls' information.
+	      The -i option also displays  the	inode  numbers of
+	      the files. The -d option displays information about
+	      a directory, instead of the files within it.
+
+       mkdir dirname ....
+	      Creates  the  specified directories.  They are cre-
+	      ated with the default permissions.
+
+       mknod filename type major minor
+	      Creates a special device node, either  a	character
+	      file  or a block file. Filename is the name of the
+	      node.  Type is either 'c' or  'd'. Major is the
+	      major  device  number. Minor is the minor device
+	      number.  Both of these numbers are decimal.
+
+       more filename ....
+	      Type out the contents of the  specified  filenames,
+	      one  page  at a time.  For each page displayed, you
+	      can type 'n' to go to the  next  file, 'p' to go to
+	      the previous file,space bar to go to the next page,
+	      return to go to the next line or 'q'  to	quit  the
+	      command completely.
+
+       mount [-r] devname dirnaem
+	      Mount a filesystem on a  directory  name.   The  -r
+	      option  specifies   that	the  filesystem  must  be
+	      mounted as read-only.
+
+       mv srcname .... destname
+	      Moves one or more files from  the  srcname  to  the
+	      destname.   If  multiple	srcnames are given, or if
+	      destname is a  directory,  then  the  srcnames  are
+	      copied into the destination directory with the same
+	      names  as  the  srcnames.   Renames  are	attempted
+	      first, but if this fails because of the files being
+	      on different filesystems, then a copies and deletes
+	      are done instead.
+
+       printenv [name]
+	      If name is not given, this prints out the values of
+	      all the current environment variables.  If name  is
+	      given, then only that environment variable value is
+	      printed.
+
+       prompt [word] ....
+	      Sets the prompt string  that  is	displayed  before
+	      reading  of  a command.  A space is always added to
+	      the specified prompt.
+
+       pwd
+	      Prints the current working directory.
+
+       quit
+	      Exits from sash.
+
+       rm filename ....
+	      Removes one or more files.
+
+       rmdir dirname ....
+	      Removes one or more directories.	 The  directories
+	      must be empty for this to be successful.
+
+       setenv name value
+	      Set the value of an environment variable.
+
+       source filename
+	      Execute  commands which are contained in the speci-
+	      fied filename.
+
+       sync
+	      Do a "sync" system call to force dirty  blocks  out
+	      to the disk.
+
+       tar [-xtvf] devname [filename] ....
+	      List  or	restore  files	from a tar archive.  This
+	      command can only read tar files, not  create  them.
+	      The  available options are xtvf.	The f option must
+	      be specified, and accepts a  device  or  file  name
+	      argument	which  contains  the  tar archive.  If no
+	      filename is given, all files  in	the  archive  are
+	      listed  or  extracted.  Otherwise, only those files
+	      starting with the  specified  filenames  are  done.
+	      Leading  slashes	in  the tar archive filenames are
+	      removed.
+
+       touch filename ....
+	      Updates the modify times of the specifed files.  If
+	      a file does not exist, then it will be created with
+	      the default protection.
+
+       umask [mask]
+	      If mask is given, sets the "umask" value	used  for
+	      initializing   the  permissions  of  newly  created
+	      files.  If mask is  not  given,  then  the  current
+	      umask  value  is	printed.   The	mask  is an octal
+	      value.
+
+       umount filename
+	      Unmounts a file system.  The filename can either be
+	      the  device  name  which	is  mounted,  or else the
+	      directory name which the	file  system  is  mounted
+	      onto.
+
+       unalias name
+	      Remove the definition for the specified alias.
+
+AUTHORS
+       David I. Bell <dbell@pdact.pd.necisa.oz.au>
+       :- Original sash code
+       Archi Schekochikhin <ARCHI@vlepp.serpukhov.su>
+       :- Porting to UZIX
+       Adriano C. R. da Cunha <adrcunha@dcc.unicamp.br>
+       :- Porting to UZIX, documentation
+       Michael Strates <mstrates@croftj.net>
+       :- Documentation
+
+SASH(1) 	      UZIX Utility Utilities		  SASH(1)

@@ -1,0 +1,39 @@
+TOUCH(1)	       UZIX File Utilities		 TOUCH(1)
+
+
+NAME
+       touch - change file timestamps
+
+USAGE
+       touch [-c] [-d time] [-m] filenames
+
+DESCRIPTION
+       This manual documents the   UZIX   version  of touch. It's
+       been significantly  scaled  down for inclusion in the UZIX
+       release, and doesn't have the  help  or	version  commands
+       included in the GNU release.
+
+       Touch changes the timestamp on files. Files  that  do  not
+       exist are created empty.
+
+OPTIONS
+       -c do not create files that do not exist.
+
+       -d {time} Use {time} instead of the current time.Time must
+       be in the form HH:MM:SS DD/MM/YY. Values don't need to  be
+       2 digits exaclty. The hour vary from 0 to 23 and year  can
+       also be 4 digits.
+
+       -m change the modification time only.
+
+BUGS
+       This version  has  been	scaled	down  a  little  bit  for
+       inclusion in the UZIX. Many options are missing from  this
+       release, that many would expect from the GNU versions.
+
+AUTHORS
+       Program :- Archi Shekochikhin <ARCHI@vlepp.serpukhov.su>
+		  Adriano R. da Cunha <adrcunha@dcc.unicamp.br>
+       Documentation :- Michael Strates <mstrates@croftj.net>
+
+TOUCH(1)	       UZIX File Utilities		 TOUCH(1)

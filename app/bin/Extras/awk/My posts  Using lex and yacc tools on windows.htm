@@ -1,0 +1,163 @@
+
+  Viswanath <http://vposts.blogspot.ru/>
+
+
+    It's My Show Case
+
+  * Home <http://v4viswanath.blogspot.com>
+  * Profile <http://vposts.blogspot.com/2009/11/my-profile.html>
+  * Design Zone <http://vposts.blogspot.com/2010/01/design-zone.html>
+  * Coding Zone <http://vposts.blogspot.com/2009/11/my-java-world.html>
+  * RSS <http://vposts.blogspot.ru/feeds/posts/default>
+
+
+      Using lex and yacc tools on windows
+      <http://vposts.blogspot.ru/2012/09/using-lex-and-yacc-tools-on-windows_7.html>
+
+
+
+Recently I came accross a situation where I have to use Lex tools for
+writing lexical analyzers. Generally these tools are avilable on most of
+the standard UNIX based operating sustems. But I use Windows Operating
+system. So, I just wanted to share my experience of installing them,
+writing sample programs and compiling them and executing them.
+
+* *
+*Let me first start with how to install them on your windows machine...*
+
+(1) Download Flex <http://gnuwin32.sourceforge.net/packages/flex.htm>
+(Free implementations of LEX library), Bison
+<http://gnuwin32.sourceforge.net/packages/bison.htm> (Free
+implementation of Bison library) and  Dev-CPP
+<http://www.bloodshed.net/dev/devcpp.html>
+(2) Install them on your machine (Note: *without spaces in the name of
+the directory*)  
+(3)Set PATH variable to include bin directories of Flex, Bison, gcc
+
+
+*Now compiling .l and .y files and generating .exe file... *
+
+*||*Open your command prompt and  go to directory where you lex and yacc
+files are located and run below commands
+
+(1) flex  filename.l
+           ===> it generates *lex.yy.c* file
+(2) bison filename.y
+           ===> it generates *y.tab.c *and *y.tab.h* file
+(3) gcc lex.yy.c y.tab.c -o test.exe
+           ===> it generates executable file (.exe)
+*Note:  *You can run gcc command only with lex.yy.c file also. ex: gcc
+lex.yy.c -o .exe
+
+*
+Sample lex file (whitespace.l):*
+* *
+
+non_white [^ \t\n]*
+%%
+
+{non_white} ECHO;
+.  ;
+[\n]  ;
+
+%%
+
+int yywrap(void)
+{
+    return 0;
+}
+
+int main(void)
+{
+    yylex();
+    return 0;
+}
+
+*
+Sample lex file (lexicalAnalyzer.l):*
+* *
+
+DIGIT [0-9]
+ID [a-z][a-z0-9]*
+%%
+char|int|float|double|main|void|real|printf|for|while|do   printf("keyword=%s\n",yytext);
+{DIGIT}   printf("integer %s\n",yytext);
+{ID}+     printf("identifier %s\n",yytext);
+{DIGIT}+"."{DIGIT}*   printf("floating point number:%s\n",yytext);
+[=|!=|>=|<=|<|>|+|-|*|/]    printf("operator %s\n",yytext);
+[(]     printf("openparenthesis %s\n",yytext);
+[)]    printf("closeparenthesis %s\n",yytext);
+[{]    printf("open bbrace is %s\n",yytext);
+[}]   printf("close braceis %s\n",yytext);
+[;]   printf("eos %s\n",yytext);
+[\t\n]+     /*eat up whitesapaces */
+["{"|^}\n]*"}"]      /*eat up comments */
+["|,|.]         printf("punctaation :%s \n",yytext);
+%%
+
+main()
+{
+yylex();
+}
+int yywrap()
+{
+return 1;
+}
+
+3:33 AM | Category: | 0 comments
+<http://vposts.blogspot.ru/2012/09/using-lex-and-yacc-tools-on-windows_7.html#comment-form>
+
+
+
+  Comments (0)
+
+
+      Post a Comment
+
+Older Post
+<http://vposts.blogspot.ru/2012/01/creating-namespaces-in-javascript.html>
+Home <http://vposts.blogspot.ru/>
+
+
+    Blog Archive
+
+  * ▼  <javascript:void(0)> 2012
+    <http://vposts.blogspot.ru/search?updated-min=2012-01-01T00:00:00-08:00&updated-max=2013-01-01T00:00:00-08:00&max-results=2>
+    (2)
+      o ▼  <javascript:void(0)> September
+        <http://vposts.blogspot.ru/2012_09_01_archive.html> (1)
+          + Using lex and yacc tools on windows
+            <http://vposts.blogspot.ru/2012/09/using-lex-and-yacc-tools-on-windows_7.html>
+      o ►  <javascript:void(0)> January
+        <http://vposts.blogspot.ru/2012_01_01_archive.html> (1)
+
+  * ►  <javascript:void(0)> 2011
+    <http://vposts.blogspot.ru/search?updated-min=2011-01-01T00:00:00-08:00&updated-max=2012-01-01T00:00:00-08:00&max-results=1>
+    (1)
+      o ►  <javascript:void(0)> November
+        <http://vposts.blogspot.ru/2011_11_01_archive.html> (1)
+
+  * ►  <javascript:void(0)> 2010
+    <http://vposts.blogspot.ru/search?updated-min=2010-01-01T00:00:00-08:00&updated-max=2011-01-01T00:00:00-08:00&max-results=18>
+    (18)
+      o ►  <javascript:void(0)> May
+        <http://vposts.blogspot.ru/2010_05_01_archive.html> (7)
+      o ►  <javascript:void(0)> April
+        <http://vposts.blogspot.ru/2010_04_01_archive.html> (4)
+      o ►  <javascript:void(0)> January
+        <http://vposts.blogspot.ru/2010_01_01_archive.html> (7)
+
+  * ►  <javascript:void(0)> 2009
+    <http://vposts.blogspot.ru/search?updated-min=2009-01-01T00:00:00-08:00&updated-max=2010-01-01T00:00:00-08:00&max-results=6>
+    (6)
+      o ►  <javascript:void(0)> December
+        <http://vposts.blogspot.ru/2009_12_01_archive.html> (3)
+      o ►  <javascript:void(0)> November
+        <http://vposts.blogspot.ru/2009_11_01_archive.html> (3)
+
+<//www.blogger.com/rearrange?blogID=5490094840375607687&widgetType=BlogArchive&widgetId=BlogArchive1&action=editWidget&sectionId=sidebar1>
+
+rss <http://vposts.blogspot.ru/feeds/posts/default>
+
+© Copyright 2009. All right reserved.
+

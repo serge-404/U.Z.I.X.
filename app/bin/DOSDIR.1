@@ -1,0 +1,41 @@
+DOSDIR(1)		  UZIX Utilities		DOSDIR(1)
+
+
+NAME
+       dosdir - list an MS(X)-DOS directory
+
+USAGE
+       dosdir [-lr] drive
+
+DESCRIPTION
+       dosdir reads standard IBM PC / MSX diskettes or hard  disk
+       partitions in MS(X)-DOS format and lists their contents on
+       standard output. Directory names should contain slashes to
+       separate components,even though MS(X)-DOS uses backslashes
+
+       The names dosdir, dosread and doswrite and dosdel are  all
+       links to the same program. The program sees which function
+       to perform by seeing how it was called.
+
+       A drive code of A causes the program to use /dev/dosA, for
+       example, a link to /dev/fd0.  Similarly, to have hard disk
+       partition 1 be DOS drive C, /dev/dosC could be a  link  to
+       /dev/hd1, and so on for other drive codes. A normal device
+       name may also be used instead of a drive code. And,  also,
+       a drive code of A: causes the  program  to  use  /dev/fd0.
+       Similarly, a drive code of C: causes the  program  to  use
+       /dev/fd2.
+
+OPTIONS
+       -l     Long listing.
+
+       -r     Recursively descend and print subdirectories.
+
+SEE ALSO
+       dosread(1), doswrite(1), dosdel(1), cr(1), ncr(1)
+
+AUTHORS
+       Program :- Michiel Huisjes
+       Documentation :- Adriano Cunha <adrcunha@dcc.unicamp.br>
+
+DOSDIR(1)		  UZIX Utilities		DOSDIR(1)

@@ -1,0 +1,141 @@
+TOP(1)			    UZIX Utilities		   TOP(1)
+
+
+NAME
+       top - display top CPU processes
+
+USAGE
+       top [-d delay][-q][-s][-i]
+
+DESCRIPTION
+       This manual documents  the  UZIX version of top. It's been
+       significantly  scaled  down  for  inclusion  in	the  UZIX
+       release. Also, some options are missing.
+
+       top provides an ongoing look at processor activity in real
+       time.  It displays a listing  of  the  most  CPU-intensive
+       tasks on the system, and can provide an interactive inter-
+       face for manipulating processes. Most features  can either
+       be selected by an interactive command. See below for  more
+       information.
+
+OPTIONS
+       d    Specifies  the delay between screen updates.  You can
+	    change this with the s interactive command.
+
+       q    This causes top to refresh without any delay.
+
+       s    Tells top to run in secure mode.  This  disables  the
+	    potentially  dangerous  of	the  interactive commands
+	    (see below).  A secure top is a nifty thing to  leave
+	    running on a spare terminal.
+
+       i    Start  top ignoring any idle or zombie processes. See
+	    the interactive command i below.
+
+FIELD DESCRIPTIONS
+       top displays a variety of information about the	processor
+       state.  The display is updated every 5 seconds by default,
+       but you can change that with the d command-line option  or
+       the s interactive command.
+
+       processes
+	    The  total number of processes running at the time of
+	    the last update.  This is also broken down	into  the
+	    number of tasks which are running, sleeping, stopped,
+	    or undead. The processes display  may  be  toggled by
+	    the t interactive command.
+
+       Mem  Statistics on memory usage, including total available
+	    memory, free memory, used memory and  kernel  memory.
+	    The display of memory information may be  toggled  by
+	    the m interactive command.
+
+       PID  The process ID of each task.
+
+       PPID The parent process ID of each task.
+
+       USER The user name of the task's owner.
+
+       SIZE The  size  of  the	task's	code plus data plus stack
+	    space, in kilobytes, is shown here.
+
+       STAT The state of the task is shown  here.  The	state  is
+	    either sleeping,  running,	zombie,  forking,  ready,
+	    paused or wainting for.
+
+       WCHAN
+	    depending	 on    the    availablity    of    either
+	    /boot/psdatabase or the kernel  link  map  /boot/Sys-
+	    tem.map  this  shows  the  address or the name of the
+	    kernel function the task currently is sleeping in.
+
+       TIME Total CPU time the task has used  since  it  started.
+
+       %CPU The  task's  share	of  the  CPU  time since the last
+	    screen update, expressed as a percentage of total CPU
+	    time.
+
+       %MEM The task's share of the physical memory.
+
+       COMMAND
+	    The  task's  command name.
+
+INTERACTIVE COMMANDS
+       Several	single-key  commands  are recognized while top is
+       running.  Some are disabled if the s option has been given
+       on the command line.
+
+       ^L   Clear the screen.
+
+       h or ?
+	    Displays a help screen giving a brief summary of com-
+	    mands.
+
+       k    Kill  a process.  You will be prompted for the PID of
+	    the task, and the signal to send to it.  For a normal
+	    kill, send signal 15.  For a sure, but rather abrupt,
+	    kill, send signal 9.  The  default	signal,  as  with
+	    kill(1),  is 15, SIGTERM.  This command is not avail-
+	    able in secure mode.
+
+       i    Ignore idle and zombie processes.  This is	a  toggle
+	    switch.
+
+       n or #
+	    Change  the number of processes to show.  You will be
+	    prompted to enter the number.  This  overrides  auto-
+	    matic  determination  of  the  number of processes to
+	    show, which is based on window size measurement.   If
+	    0  is specified, then top will show as many processes
+	    as will fit on the screen; this is the default.
+
+       q    Quit.
+
+       s    Change  the  delay	between  updates.   You  will  be
+	    prompted to enter the delay time, in seconds, between
+	    updates.  Entering	 0   causes  continuous  updates.
+	    The default value is 5 seconds.  Note that low values
+	    cause nearly unreadably fast  displays,  and  greatly
+	    raise  the	load.	This  command is not available in
+	    secure mode.
+
+       m    toggle display of memory information.
+
+       t    toggle  display  of processes summary.
+
+NOTES
+       %CPU shows the cputime/realtime percentage in  the  period
+       of  time  process was running.
+
+BUGS
+       This version  has  been	scaled	down  a  little  bit  for
+       inclusion in the UZIX. Many options are missing from  this
+       release, that many would expect from other top versions.
+
+AUTHORS
+       Program :- Adriano R. da Cunha <adrcunha@dcc.unicamp.br>
+       Documentation :- Adriano Cunha <adrcunha@dcc.unicamp.br>
+
+TOP(1)			    UZIX Utilities		   TOP(1)
+

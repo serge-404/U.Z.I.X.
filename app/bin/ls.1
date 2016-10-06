@@ -1,0 +1,74 @@
+LS(1)			   UZIX File Utilities		    LS(1)
+
+
+NAME
+       ls - list contents of directories
+
+SYNOPSIS
+       ls [-dilfaouRF] [name...]
+
+DESCRIPTION
+       This manual documents the UZIX version  of  ls.	It's been
+       significantly  scaled  down  for  inclusion  in	the  UZIX
+       release, and doesn't have the  help  or	version  commands
+       included in the GNU release.Also,many options are missing.
+
+       ls list each given  file  or  directory	name.	Directory
+       contents are sorted alphabetically.  Files are by  default
+       listed in columns, sorted horizontally,	if  the  standard
+       output is a terminal.
+
+OPTIONS
+       -a
+	      List all files in directories, including all  files
+	      that start with `.'.
+
+       -d
+	      List  directories  like  other  files,  rather than
+	      listing their contents.
+
+       -f     Do  not  sort  directory	contents;  list  them  in
+	      whatever	order  they  are stored on the disk.
+
+       -i
+	      Print the index number of each file to the left  of
+	      the file name.
+
+       -l
+	      In  addition  to	the  name of each file, print the
+	      file type, permissions, number of hard links, owner
+	      name, group name, size in bytes, and timestamp (the
+	      modification time unless other times are selected).
+	      For  files  with	a time that is more than 6 months
+	      old or more than 1 hour into the future, the times-
+	      tamp  contains the year instead of the time of day.
+
+       -o
+	      Presents file permissions (if -l option)	in  octal
+	      mode, not in symbolic mode.
+
+       -F
+	      Append a character to each file name indicating the
+	      file type.  For regular files that are  executable,
+	      append a `*'.  The file type indicators are `/' for
+	      directories, `@' for symbolic links, `|' for FIFOs,
+	      `=' for sockets, and nothing for regular files.
+
+       -R
+	      List the contents of all directories recursively.
+
+       -u
+	      Do not sort directory contents; list them in  what-
+	      ever  order  they  are  stored  on  the disk.
+
+BUGS
+       This version  has  been	scaled	down  a  little  bit  for
+       inclusion in the UZIX. Many options are missing from  this
+       release, that many would expect from the GNU versions.
+
+AUTHORS
+       Program :- David I. Bell <dbell@pdact.pd.necisa.oz.au>
+       Documentation :- Adriano Cunha <adrcunha@dcc.unicamp.br>
+
+LS(1)			   UZIX File Utilities		    LS(1)
+

@@ -1,0 +1,145 @@
+
+  Running lex and yacc on Linux systems
+
+
+    Student accounts
+
+An account has been created for all CS315 students on
+knuth.ug.bcc.bilkent.edu.tr. As soon as possible, you should login into
+your account with your initial password and change it by using the
+*passwd* command. You should be able to use any ssh client from Windows
+or Linux machines available in student labs.
+
+
+    Editing files
+
+*emacs* and *vi* editors are available on knuth and can be used to edit
+your lex and yacc source files. If you have your own Linux machine or
+another environment within which you have lex and yacc installed, you
+can use your favorite text editor to work on your project.
+
+In some version of linux (e.g., Mandrake) |lex| is called |flex|.
+
+
+    Compiling Standalone lex programs
+
+Normally, lex and yacc are used together. However, it is possible to use
+only lex and create programs that just do lexical analysis. There are
+two ways of doing this:
+
+ 1. If you do not need to include your own custom |main()| in your code,
+    put the following line at the beginning of your lex specification file:
+
+        %option main
+      
+
+    This makes sure that a default main() and yywrap() are created for you.
+    Suppose you have a lex specification file called *example.l*. You
+    can use the following commands to obtain an executable and run it:
+
+        
+        lex example.l
+        gcc -o example lex.yy.c
+        ./example
+        
+      
+
+ 2. If you want to define a more complex main function, you will also
+    need to define |yywrap()| in your code. In the simplest case, your
+    lex specification file should look like the following:
+
+        
+        /...definitions.../
+        %%
+        /...rules.../
+        %%
+        /...additional user code.../
+
+        main() {
+          yylex();
+        }
+        int yywrap() { return 1; }
+        
+      
+
+    You can compile your specification file with the same method as before.
+
+
+    Using lex and yacc together
+
+Once again, there are a number of different ways you can build your lex
+and yacc specification files with a varying degree of customization.
+Here are a few notes:
+
+  * /*Do not*/ include %option main in your lex specification file. This
+    will cause a default main to be created only for lex and the yacc
+    source will be ignored.
+  * Since you will not be using the default routines provided by %option
+    main, you have to include the definition of yywrap() in your *lex
+    specification* file. A simple example would look like this:
+
+        
+        /...definitions.../
+        %%
+        /...rules.../
+        %%
+        /...additional user code.../
+
+        int yywrap() { return 1; }
+        
+      
+
+  * Since on some Linux systems, default libraries are not provided for
+    yacc, we recommend that you define your own main() and yyerror()
+    functions in your *yacc specification* file. So, the following would
+    be a simple yacc specification file which does this:
+
+        
+        /...declarations.../
+        %%
+        /...rules.../
+        %%
+        /...additional user code.../
+
+        main() {
+          return yyparse();
+        }
+        int yyerror( char *s ) { fprintf( stderr, "%s\n", s); }
+        
+      
+
+  * For large projects, you could compile lex.yy.c and y.tab.c and link
+    them afterwards. However, for simple cases (and most likely your
+    projects), you could directly include lex.yy.c in the user code
+    section of your *yacc specification*. Your yacc specification would
+    then look something like the following:
+
+        
+        /...declarations.../
+        %%
+        /...rules.../
+        %%
+        #include "lex.yy.c"
+
+        /...additional user code.../
+
+        main() {
+          return yyparse();
+        }
+        int yyerror( char *s ) { fprintf( stderr, "%s\n", s); }
+        
+      
+
+  * These custom definitions eliminate the need to link any external
+    libraries. So, assuming your have the specification files
+    *example.l* and *example.y*, the following commands would get you a
+    nice executable which hopefully does what you want:
+
+        
+          lex example.l
+          yacc example.y
+          gcc -o example y.tab.c
+          ./example
+        
+      
+

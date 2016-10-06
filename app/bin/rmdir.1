@@ -1,0 +1,35 @@
+RMDIR(1)	       UZIX File Utilities		 RMDIR(1)
+
+
+NAME
+       rmdir - remove empty directories
+
+USAGE
+       rmdir [-p] directories
+
+DESCRIPTION
+       This manual documents the   UZIX   version  of rmdir. It's
+       been significantly  scaled  down for inclusion in the UZIX
+       release, and doesn't have the  help  or	version  commands
+       included in the GNU release.
+
+       rmdir deletes empty directories from your disk.The command
+       isn't dangerous, as it will only remove empty directories,
+       not full ones.
+
+OPTIONS
+       -p removes any  parent  directories  that  are  explicitly
+       mentioned in the argument, if they become empty after  the
+       argument file is removed.
+
+BUGS
+       This version  has  been	scaled	down  a  little  bit  for
+       inclusion in the  UZIX.	Only  the  --help  and	--version
+       commands are missing from this release (and  the  extended
+       GNU equivilants, ie: --parents).
+
+AUTHORS
+       Program :- Alistair Riddoch <ajr93@ecs.soton.ac.uk>
+       Documentation :- Michael Strates <mstrates@croftj.net>
+
+RMDIR(1)	       UZIX File Utilities		 RMDIR(1)

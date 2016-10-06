@@ -1,0 +1,78 @@
+GREP(1) 		  UZIX Text Utilities		  GREP(1)
+
+
+NAME
+       grep - print lines matching a pattern
+
+USAGE
+       grep -cnfv {-p<pattern>} files
+
+DESCRIPTION
+       This manual documents the   UZIX   version   of grep. It's
+       been significantly  scaled  down for inclusion in the UZIX
+       release, and doesn't have the  help  or	version  commands
+       included in the GNU release. Also, quite a few options are
+       missing.
+
+       Grep searches the files you specify(may use wildcards) for
+       the pattern you specify, and  writes  any  matches  to the
+       console in the form you specify.
+
+SYNTAX
+       In the pattern yor may use following elements:
+
+	x    - ordinary character
+	\    - quotes any char
+	^    - beginning of line
+	$    - end of line
+	.    - any char
+	\nnn - numeric (C-style) value
+	:l   - lower-case
+	:u   - upper-case
+	:a   - alphabetic
+	:d   - digits
+	:n   - alphanumeric
+	:r   - any russian letter
+	:s   - space
+	:t   - tab
+	:c   - any control, except LF & TAB
+	:e   - start of subexpression
+	*    - repeat zero or more
+	+    - repeat one or more
+	-    - optionally matches the expression
+	[..] - any from this (may be ranges FROM-TO)
+	[^..]- any except this
+
+OPTIONS
+       -c print only a count of matched lines.
+       -n preceed each line by its line number.
+       -f print file names.
+       -v print non-matching lines.
+       -p give pattern, may be repeated.
+
+ERRORS
+       Unknown switch
+       No pattern
+       Illegal occurrence op. ...
+       No type
+       Class terminates badly
+       Unterminated class
+       Class too large
+       Empty class
+       Pattern too complex
+
+BUGS
+       Since the original docs of GREP are in russian,	this  man
+       page can't give more details  of  the  program  usage  and
+       syntax and can't explain the error messages.
+
+EXAMPLE
+       To search all files for those whose  has  lines	with  the
+       word "UZIX", I'd type:
+	  grep -cf -pUZIX *
+
+AUTHORS
+       Program :- BAS
+       Documentation :- Adriano Cunha <adrcunha@dcc.unicamp.br>
+
+GREP(1) 		  UZIX Text Utilities		  GREP(1)

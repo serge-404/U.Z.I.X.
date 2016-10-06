@@ -1,0 +1,51 @@
+DD(1)			   UZIX File Utilities		    DD(1)
+
+
+NAME
+       dd - convert a file while copying it
+
+USAGE
+       dd if=name of=name [bs=n] [count=n] [skip=n] [seek=n]
+
+DESCRIPTION
+       This manual documents the UZIX version  of  dd.	It's been
+       significantly  scaled  down  for  inclusion  in	the  UZIX
+       release, and doesn't have the  help  or	version  commands
+       included in the GNU release.Also,many options are missing.
+
+       dd copies a file with  a  user-selectable blocksize, while
+       optionally performing conversions on it.
+
+OPTIONS
+       Numbers can be followed by a multiplier:
+       b=512, c=1, k=1024, w=2, xm=number m
+
+       if=name
+	      Read from file.
+
+       of=file
+	      Write to	file. Truncate file to the size specified
+	      by seek= (0 bytes if  seek=  is  not  given).
+
+       bs=bytes
+	      Read  and write bytes bytes at a time.
+
+       skip=blocks
+	      Skip blocks bs-sized blocks at start of input.
+
+       seek=blocks
+	      Skip blocks bs-sized blocks at start of output.
+
+       count=blocks
+	      Copy only blocks bs-sized input blocks.
+
+BUGS
+       This version  has  been	scaled	down  a  little  bit  for
+       inclusion in the UZIX. Many options are missing from  this
+       release, that many would expect from the GNU versions.
+
+AUTHORS
+       Program :- David I. Bell <dbell@pdact.pd.necisa.oz.au>
+       Documentation :- Adriano Cunha <adrcunha@dcc.unicamp.br>
+
+DD(1)			   UZIX File Utilities		    DD(1)

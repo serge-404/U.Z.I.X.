@@ -1,0 +1,1176 @@
+http://ftp.sunet.se/pub/usenet/ftp.uu.net/comp.sources.unix/
+
+archive-server note: You must prefix the filename with the volumenumber. E.g.
+	send volume1/cpp/part1 from comp.sources.unix
+	send volume9/elm2/part14 from comp.sources.unix
+
+		volume1
+
+ansi.c			Yacc and Lex for 11/12/84 draft of ANSI C
+bed			Bed version 1.0 (editor for binary files).
+bourne/part[1-9]	Bourne shell history + tilde + job control + more
+c-kermit.ann		C-Kermit & USENET
+cforth/part[1-3]	FORTH INTERPRETER IN C
+checkin			checkin: editor interface for RCS logs
+compress		Compress release 3.0
+cpg+mdep		cpg and mdep
+cpp/part[1-3]		cpp1.arc
+cshar			improved version of shar (shell archiver)
+cxref			Cxref -- C cross referencer
+diffc			contextual diff on Bell systems
+digest			shar of digest software
+dynamic			dynamic loading code for 4.2bsd
+expire.8		Manual page for 2.10.2 expire(8)
+getopt			public domain getopt(3)
+lbgm			lbgm
+newshar			The Connoisseur's Shar, version 2
+newsweed		Newsweed: a program to delete unwanted news articles
+nic			New NIC domain request form
+patch1.3		patch version 1.3
+pcurses/part[01-11]	Terminfo/Curses
+pcurses/patch1		Terminfo/Curses patch
+readnews.1		Manual page for 2.10.2 readnews(1)
+rfc_882			RFC 882 - Domain Names - Concepts and Facilities
+rn/part[01-09]		rn version 4.3 source
+rn/patch[01-40]		rn version 4.3 patches
+rpc/part01		Sun RPC part 1 of 10
+sendmail.cf		GaTech Sendmail configuration
+smail			Smail - a smarter net mailer
+uk-1.1/part[0-4]	yet another sendmail configuration (4 parts)
+uucpanz.s5		uucpanz for System V
+uucpanz.v7		another uucp status program: uucpanz
+uuque			a uuwizard's utility for uucp queue snooping
+vnews.1			Manual page for 2.10.2 vnews(1)
+vnews/part[1-7]		Vnews part 1
+xfernews		xfernews software
+xlisp1.4/part[1-4]	XLISP 1.4
+xref			a cross reference program
+
+		volume2
+
+access			source for access control lists
+basic/part[0-4]		A BASIC interpretor
+bgrep			Boyer-Moore based fgrep like program
+bm			bm version 1.1
+bm2			bm (update to 1.1)
+bm2			bm bug fix
+choose			choose -- a program to select lines at random
+compress4.0/part[0-2]	Compress 4.0
+cpg+mdep3		cpg revisited
+cshar3			Update to C shar (shell archiver)
+index.1			mod.sources archive index
+index1a			mod.sources archive access
+makekits		software "kit" generation script
+mdump			mdump - multiple dump per tape utility
+pathalias		Pathalias - new release
+pnews.patch		Patch to Pnews to save article
+remote			Remote mag tape routines
+remote2			small patch to remote tape library
+rtar			Diffs to tar to use a remote system's tape drive
+runtime			run-time memory allocation for multi-dimensional arrays
+runtime2		dynamic allocation (arrayalloc) update
+smail1			update to smail
+tools/part[0-6]		Software Tools in Pascal
+uroff			uroff - nroff underlining
+uuhosts			uuhosts (updated)
+window/part[0-4]	wm - a window manager
+wire/part[1-2]		Wirewrap program
+
+		volume3
+agelog			agelog - trim log files
+att_getopt		public domain AT&T getopt source
+badm			badm - BSD4.2 MASSBUS disk formatter
+bm1.1			Ken Yap's changes to bm
+calendar		A calendar program
+calls			calls(1)
+calls_4.2		Patches to calls(1) for 4.2 BSD
+chsh			chsh chfn for SV
+chsh2			chsh,chfn - Original contained security bugs.
+clr.queue		sendmail clean-up script
+command			command: replacement for system(3)
+ctags			ctags source
+date			formatted date program
+decus_grep		DECUS grep.c
+dial			a state transition controlled communications program
+dial.sample		Example dial script.
+dialout			dial-out mods for 4.3BSD
+dtree4.2		dtree for 4.2
+ff/part[1-2]		ff: fast text formatter
+g-format/part[1-4]	G-format compilers for Ultrix/Unix Vaxes
+gatech/part[00-03]	GaTech Sendmail files
+gatech1			Updates to GaTech Sendmail files
+give			give: change owner/group of files
+hdiff			hdiff: - source file compare program
+head			head(1), and ctags(1) for AT&T type systems
+help			help: VMS-style help facility
+hey			Hey(1) [from Unix/World, Oct. 85]
+hyphen			troff hyphenation utility
+idledaemon		Yet another idledaemon
+ieee/part[1-6]		Makefile for IEEE calculator
+index.1			mod.sources Index and archive access
+infer			inference engine
+la50			hack to convert nroff underlines to LA50 esc. seq's
+laserjet-printcap	LaserJet sources for BSD 4.2+
+laserjet/part[1-2]	HP LaserJet driver
+lcat			troff->laserjet
+lcat2			Troff->HP Laserjet filter - newfonts.c
+less/part[1-2]		less
+lib_term		lib_term - datum entry using termcap
+libc_term		libc_term - datum entry using curses
+llib-dbm		Ling library for dbm
+man			A compiled 'man' program for System V
+match			match - faster than bm
+mdump2			Revised mdump (multiple dump per tape utility)
+modgen			extract usenet moderator list from postings
+modnotes		changes to notes
+modula_pp		Modula-2 prettyprinter
+msdir			MSDOS directory access routine
+newspace		newspace - determine newsgroup disk usage
+nwho			nwho - enhanced "who" program
+okstate			UUCP Access to Kermit Distribution
+pathalias2/part[1-2]	New pathalias
+pretty			mc & xlisp pretty printer
+prune			prune.c - prunes log files
+rcsit			rcsit - A program to prepare files for RCS
+regexp			regexp(3)
+regexp2			bug in regexp(3), and fix
+rename			rename: a companion to restor
+rfs/part[1-7]		RFS: remote file system
+rfs/patches[1-3]	RFS: Bug fixes
+rmsecure		rmsecure - source for a safe "rm"
+rsend			rsend - BSD communications program
+scpp/part[1-2]		scpp - a selective C preprocessor
+sim			Software similarity tester for C programs
+sndml.mods		translation tables in sendmail
+sps/part[1-3]		SPS (Show Process Status)
+suntools		Improved version of Sun's window manager for 2.0
+swho			swho: screen based who (curses, continuous update)
+tc			termcap capability in scripts
+tctoti			termcap to terminfo converter
+telno			Telno: a telephone number permutation program
+texchk/part[1-2]	syntax checker for LaTeX
+times.awk		uucp info from LOGFILE (awk script)
+trc/part[0-8]		TRC - expert system building tool
+ttype			ttype: typing tutor
+ttyuse			ttyuse
+turbo_patch		Software Tools in Turbo - SHELL.PAS
+turbo_tools/part[0-2]	Software Tools in Turbo Pascal
+uuhosts2		newer uuhosts (too many changes for diff listings)
+uuhosts3		uuhosts
+uuhosts4		uuhosts 1.69
+uumail			uumail -- an opath/pathalias based uucp mailer
+uumail2			uumail release 2
+uumail2.fix		fix to uumail release 2
+vtem			a VT100 emulator based on termcap
+wm.new			updated window manager - wm
+xargs			execute a command with many arguments
+
+		volume4
+
+68kdisassem/part[1-2]	unc - 68000 disassembler
+68kdisassem/patch1	Patches to unc to work on SUN UNIX
+aaa			aaa - the amazing awk assembler
+archx			archx: suggested replacement for shar
+bm1.2			bm version 1.2 (blindingly fast "fgrep")
+bm1.2speedup		speedup for bm on some machines
+browser			Amiga file browser
+calgen/part[1-2]	Calendar Generation Program
+chown			Improved and expanded chown/chgrp
+chuni			chuni.c - change a users default universe (Pyramid)
+client_man		Client/server context diffs to 4.2BSD man.c
+client_server		Generic client and server commands for 4.2BSD
+egrep			egrep - More Pep for Boyer-Moore Grep
+fmtr			Fmtr - simple text formatter
+game_reg		GR - A Game Regulator
+hershey.f77/part[1-2]	Hershey Fonts in Fortran 77
+hershey/part[1-5]	Hershey Fonts
+index.1			mod.sources Index and archive access
+iso_pascal		Yacc and Lex for ISO Level 0 Pascal
+lastindex		mod.sources Index and archive access
+loadav			Routines to check the load average
+mail.fixes		Patches to BSD4.2 mail (SysV mailx?)
+match1.2		Match 1.2 - Fast grep for Vaxen
+moveicon		tools for editing Sun icons
+msg/fmtd[1-2]		Msg docs preformatted
+msg/part[0-8]		The Msg Mail System Intro (+ moderators notes)
+nrtable			compile/decompile nroff driver tables (USG only)
+nums			list-of-numbers generator
+oldindex		mod.sources Index and archive access
+portar			portable ar: suggested replacement for shar
+portar2			unpar compatability with Sys V (patch)
+printfck		printfck -- makes lint check (most) printf calls
+quickplot/part[1-2]	lplot and quickplot
+rcsit2			new version of rcsit(1) - prepare files for RCS
+regexp3			2nd bug fix for regexp(3), in regsub()
+regexp4			regexp(3) improvement
+rlogin			4.2bsd rlogin enhancements
+rolodex/part[1-3]	rolodex database program
+rpt			A program called 'rpt'
+savesrc			Two tools for organizing sources from USENET
+se/part[1-8]		Georgia Tech 'se' screen editor (Part 1 of 8)
+settz			time conversion / time zone system
+shortc			shortc: C program to map flexnames into short identifier
+shortc2			shortc: sed output, and standard input
+sim2			Re: Software similarity tester for C programs
+simplex			Simplex Curve Fitting Algorithm in C
+spellfix/part[1-2]	The ultimate spelling checker
+sticky			PostScript sticky label program
+strings/part[1-3]	strings
+subnet.arp		4.3BSD IP subnet ARP hack
+telnetd			telnetd in the kernel
+texindex		texindex -- make an index from a LaTeX .idx file
+texindex2		AAAAARRRRGGGGGHHHH!!!! Bugs in texindex!!!
+tm_to_time		tm_to_time(3) -- convert broken-down time into time_t.
+tmac.ti			travel-itinerary macros for nroff
+tvx/part[01-10]		tvx: 1 of 10
+tvx/patch1		1st batch of TVX Bug fixes
+uemacs/part[1-6]	MicroEmacs
+uemacs/patch1		Termcap support for MicroEmacs v. 30 sources
+uemacs3.6/part[0-8]	MicroEMACS 3.6
+uk-1.4/part[1-5]	Sendmail UK-1.4
+unaxcess/part[1-3	UNaXcess (unix bulletin board)
+unaxcess/patch1		UNaXcess update #1
+uumail3/part[1-2]	uumail 3.0
+xmodem			4.2BSD XMODEM programs
+
+		volume5
+
+backup			front end for BSD dump
+bm.odd			odd address optimization
+bmgsubs			Boyer-Moore-Gosper fast string search subroutines
+dither			Color Dither (ver 1.1)
+getmaps			automated UUCP maps
+junkmail		delete outdated mail automatically
+portar3			more patches to par/unpar
+retouch			force changed date
+rise_set		Sun and Moon rise/set program
+smallc/part[1-3]	Small C compiler version C3.0R1.1
+smtp_send		SMTP SEND command for Sendmail
+uemacs3			MicroEMACS version 30 updates.
+untic			decompile terminfo description file.
+
+		volume6
+
+att_which		A "which" for non-BSD systems
+bsd.ps.patch		Speed, etc., patches for BSD ps
+bsearchstr		Binary search for strings in a file
+cdecl			English<->C translator for C declarations
+compress.xenix		Xenix patches to compress4.0
+context			context - generalized context printer
+context.1		Manual page for context program
+cpp.patch		Patches to 4.2BSD cpp for #elif, // comments
+cvs/part[1-2]		CVS, an RCS front-end
+datediffs		patches for date to use elsie!ado's localtime
+ditrev			Page reverser for ditroff
+elm/part[01-14]		Elm mail system
+elm/patches1		Elm fixes for BSD, et. al.
+fmtr.patch		Patches to fmtr
+glob			'Globbing' library routine
+halign			halign - line up columns
+help/part[1-2]		Help programs
+lbl			lbl preprocessor for [nt*]roff
+less.patch		Patches for more/less interoperability
+less2/less.1.alt	Revised man page for less
+less2/part[1-2]		New version of less
+lj_filter		Filter for HP Laserjet
+maildigest		The Mail Digest System
+malloc			A "smarter" malloc
+malloc.mk		Missing makefile for "malloc" posting
+malloc.patch		Bug fix for "smarter malloc"
+misc.patches1		Changes to calls, compress, ditrev, getpaths, nbatcher
+msdos_mk		A Make for MS-DOS and VAX/VMS
+newbatcha		Usenet news batcher control program
+newbatcha.new		nbatcher source
+newbatchb		Usenet news batcher control program
+newscnt			Count unread news articles
+pacman.p.h		missing files from Apollo pacman
+printfck2		new printfck and manpage
+qterm			qterm: Query Terminal for terminal type
+reminders		A Personal Reminder system
+rpc2/part[01-11]	Sun RPC Source
+s3uuque			uuque for System III/V in C
+settz.patch		Updates to "settz" data files
+sh.ulimit		Add ksh-style 'ulimit' to 4.2BSD /bin/sh
+stringlib		X3J11/SVID/4BSD/etc string library
+sysvdial/part[1-3]	System V generic dial routines
+talk.sysv.vera		A "talk" for system V.2
+talk.sysv.verb		A "talk" for System V
+texdvi2lj/part[1-3]	TeX DVI driver for LaserJet+
+uemacs3.7/part[01-12]	MicroEmacs, Version 3.7
+unrm.rm			"rm" and "unrm" programs
+vt100tool/part[01-10]	VT100TOOL for Sun's
+watch			A multiple "tail -f" program
+xlisp1.6/part[1-6]	Xlisp version 1.6
+yaccref			Cross-reference for Yacc
+
+		volume7
+
+2.11news/part[01-08]	2.11 News Documentation and Conversion
+2.11news/part[09-10]	2.11 News Miscellaneous Files
+2.11news/part[11-19]	2.11 News Source
+2.11news/part20		News change log and makefile
+2.11news/patch[01-08]	Patch #1 for news 2.11 source
+4.3cpp.patch		#elif patch to 4.3BSD cpp
+aaakeys			Ann Arbor XL key uploader
+append			Allow additions to 'protected' directories
+bpatch			Binary (file) patcher/viewer
+cmstape			Read and write IBM VM/SP CMS dump tapes
+csh.patch		Two CSH patches
+des			Purported DES program in C
+determcap		Decomposing termcaps
+dirstack.csh		CSH tools for directory stacks
+forktest		Find security holes in shell-escapes
+getmetrics		PostScript program to generate .afm files
+getopt.fix		Getopt(1) from mod.sources
+getoptprog		Getopt program for scripts
+hostup			An alternative to the BSD ruptime command
+idle.users		A simple BSD idle-users daemon
+index.1			Mod.Sources Index and Archives
+index.2			Complete Listing of Mod.Sources Archive (index.2)
+index.3			Archive access and listing
+index.4			Index for volume7 and other info
+less3/part[01-03]	New release of LESS
+make			Public-domain MAKE
+msdos_mk.patch		Patch to msdos_mk for Microsoft C
+new_archives		Additional UUCP Access to Mod.Sources
+patch2/part[01-03]	Apply diffs to files
+patch2/patch[1-11]	Patches for the patch2 program
+paths.mk		Makefile to build UUCP paths
+pdtar			Public-domain TAR program
+read-vms-backs		Read VMS backup tapes
+regex			Ed(1)/regex(3)-compatible reg. exp. package
+remtape			Remote magtape library for 4.3BSD
+safe			Limit a program's execution time
+sop			A .so filter for n/t/*roff files
+sunmailwatch		A mail watcher for SUNwindows
+tar_aids		Tools to read damaged tar tapes (tar_aids)
+texdvi2tty		TeX DVI driver for TTY's, etc.
+tinytcp			A tiny set of TCP routines (tinytcp)
+tput			Public-domain tput(1) program
+tput2			Public-domain TPUT (corrected implementation)
+untamo2			Log out idle users
+untamo3			Log out idle users (untamo revised)
+uucp+nuz.tulz		Erik Fair's UUCP & Usenet toolbox
+uuencode		Uuencode and uudecode
+vttest/part[01-02]	Test VT100 features
+xlisp.patch		Patch to Xlisp1.6 for Pyramid machines
+yacc.notes		restarting yacc
+yacchacks		Tools to restart YACC parses
+yearlength		Compute length of any year
+
+		volume8
+
+ansitape/part[01-02]	ANSI tape program
+cut+paste		Public-domain implementations of cut(1) and paste(1)
+dca2troff		Convert IBM DCA documents to troff input
+display			Execute command repeatedly, display output
+display.pch		copy of what I just sent out in net.sources.bugs
+ease/part[01-04]	Ease, a language for writing sendmail.cf files
+fixcpio			Repair damaged "cpio -c" archives
+foogol			A (vax) compiler for a tiny ALGOL-like language
+getpw			Public-domain getpw*(3) routines
+graph+/part[01-03]	Graph+, A Graph Plotting Program
+her2vfont		Hershey fonts to 'vfont' rasterizer
+hier			Directory hiearchy scanner
+index.1			Mod.Sources Index and Archives
+index.2			Archive access and listing
+jove/part[01-13]	The JOVE text editor
+kurses			A program to call curses(3) functions
+mcp/part[01-08]		Account creation/manipulation program
+micrognu/part[01-11]	A Micro-Emacs variant that resembles GNU Emacs
+multi-feed.c++		Simultaneous multi-site news feeder in C++
+multivol.pch		Multivol, Patch #1 (see Vol 7, Issues 12 & 13)
+pd-localtime/part[01-03]	Public Domain (Table Driven) ``localtime''
+pd-localtime/patch	Public Domain (Table Driven) ``localtime''
+phoon			Phase of the moon, date routines
+prep/part[01-02]	A pre-processor for FORTRAN source
+psfig-tex/part[01-03]	Including PostScript/Macintosh figures in TeX documents
+qterm			Query terminal for its type
+se/part[01-07]		Georgia Tech 'se' Screen Editor
+se/patch1		SE patches for 4.2 and USG Unices
+shrink_names		Shrink VeryLong+File.names to shorter names
+smail2/part[01-05]	Smail, release 2.3
+soelim			A .so/.nx/.PS filter for *roff files
+sp/part[01-02]		Soundex spelling-checker
+tabs			A tab/space conversion program
+textools2/part[01-02]	A collection of tools for TeX users
+trmatch			Syntax-checker for *roff
+uk-1.4.pch		Patch for UK-1.4 mail configuration
+unaxcess2/part[01-04]	UNaXcess Conferencing, version 1.00.02
+uucp.x25pad		UUCP X.25 'f' protocol and PAD dialer
+uumail4/part[01-04]	Uumail release 4.2
+uutty/part[01-02]	Bidirectional getty/login for SystemV
+vn/part[01-03]		The VN news reader
+vtrm/part[01-02]	A Unix/PC virtual terminal package
+
+		volume9
+
+assem2/part[01-02]	Generic assembler for micro's
+bitstring		"Bitstring" package
+elm2/part[01-19]	ELM Mail System
+elm2/patch[01-02]	New Configure.sh for ELM
+fastgrep/part[00-02]	Fastest grep around
+gwyn-dir-lib		New directory-access library
+index9.1		Introduction to mod.sources
+index9.2		Index of mod.sources archives
+index9.3		Change in archive sites, recent errors
+index9.4		CRYPTOGRAPHY, update for archive sites and index
+month/part[01-02]	Visual calendar program
+mx-macros		Troff macros for "ACM Transactions"
+old.bad.code		Previous "obfuscated C" winners
+printf			Printf(1), for shell scripts
+teco/part[01-04]	A TECO text editor
+uemacs3.8b/part[01-14]	MicroEMACS, version 3.8b
+uemacs3.8b/patch1	Repost of display.c from MicroEmacs
+uumail.pch		UUmail 4.X patch
+xscreen/part[01-02]	Screensaver for X window system
+xterm/part[01-07]	Terminal emulator for X window system
+zmac/part[01-02]	Z80 macro cross-assembler
+
+		volume10
+
+agef			Show disk usage by file age
+cbar			Another changebar program
+cbw/part[01-11]		Crypt Breaker's Workbench
+cbw/patch01		Patch for CBW (use int instead of char)
+cfc			"Compile" sendmail.cf files into EASE language
+comobj.lisp/part[01-13]	Common Objects, Common Loops, Common Lisp
+complex-lib		Complex arithmetic library
+copytape		NEW version of magtape copy program
+crc_plot/part[01-06]	CRC Plotting Package
+derez			Find and remove stale files from a disk.
+des			DES encryption routines and a login front-end
+dev.fd			A /dev/fd device driver for 4.3 and NFS systems
+dir-lib.pch		Bugfix to Doug Gwyn's portable directory library
+ease/part[01-04]	Ease translator repost
+hum/part[01-03]		Bull Tuthill's "hum" text concordance package
+ida/part[01-07]		The IDA Sendmail Kit
+ien116-server		IEN116 Nameserver
+ifp/part[01-07]		Interpreted Functional Programming lanuage
+index10.1		List of sources in the archives
+lc			An "ls" program
+lemming/part[01-04]	A graphics editor
+logo/part[01-06]	Logo interpreter for Unix
+logo/patch01		Patches to Logo for Suntools
+logo/patch02		Replacement makehelp script for logo
+magtapetools/part[01-02]	Magtape handling package
+mx-macros		Troff macros for "ACM Transactions"
+notes-mod.pch		Patches for NOTESFILES for moderated groups
+nrchbar			A "changebar" interface for *roff
+ptoc/part[01-12]	Pascal to C translator
+qterm			Query terminal for its type
+regexp.pch		Bug-fix for regexp() library
+screen/part[01-02]	BSD multi-screen manager
+sps/part[01-03]		SPS for BSD, Ultrix1.2, Sun3.x, NFS
+sxt-sh-jobs/part[01-02]	Diffs for SystemV /bin/sh job control with sxt's
+top_s375/part[01-02]	Top users display, 2.1 with Symmetric changes
+tr2latex		Translate troff to LaTex
+x10r4.sunpch/part[01-03] X10R4 patches for Sun3/110C
+
+		volume11
+
+3bnet/part[01-02]	3Bnet utilities and printer spooler
+avl-subs		AVL Tree subroutines
+bsd.2.10.note		BSD2.10 available from Usenix
+bsmtp			Batch SMTP program
+bundle			Buffered copy to/from physical devices
+comobj.pch		Patch for Common objects sources
+cpmod			Copy modes/ownerships/times
+getty-enable		Getty on/off programs for 4.[23] BSD
+graphedit/part[01-06]	Graphcs editor for Suns
+hum.pch			Hum concordance package update kit
+id/part[01-03]		C cross-reference database system
+inline/part[01-04]	Inline code expander for C
+inline/patch1		Inline code expander for C
+jove.pch/part[01-04]	Jove upgrade kit
+jove.pch/patch1		Missing file from Jove update
+lemming/patch[1-2]	Update kit for lemming editor
+less3/part[01-03]	The 'less' pager
+little-st/part[01-03]	Little Smalltalk interpreter
+musbus/part[01-04]	MUSBUS 5.0 -- Monash University Benchmark
+monthtool		Sunview visual calendar
+mtools/part[01-02]	MS-DOS disk tools for Unix
+mush5.7/part[01-12]	Mail user's shell
+netdata			Transfer data (and mail) between SYSV and CMS
+number			Arabic numerals to multi-lingual natural language
+psfig/part[01-05]	Including PostScript figures in ditroff
+qsubst			A query-replace program
+reader.poll		Poll on copyrights
+saver			Small SUN screen-saver
+sc4.1/part[01-03]	Spread sheet program, sc 4.1
+se.pch.2		Second update for 'SE' editor
+smail3/part[01-03]	Smail, UUCP domain mailer
+syslog			Development version of syslog(3), for ATT, too
+syslog.sysv		SystemV version of syslog
+tcsh.4.3/part[01-02]	Tcsh for 4.3 CSH
+tcsh/part[01-06]	New version of T-shell
+tek2ps			Tektronix4014 to PostScript filter
+templates/part[01-06]	Template-mode for GNU Emacs
+test.el/part[01-03]	Test system for GNU Emacs
+vitals			Word counts, checksums, etc.
+watcher/part[01-02]	Watcher system monitor program
+zoo/part[01-07]		File archiver programe
+
+		volume12
+
+afio/part[01-02]	Manipulate CPIO-format archive and files
+cake/part[01-09]	Cake, a make replacement
+cnews/part[01-14]	C News alpha release
+crc.pch			CRC Graphics Package Patch#1
+fuser			Who's using that file? (For Unix-PC)
+hershtools/part[01-05]	Hershey font manipulation tools and data
+index12.1		Introduction to comp.sources.unix
+index12.2		List of sources in the archives
+ln03-plot		New version of LN03 plot(3) package
+musbus5.2/part[01-03]	Monash Benchmark Update
+ops5/part[01-05]	OPS5 in Common Lisp
+pathalias9/part[01-02]	Pathalias, version 9
+pdtar/part[01-03]	Public-domain TAR
+postscript/part[01-18]	A PostScript interpreter
+qterm.alt		Query terminal for its type
+starcharts/part[01-07]  StarChart program and Yale star data
+strings.coff		Find printable strings in COFF files
+vmail/part[01-03]	vmail - screen-based mail handler
+zmodem/part[01-03]	Zmodem file transfer programs
+
+		volume13
+
+4.3autobaud		Baud rate detection for 4.3BSD
+atl			List jobs in at queue for 4.3BSD
+attpc.renice		Change process priority on ATT PC
+autoadd			Program to add users to system
+backups			Tools to help automate backups
+bool-eval		Boolean expression array evaluator
+bpatch.2		Binary file editor
+bpatch2			Binary patch program, ported to 80286 etc.
+budpak			Utilities to monitor usage on system
+casette-lbl		Cassette label formatting program
+cfc			New version of .cf compiler
+check			Check for mistakes in C programs
+derez/par[01-02]	Derez, remove stale files from system
+e			Friendly front-end to vi
+ease.pch		Patches to EASE sendmail.cf language
+file/part[01-02]	Replacement for the file(1) program
+funcproglang/part[01-02] Functional programming language
+iface/part[01-02]	Generic user interface kit
+korner			Convert (some) csh scripts to ksh scripts
+labels			Program to make mailing labels
+lit			Lit, a "better" echo
+little-st2/part[01-05]	New release of little smalltalk
+m4/part[01-02]		Public domain M4 macro processor
+mcc			Merge C code with compiler error messages
+measures		Brute force measurement selection
+modemcap		Hardware-independant modem routines
+nroff-driver		Nroff driver table utility
+pas2c.pch		Patches for Pascal-to-C translator
+perl/part[01-10]	Perl, a "replacement" for awk and sed
+perl/patches1-5		Perl, a "replacement" for awk and sed
+perl/patches6-10	Perl, a "replacement" for awk and sed
+perl/sample		Perl, a "replacement" for awk and sed
+pinrtacct		Print BSD accounting file
+process-uucp		Tools for pathalias with MMDF
+pwget			Programs to retrieve /etc/passwd info
+ratfor			Public domain RATFOR in C
+rf			Rolodex-like filing system
+rolodex/part[01-04]	Screen-oriented rolodex program
+rpc3.9/part[01-15]	Sun RPC, release 3.9
+rstat			Remote statistics server
+sbbs/part[01-02]	A BBS written in /bin/sh
+sc5.1/part[01-03]	SC spreadsheet program, version 5.1
+sets			Perform "set" operations on command line arguments
+slice			Split file based on patterns or line numbers
+starchart/patch[1-2]	Starchart package
+ups			BSD File delivery programs
+vn.jan.88/part[01-05]	VN newsreader, 1/88 version
+vt220fontedit		Font edit program for VT220 terminals
+with			Resource allocation program
+xmodem3.4/part[01-03]	Full featured xmodem program, v3.4
+xmodem3.4/patch1	Full featured xmodem program, v3.4
+
+		volume14
+
+3bconnect		3B2 Ethernet Connection and File Transfer Utility
+bsd-dyna-link		Dynamic linking package for BSD
+calc			A trig/multi-base calculator
+cdecl2/part[01-02]	New version of Cdecl, parse C declarations
+flex/part[01-05]	Flex, a lex replacement
+flex/patch1		Flex, a lex replacement
+ioccc/part[01-05]	International Obfuscated C Code Contest
+jove4.9/part[01-21]	Jove, an emacs variant, version 4.9
+localtime3/part[01-03]	Public time (zone) conversion routines
+mush6.0/part[01-14]	Mail User's Shell, version 6.0
+mush6.0/patch1		Mush updates for SystemV, etc.
+nntp1.5/part[01-09]	Network News Transfer Protocol, version 1.5
+pcomm/part[01-06]	Dial out and terminal emulator
+pcomm/patch1		Dial out and terminal emulator, Patch1
+rast			Sun rasterfile I/O library
+sharedmem/part[01-04]	Shared memory emulation for 4.2BSD
+shellforms/part[01-02]	Forms interface for shell scripts
+splay-tree		Splay tree library
+vn.nntp.pch		VN NNTP conversion kit
+vplot/part[01-24]	Device-independant graphics system, with drivers
+
+		volume15
+
+index15.1		Introduction to comp.sources.unix
+index15.2		List of sources in the archives
+abcd			abcd - Automatic Backup Copy Daemon
+arc5.21/part[01-05]	ARC (PC compression program), v5.21
+ck			Check mailboxes for new mail
+cshar/part[01-03]	Tools to create and unpack shell archives
+cshar/patch1		Tools to create and unpack shell archives, Patch1
+cshar/patch2		Tools to create and unpack shell archives, Patch2
+cshar/patch3		Tools to create and unpack shell archives, Patch3
+cu-shell		A "shell" for CU, Kermit, etc.
+ddd			Fast, multi-process dd(1) clone
+delta-times		Delta time routines for alarm(2) manipulation
+dis6502			6502 disassembler
+dis88/part[01-02]	Symbolic disassembler for PC/IX
+dvipage/part[01-02]	Sun previewer for TeX DVI files
+emitc			Routine to process ctime(3) output
+gbench/part[01-02]	Graphics benchmark toolkit for X
+hash8			Hash long identifiers into unique short ones
+ien116			Updated IEN-116 namesever
+inc-elim		Filter to eliminate file inclusion commands
+ioccc/part[01-07]	International Obfuscated C Code Contest
+lp-onionskin		Wrapper for System V lp, bug work-around
+lwf			ASCII to PostScript filter
+mcat.new		A cat(1) for mmap'able devices
+monthtool2/part[01-02]	Monthly apointment calendar, for Suns
+moontool		The moon on a Sun
+mp			mp - mail pretty printer v1.4 (aka mail->postscript)
+mush6.2.pch		Upgrade kit for Mush release 6.2
+mush6.3kit/part[01-04]	Mush (mail user's shell) upgrade...
+net-notify		Network message system, sort of like wall
+newgetty		Alternate getty front-end, with speed detection
+nroffgraphics/part[01-02] Tools for nroff graphics on dot-matrix printers
+pages			Page accounting aide for SysVrel3.1
+perl2/part[01-15]	Perl, release 2, Part01/15
+perl2/patch1		Perl, release 2, Patch1
+ps.sun.pch		Patch for postscript interpreter work under Suntools
+rmtlib			Remote magtape library for BSD
+rot			Rotate text
+ru			A users(1)-style rwho
+siod			Scheme in one defun
+stevie/part[01-04]	Stevie, an "aspiring" VI clone for Unix...
+stevie/patch1		Missing header file for "stevie" editor, Patch1
+surun			Run commands as another (or super) user
+touchup/part[01-06]	A bitmap editor for Suns
+touchup/patch1		A bitmap editor for suns, Patch1
+touchup/patch2		A bitmap editor for suns, Patch2
+tpscript/part[01-05]	Ditroff to PostScript translator
+twm/part[01-04]		A window manager for X
+ultrix-modem		UUCP/CU access on one modem
+unfsd/part[01-02]	unfsd - user-level NFS server
+uumailclean		Clean-up backlogged UUCP mail
+vn.april.pch/part[01-02] VN April, 1988, upgrade kit, Part01/02
+vtree			Visual display of directory tree
+whichtape		Tools to help find files on backup tapes
+window-srch		Windowing search (not unlike context grep)
+xmodem3.6/part[01-05]	Xmodem release 3.6
+yp-quote		Building custom Yellow Page Maps
+
+		volume16
+
+index16.1		Introduction to comp.sources.unix
+index16.2		List of sources in the archives
+index16.3		Corrections to first two INFO postings
+4.3mathlib/part[01-05]	NOT AVAILABLE
+conf2/part[01-05]	Multi-user conference system
+deliver/part[01-03]	Mail delivery program
+dist2/part[01-07]	Larry Wall's Configure generator, etc.
+dist2/patch1		Larry Wall's Configure generator, etc.
+dist2/patch2		Larry Wall's Configure generator, etc.
+fep/part[01-05]		Front end editor program
+fido			Watchdog for users and machines
+hgrep			Highlighting grep filter
+ida2/part[01-08]	IDA Sendmail kit
+less5/part[01-04]	Less, a pager that's more than more
+lint-proto.pch		Turn 4.2BSD lint into a prototype generator
+lumberjack		Logfile monitor tool for Suns
+month8.7/part[01-06]	A visual calendar and appointment system
+narc			Archive net sources groups
+obvious-pw		Tell if a password is "obvious"
+pcomm2/part[01-08]	Modem communications package
+plp/part1[01-6]		Public lineprinter spooler package
+psterm/part[01-04]	Terminal emulator for NeWS window system
+sao/part[01-49]		Smithsonian Astronomical Observatory
+spiff/part[01-04]	Spiff, find approximate differences ...
+texi2roff		Convert GNU Texinfo files to nroff/troff files
+uniqbib			Remove duplicates from a "bib" database
+xfmt			A simple formatter
+
+		volume17
+
+index17.1		Introduction to comp.sources.unix
+index17.2		List of sources in the archives
+mgr/part[00-61]		MGR, Bellcore window manager
+mgr/patch1		MGR, Bellcore window manager, Patch1
+zoo2/part[01-10]	Zoo archive programPart01/10
+pax/part[01-06]		Usenix/IEEE POSIX replacement for TAR and CPIO
+mod-copyright		Renunciation of Moderator's Copyright
+pps			PostScript pretty-printers for common languages
+morsecode		ASCII->Morse Code filter
+screen2/part[01-02]	Screen, multiple windows on a CRT
+contest-prog/part[01-03] ACM-style programming contest programs
+ease2/part[01-03]	Ease2.0, a language for sendmail.cf files
+cscript			Record interactive session (using pipes)
+printf			A printf program
+hill			Encrypt using Hill cipher
+prologtags		Create tags file for Prolog
+malias			Expand .mailrc aliases
+e2/part[01-03]		E, friendlier front-end to vi
+gnugrep/part[01-05]	Gnu E?GREP (it's fast)
+
+		volume18
+
+april-fool		Absolutely-portable remote interchange library 1
+biff-comsat		Remote biff/comsat
+btoa			Btoa v5.2 -- binary/ascii packer with repair features
+changebar		Generate changebars in ?roff docs using patch
+ctrl			Transform symbolic to real escape sequences
+des-no-usa/part[01-02]	DES code free of US restrictions
+diskhog2		A diskquota-system for non-BSD sites
+elm2.2/part[01-24]	Elm mail system, release 2.2
+fft			General Fast Fourier Transform package
+fnet/part[01-05]	Fido/Usenet gateway
+fstat2			Show file/open status
+geneal/part[01-04]	Geneal, a genealogy browsing program
+gl_plot/part[01-07]	GL Graphics Library for AT-clone Unix
+gnugrep1.3.pch		GNU Grep 1.2->1.3 patch kit
+hat-n-coat/part[01-02]	Hat/Coat, dependency analysis tools
+headers			Selectively retrieve news article headers
+indent/part[01-03]	Indent, C reformatting program
+localtime3/part[01-07]	Table-driven ctime/time/localtime/date ...
+malloc-trace		Malloc package, with tracing
+mcqueer-lib		Library for hat/coat and others
+mq			Display mail queue and "from" output
+mtvraytrace/part[01-03]	A ray-tracing package
+mush6.4/part[01-19]	Mail user's shell version 6.4
+ofiles			Find who has files open on BSD, Sun, etc.
+ofiles.new		v18i057:  REVISED ofiles, doesn't need Sun source
+pwdiff			Tool to aide in merging password files
+rename-files		Rename multiple files
+rh			Find files using C-style expressions
+rmtlib2			Remote tape library
+ru2			Rwho with a users(1)-style output
+sc6.1/part[01-04]	SC spreadsheet, version 6.1
+sls			SLS, a program like "ls -l" with more control
+spin/part[01-02]	Simple programmable interface kit
+superserver		"Super" network server for easy service-building
+treepar/part[01-03]	Tree-structured data placer/router/plotter
+undel/part[01-06]	MIT Athena delete/undelete programs
+vtree			Visual directory browser
+
+		volume19
+
+index19.1		Introduction to comp.sources.unix
+index19.2		List of sources in the archive
+ash/part[01-08]		A reimplementation of the System V shell
+ash/patch1		A reimplmentation of the System V shell, Patch1
+atty/part[01-04]	A command-line editor (for BSD)
+backup			Save files that have changed in the last little while
+cnews2/part[01]19]	Cnews production release
+cnews1/patch1		Cnews production release, Patch1
+fbm/part[01-08]		FBM, image manipulation library
+flex2/part[01-07]	Flex, a fast LEX replacement
+nn/part[01-15]		NN, a Usenet news reader
+nn/patch1		NN, a Usenet news reader, Patch1
+rkive/part[01-04]	Usenet sources archiver
+shape/part[01-33]	A software configuration management system
+
+		volume20
+
+index20.1		Introduction to comp.sources.unix
+index20.2		List of sources in the archive
+c-gc/part[01-02]	C memory garbage collector
+cproto			Generate C function prototypes from C source
+curses-clock		Curses-based digital clock
+deliver2.0/part[01-04]	Deliver, flexible email delivery system
+deliver2.0/patch1	Deliver, flexible email delivery system, Patch1
+epf/part[01-06]		LQ-1500 drivers for nroff
+etherlib/part[0-03]	User-level interface to Ethernet
+fpc/part[01-06]		Portable compiler of the FP language
+gperf/part[01-05]	Perfect hash generator for sets of key words
+index-db/part[01-02]	Maintain multiple databases of textual data
+inserts			Do insertions into a document
+keybind			Rebind the console keyboard in Xenix or System Vr3.2.1+
+keybind.pch		Rebind the console keyboard in Xenix or System Vr3.2.1+
+lcomp			Statement count profiling
+memlintok		A package to remove common lint/malloc complaints
+metrics/part[01-14]	Tools for generating software metrics
+multi-include		Modify files to help remove multiple #include's
+opcom			Operator interface with limited privileges
+pcomm1.2/part[01-08]	Pcomm telecommunication package
+pcomm1.2/patches1to4	Pcomm telecommunication package, Patches 1 through 4
+pegboard		An electronic office sign-in/signout pegboard
+perl3.0/part[01-24]	Perl, a language with features of C/.../etc
+perl3.0/patch1		Perl, a language with features of C/.../etc, Patch1
+plum-ansi-macros	Plum-Hall X3J11 macro explainer
+plum-benchmarks		Plum-Hall benchmarks for timing common C operations
+posix.h-tester		POSIX 1003.1 #include file tester
+posix.h-tester.pch	POSIX 1003.1 #include file tester, Patch1
+process-cwd		Print current directory of processes (on BSD)
+psroff/part[01-06]	Troff upgrade for PostScript, DiTroff compat.
+pt			Display process family tree
+rc.user			Allow users to automatically run scripts at boot time
+reactivekbd/part[01-04]	Command-line editor with predictions
+reldb/part[01-03]	Relational database tools
+xxalloc			Multi-dimension dynamic array manipulation package
+
+		volume21
+
+index21.1		Introduction to comp.sources.unix
+index21.2		List of sources in the archive
+amd/part[01-13]		An Automounter for NFS systems
+berkeley_yacc/part[01]05] Public domain Berkeley YACC
+coda/part[01-03]	File distribution alternative to rdist
+cops/part[01-05]	System Security analysis tool
+exebyte_toc		Table of Contents for Exebyte 8mm tapes
+filterfile		Apply a filter to a file, safely
+indir			Safe way to run setuid shell scripts
+ipl/part[01-04]		2D graphic system with table beautifier
+mmv/part[01-02]		Safely rename wildcarded files
+p2c/part[01-32]		Pascal to C translator
+p2c/patch1		Fix to incomplete shar files for p2c, Patch1
+rayshade/part[01-08]	A ray tracing program
+rayshade/patch[1-3]	A ray tracing program
+rh2/part[01-02]		Find files using C expressions
+ro/part[01-03]		A text formatter with some nroff-like...
+snefru/part[01-04]	Snefru hash and netnews validation ...
+squeeze1.711		A file compression program
+strsed/part[01-03]	String function to do sed/tr manip...
+
+		volume22
+
+index22.1		Introduction to comp.sources.unix
+index22.2		List of sources in the archive
+auth-utils/part[01-3]	Utilities for auth2.1 server
+auth2.1/part[01-02]	RFC931 TCP Authentication serer
+byte-benchmarks/part[01-05]	Byte Unix benchmarks
+checknr			The BSD checknr program -- "lint for ?roff documents"
+cops.pch		System security analysis tool
+cvs-berliner/part[01-07] Brian Berliner's concurrent RCS system
+cvs-berliner/patch1	Patch to Brian Berliner's CVS system
+cvs3.0/part[01-02]	Concurrent RCS version system, release 3.0
+debug_malloc/part[01-02]	Debugging malloc() library
+elm2.3/part[01-26]	ELM mail system, release 2.3
+et/part[01-03]		Error table compiler and library
+et/patch1		Error table compiler and library
+gawk2.11/part[01-16]	GNU AWK, version 2.11
+gawk2.11/patch1		GNU AWK, version 2.11, Patch1
+indir.pch		Patch to indir -- safely execute (set[ug]id) scripts
+mmv.pch			CRITICAL patch to MMV
+multitee2.0		Send multiple inputs to multiple outputs
+nn6.4/part[01-22]	NN Newsreader, release 6.4
+nn6.4/patch[1-4]	NN newsreader, release 6.4
+pathalias10/part[01-03]	Pathalias, version 10
+p2cpatches/part[01-02]	Update kit for p2c Pascal to C translator
+queuer/part[01-03]	Multi-system program queueing package
+tpipe			A "tee" with multiple outputs
+undel2/part[01-3]	MIT Athena delete/undelete programs, release 2
+undel2/patch10		MIT Athena delete/undelete programs, release 2
+
+		volume23
+
+index23.1		Introduction to comp.sources.unix
+index23.2		List of sources in the archive
+abc/part[01-25]		ABC interactive programming environment
+abc/patch[1-3]		ABC interactive programming environment
+awf			nroff -man/-ms clone written in (old) awk
+cio			Frontend to RCS ci/co
+deliver2.0pch/part[01-10] Deliver 2.0 patches
+flex2.3/part[01-10]	Flex, a fast lex replacement
+lome/part[01-09]	Line oriented macro processor
+mlpd			Feed multiple printers from one BSD lpr queue
+newsxd/part[01-03]	Netnews transmission daemon
+pty/part[01-06]		Run a program under a pty session
+sc6.8/part[01-06]	The SC Spreadsheet, release 6.8
+sps2/part[01-04]	SPS, a PS replacement
+transfig/part[01-06]	Tool for creating TeX documents with portable graphics
+trn/part[01-14]		Complete reposting of TRN at patchlevel 1
+trn/patch1		TRN, version of RN that follows conversation threads
+vixie-cron/part[01-03]	A cron/crontab replacement
+xmodem3.9/part[01-03]	Xmodem file transfer program, revision3.9
+
+
+--------------------
+Subject: Volume 28 (Ends May 23, 1995)
+
+index28.1	Introduction to comp.sources.unix
+index28.2	List of sources in the archives
+index28.3	Future plans for comp.sources.unix
+bcs-2.0		(26 parts) A Baseline Configuration System,
+mrandom-3.0	(6 parts) random number generator with persistent state,
+fullpath	(1 part) reformat "ls -lR" output to a more useful form, V1.0.1,
+strftime-6.1	(1 part) strftime(3) and date(1) implementation, V6.1,
+lb		(1 part) a load balancing interface to "rsh", V2.01,
+fgres		(1 part) search and replace character patterns,
+smartlog	(1 part) Logfile maintenance utility, V2.3,
+fingerprint	(1 part) a uniform interface to MD5, snefru, et al, V0.75,
+fprintls	(1 part) a fingerprinting version of ls, V0.75,
+siod		(3 parts) Scheme In One Defun, V3.0,
+xtree		(1 part) an ls-like tool, similar to DOS's vtree,
+grok		(1 part) match regular expressions and correct errors, V1.0,
+yapp		(5 parts) conferencing system (similar to PicoSpan),
+pd		(1 part) an alternative to "ls",
+m0		(12 parts) a messenger execution environment,
+simple-syslog	(1 part) 'simple' clone of 4.4BSD syslog routines,
+diffstat	(1 part) compute histograms of diff output,
+saenv_alldisks	(6 parts) sysadmin env, disk management and backups,
+vtprint-2.0	(3 parts) utility for printing through VT100/clone "aux" port,
+sysinfo-2.1.2	(5 parts) Show system information, V2.1.2,
+filter-2.1	(1 part) multiple-keyword text searcher, V2.1,
+freeks		(1 part) a who-is-logged-on report similar to "geeks", V1.32,
+hostid-sun	(1 part) change hostid on a Sun,
+bmw-5		(1 part) Mailing List/Digest/Archive Mananger (in PERL), V5,
+freeks-1.33	(1 part) extended login accounting, V1.33,
+getnfswd-1.12	(2 parts) a replacement for the getwd(2) system call, V1.12,
+zm		(1 part) zmtx/zmrx fast Zmodem, developed from scratch,
+skill		(3 parts, 3 patches) signal or reprioritize specified processes, V3.6,
+rain		(1 part) rain drops keep falling on my (non-curses) screen,
+srsi		(1 part) Program to remind you to take a typing break,
+fromwho		(2 parts, 1 patch) an expanded `from' program, V1.7,
+cook-1.6	(19 parts) a file construction tool, V1.6,
+sortmail	(1 part) kill files and more for your mail,
+bootp-2.4.0	(4 parts, 1 patch) RFC 1048,1533 "bootp" server (updates V27I63),
+hand-1.70	(3 parts) a bunch of fingers working together,
+slock-1.0	(1 part) a curses screen lock with logging, screensaver,
+startup		(1 part) flexible UNIX shell session initialization,
+simple_menu-3.1	(9 parts, 3 patches) a simple shell-level menu system, V3.1,
+ckpasswd	(1 part) a password checker,
+hostid-sun-1.3.1	(4 parts) change hostid on a Sun, V1.3.1,
+pint		(7 parts) PINT is not TWAIN (scanner interface toolset),
+fullpath-1.1.0	(1 part) reformat "ls -lR" output to a more useful form,
+saenv-5.01	(7 parts) SysAd Environment (OS_Research/Backup) Suite,
+slock-1.1	(1 part) A curses based terminal locking program,
+bl_lock		(1 part) dumb(sic) terminal screen lock utility,
+submit		(1 part) electronic submission tool for classwork,
+mail-expand	(1 part) sendmail wrapper to expand and check addresses,
+term-2.2.5	(9 parts) SLIP-like functionality between two *IX hosts (REPOST),
+krusty-0.79	(8 parts) Krusty's Fun House (a game),
+sect		(1 part) extract a section of lines from a file or stdin,
+publib-0.4	(4 parts) framework for library of public, reusable "C" functions,
+liw-modules-0.4	(14 parts) the LIW module set (for use with Publib),
+netpipes-2.1	(1 part) the power of shell pipes over TCP streams,
+libprint-1.0	(1 part) libprint-1.0 -- extensible and dynamic string formatting library,
+idled-1.00	(2 parts) idle (et al) session detector/sanctioner, V1.00,
+saudi		(1 part) provide a syslog audit of 'su' users,
+strobe		(1 part) super optimized TCP port surveyor (V0.92),
+rel		(1 part) find files relevant to boolean search parameters,
+
+--------------------
+Subject: Volume 27 (Ends March 29, 1994)
+
+index27.1	Introduction to comp.sources.unix
+index27.2	List of sources in the archives
+index27.3	Future plans for comp.sources.unix
+top-3.2		(13 parts) a top process display, version 3.2,
+screen-3.5.1	(10 parts) full-screen window manager/multiplexor,
+ytalk-3.0	(1 part, 2 patches) multi-user replacement for the UNIX "talk" program,
+efence		(1 part, 1 patch) Electric Fence, a debugging malloc() library,
+runes		(3 parts) an implementation of setlocale(3) and all its friends,
+conv123		(2 parts) convert ASCII files to Lotus-123 format,
+avl-subs	(1 part) REPOST AVL Tree subroutines (replaces v11i020 from 1987),
+encode		(1 part) utilities encode/decode binary files in ascii format,
+aegis-2.1	(19 parts) project change supervisor (V2.1),
+transfig-2.1.8	(7 parts, 1 patch) a set of tools for creating TeX documents with graphics,
+bootp-2.2.B	(2 parts, 2 patches) RFC 1048 "bootp" server (w/ vendor extensions),
+bootptest-1.1	(1 part, 1 patch) utility for testing a bootp server,
+leak		(1 part, 2 patches) quick and dirty code to find memory leaks,
+fas-2.11.0	(8 parts) asynch serial driver for System V,
+qt		(1 part) full-text retrieval program,
+fingerprint	(2 parts) a universal hash/checksum package,
+jam		(5 parts) just another make,
+xinetd-2.1.1	(2 patches)
+ease3.5		(1 patch)
+mthreads	(4 parts) netnews database generator/manager, V3.1,
+trn-3.3		(12 parts) threaded newsreader based on RN, V3.3,
+clc		(21 parts) C Libraries Collection,
+calc-2.9.0	(20 parts) arbitrary precision C-like programmable calculator,
+tripwire-1.1	(26 parts) security integrity monitor, V1.1,
+queue		(1 part) implementations of lists, tail queues, and circular queues,
+distributed-c-2.1 (19 parts) Distributed C Development Environment, V2.1,
+mmap-2.2.3	(2 parts) A SVR3.2 Memory Mapped I/O Driver v2.2.3,
+team		(1 part) portable multi-buffered tape streaming utility,
+vixie-cron	(2 parts, 1 patch) Vixie's Cron, V3.0,
+fas-2.12.0	(8 parts) asynch serial driver for System V,
+strftime-6.0	(1 part) yet another strftime(3) and date(1),
+psroff-3.0	(1 patch)
+
+--------------------
+Subject: Volume 26 (Ends August 7, 1993)
+
+arc-5.21	(3 parts) arc 5.21 (pl 8) - file archive/compression tool
+psroff3.0	(9 patches)
+agrep-2.01	(3 parts) very fast grep with approximate pattern matching
+pr2		a simple page formatter similar to `pr'
+ptyshl		shell layers via pseudo-ttys
+cputt		monitor top ten (by cpu time) processes on SunOS
+sps3		(3 parts) show process status
+newmail.pch1	utility to check for new mail, Patch01
+setd.pch1	setd V1.7 -- Set Directory and Mark Utilities, Patch01
+calc		(21 parts) An arbitrary precision C-like calculator
+hostcvt.pch2	convert /etc/hosts files into DNS zone files, Patch02
+uuhost-2.1	lookup UUCP mail and USENET information
+munetd		a more universal network superserver
+perfmon		line- and screen-oriented interface to rstatd(8)
+maint		(7 parts, 1 patch) full-screen file/dir maintenance tool
+cforms		(3 parts) forms management front end for curses(3)
+utree		(8 parts) screen oriented filesystem utility (V3.03b-um)
+super		execute limited command set as root
+line3d		3D Bresenham's (a 3D line drawing algorithm)
+psgraph		(3 parts) generate graph in Postscript
+sftp		(1 parts, 1 patch) command line ftp interface
+tpage2		tom's utilities for alphanumeric pagers (V2.0)
+idutil		command-line i'face to cuserid(3), getpwnam(3), &etc
+lmdd		Trivial disk I/O performance tester - like dd
+netpipes	(1 parts, 1 patch) netpipes -- BSD network pipe tools
+socket		shell-level interface to IP/TCP sockets (V1.1)
+mytinfo		(3 parts) a replacement for terminfo and termcap
+op		(1 parts) a tool to allow customizable super user access
+nisttime	(1 parts) Set the system clock to the NIST master clock
+schemeweb	(1 parts) simple support for literate programming in Lisp
+xwhosup		(1 parts) X11 R5 program to graphically display "rwho" activity
+tprobe-1.0	(1 parts) tape saveset analyzer and duplicator
+strftime	(1 parts) convert date and time to string (includes "date")
+faucet		(1 parts) pipe-like functionality over TCP sockets
+dup		(1 parts) a /dev/fd driver for Xenix/386 2.3+
+cellular-2.0	(3 parts) a cellular automata language
+chernikov	(1 parts) computes Chernikov stochastic webs
+ns2tab		(3 parts) Increasing the usefullnes of the nameserver
+aliasmooth	(1 parts) perl script for tidying up the aliases file
+tcx-1.1		(1 parts) Transparently Compressed Executables for UNIX
+malloc-1.2.0	(5 parts) debugging version of malloc, V1.2.0
+cputt-2.3	(1 parts) cpu status monitor for sunos, V2.3
+modempool	(1 parts) modem pool handler, with dialback
+mcast		(4 parts) LLNL IP multicast implementation, V1.2.3
+xc-4.1		(3 parts) a serial communications program, V4.1
+sysinfo-1.0	(1 parts) Show system information
+strftime-2.0	(1 parts) yet another strftime(3) and date(1)
+getethers	(1 parts) find IP addrs for all local ether addrs (V1.4)
+port-lpr	(1 parts) portable lpr client for USL and VMS systems
+mood		(1 parts) social programs including rwhod, rwho replacements
+parpd		(1 parts) proxy arp daemon for sunos/NIT, V1.0
+opcom-2.1	(1 parts) permit unprivileged users to run selected commands
+funnelweb	(23 parts) a tool for literate programming in C
+banners-1.1	(7 parts) a collection of banner programs, V1.1
+most-3.2	(2 parts) most-3.2 -- more/less replacement, V3.2
+pcomm-2.0.2	(6 parts) a serial communications program (clone of ProComm)
+parpd1.2	(1 parts) proxy arp daemon for sunos/NIT, V1.2
+tulp-3.0.3	(2 parts) a listserv-like mailing list manager, V3.0.3
+radio2.0.2	(2 parts, 2 patches) UDP b'cast/rcv utilities for audio, V2.0.2
+tuner1.4	(1 parts) a Motif-based utility for "radio" reception
+cdsend1.2	(1 parts) read music CD's via SCSI, convert and play [SGI]
+filterkit	(1 parts) a collection of audio filters and resamplers
+ssh-1.7		(4 parts) Steve's SHell (a small csh-like shell), V1.7
+tripwire	(8 parts, 2 patches) security integrity monitor
+mnl-rpc++-2.3.1	(3 parts) a C++ interface to Sun RPC
+veos-2.0	(16 parts) The Virtual Environment Operating Shell, V2.0
+philspell-1.0	(1 parts) correct problematic spelling in text files
+strftime-3.0	(1 parts, 1 patch) still more strftime(3) and date(1)
+cook-1.4	(11 parts) a file construction tool (like "make")
+uutraf		(4 parts) UUCP Traffic Analysis and Reporting
+everex-led	(1 parts) LED driver for Everex Step machines
+ee-1.23		(1 parts) simple text editor for novice users
+macps-2.3	(1 parts) Print Mac files on UNIX
+xinetd-2.1.1	(32 parts, 1 patch) inetd replacement with ACL's and logging
+con		(1 parts) user-friendly network connection utility
+uulocks		(1 parts) print status summary of UUCP locks
+fping		(1 parts) A tool to quickly ping N number of hosts
+db-1.6		(9 parts) A New Hashing Package for UNIX(tm) (updates dbm/ndbm)
+byacc-1.9	(3 parts) Berkeley YACC
+super-2.0	(1 parts) allow certain users to use certain commands as root
+hostcvt		(1 patch)
+ltroff		(2 parts, 1 patch) troff-classic to laserjet 4 filter +fonts
+banners		(5 parts) a collection of banner programs
+rmgetopts	(1 parts) remove getopts(1) from shell scripts
+screen-3.5	(10 parts) screen manager with VT100/ANSI terminal emulation
+
+--------------------
+Subject: Volume 25 (Ends April 10, 1992)
+
+index25.1	Introduction to comp.sources.unix
+index25.2	List of sources in the archives
+byte-benchmarks3.1	(4 parts) BYTE Benchmarks, V3.1
+chop		extract selected fields or columns of text lines
+classify	compare groups of files and classify them
+crashme		stress-test your U**X kernel
+ease3.5		(6 parts) high-level sendmail.cf language,
+ethertop	Monitor network utilization in terms of ``busiest hosts''
+fido		a new watchdog for users and machines
+finger		(7 parts) Phil's Finger Program
+fromwho		yet another replacement for from(1)
+fsp		(3 parts) A real-time, multithreaded Internet archive server
+getethers	scan an ethernet and learn hostname/ethernet pairings
+hexpert		a binary file editor for SysV
+hostcvt		convert /etc/hosts files into DNS zone files
+hostcvt.pch1	patch 1 for hostcvt
+ile		an input line editor
+ils		interactive "ls" and browser
+indir.pch2.4	from 2.3 to 2.4
+ispin		(15 parts) Indianapolis Standard Printer I'face / Net printers
+kit		(4 parts) the ultimate mailing kit,
+letters		game to improve typing skills
+listserv5.31	(6 parts) mailing list management system,
+lsof		a successor to fstat and ofiles
+macps		utilities to help print Apple "LaserPrep" files
+mrandom		A random number generator with persistent state
+msgd		sends a one line message to another user or users
+mtools2		(3 parts) tools to manipulate MSDOS filesystems, V2.0
+mtools2-xenixpatch	xenix patches for mtools2
+newmail		utility to check for new mail
+npasswd		(3 parts) replacement for passwd(1)
+ofiles.pch	patch to ofiles -- v18i057
+ofiles2		a portable version of ofiles (show list of open files)
+pathalias10.pch	patch to pathalias V10 from Volume 22
+permissions	(3 parts) access control library for YP/NIS environments
+policy		(3 parts) tools for providing interactive timeshare policies
+posix-date	implementation of posix date(1) and strftime(3)
+psroff3.0	(3 patches)
+pty4		(9 parts) Generalized interface to pseudo-tty devices
+rcs-5.6		(11 parts) Revision Control System, V5.6
+rcsify		put groups of files under RCS control
+rlogin-hack	Enhanced BSD Rlogin to support environment passing
+roff		simple text formatter
+screen3		(8 parts) multiple windows on an ASCII terminal
+setd		setd V1.7 -- Set Directory and Mark Utilities
+settime		Set system time from atomic clock
+smail-deliver.pch	patches to smail 2.5 for Xenix and/or Deliver
+sockdemo	demo for berkeley socket interface
+tcsh-6.01	(18 parts) a csh replacement with lots of extra goodies
+tourney		runs an NCAA B-Ball tournament
+trash		(8 parts) simulate process execution in MIPS RISC/os 4.52
+trn		(13 parts) threaded newsreader based on rn 4.4
+utmp		utility to repair broken /etc/utmp files
+zip		(7 parts) file compression/archive tool
+
+--------------------
+Subject: Volume 24 (Ends October 10, 1991)
+
+index24.1	Introduction to comp.sources.unix
+index24.2	List of sources in the archives
+chemtab		(3 parts, 2 patches) Manipulate data on the chemical elements
+cvs1.2upgrade	(2 parts) CVS upgrade for RCS5.5 support
+elm2.3patches	(11 parts) Elm mail system, release 2.3 (patches)
+faxpax		(5 parts) Email fax-sending package
+gnudiff1.15	(8 parts) GNU Diff, version 1.15
+hp		Reverse polish notation calculator
+jlook		(5 parts) Journal lookup-program with database
+lb		Simple load-balancing program
+mkid2		(7 parts) Program identifier database tools
+namei		A program to trace through symlinks
+policy		Scripts for setting site policies
+psroff3.0	(19 parts, 4 patches) psroff, Troff to PostScript filter
+pucc-install	(7 parts) Purdue software product installation system
+pucc-lib	(2 parts) Library for Purdue University Computing Center tools
+pucc-mk		(6 parts) Purdue shell turbo charger and manual installer
+pucc-rmprog	Purdue tool to remove old programs
+pucc-turnin	(2 parts) Purdue tool for students to turn in work
+qterm5.0	(2 parts) Qterm5.0 -- Query terminal for its type
+rcs		(12 parts, 1 patch) GNU RCS V5.5 source control system
+sysVr4386slip	(4 parts) SystemVr4/386 SLIP driver and utilities
+tarx		Tool to salvage data from damaged tar tapes
+untic		Decompile terminfo terminal descriptions
+watch		Repeatedly execute a program under curses(3)
+yabbawhap	(4 parts) Public-domain replacement for compress programs

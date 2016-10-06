@@ -1,0 +1,46 @@
+CGREP(1)		UZIX Text Utilities		 CGREP(1)
+
+
+NAME
+       cgrep - get regular expression and display context
+
+USAGE
+       cgrep [-a n][-b n][-f][-l n][-n][-w n] pattern [files...]
+
+DESCRIPTION
+       This manual documents the UZIX version of cgrep. It's been
+       scaled down for inclusion in the UZIX release, and doesn't
+       have the help or version  commands  included  in  the  GNU
+       release. Also, some options are missing.
+
+       cgrep  is  a  program  like  grep, except that it also can
+       print a few lines above and/or below the  matching  lines.
+       It also prints the line numbers of the output.
+
+OPTIONS
+       -a     How many lines to display after the matching line.
+
+       -b     How many lines to display before the matching line.
+
+       -f     Suppress file name in the output.
+
+       -l     Lines are truncated to this length before  compari-
+              son.
+
+       -n     Suppress line numbers in the output.
+
+       -w     Sets window size (same as -a n -b n).
+
+BUGS
+       This version  has  been	scaled	down  a  little  bit  for
+       inclusion in the UZIX. Some options are missing from  this
+       release, that many would expect from the GNU versions.
+
+SEE ALSO
+       grep(1), fgrep(1)
+
+AUTHORS
+       Program :- Mark Mallett <mem@zinn.mv.com>
+       Documentation :- Adriano Cunha <adrcunha@dcc.unicamp.br>
+
+CGREP(1)		UZIX Text Utilities		 CGREP(1)

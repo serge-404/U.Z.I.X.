@@ -1,0 +1,44 @@
+SU(1)    	UZIX System Administrator's Manual	    SU(1)
+
+
+NAME
+       su - temporarily log in as superuser or another user
+
+USAGE
+       su [username]
+
+DESCRIPTION
+       This manual documents the UZIX version  of  su.  It's been
+       scaled down for inclusion in the UZIX release, and doesn't
+       have the help or version  commands  included  in  the  GNU
+       release. Also, all options are missing.
+
+       su  can  be used to temporarily login as another user.  It
+       prompts for the superuser password.  If the correct  pass-
+       word  is entered, su creates a shell with the desired uid.
+       If no name is specified, root is  assumed.   To  exit  the
+       temporary shell,  type  exit.  When memory is tight, it is
+       better to become superuser by logging out and then logging
+       in  again  as  root, rather than using su since the latter
+       creates an extra shell in memory.  Any user  with  a  zero
+       group id need not type a password.  This makes life easier
+       for the system administrator.
+
+EXAMPLES
+       To become root, I'd type:
+       su
+
+       To become user 'fudeba', I'd type:
+       su fudeba
+
+BUGS
+       This version  has  been	scaled	down  a  little  bit  for
+       inclusion in the UZIX. Many options are missing from  this
+       release, that many would expect from the GNU versions.
+
+AUTHORS
+       Program :- Patrick van Kleef
+		  Adriano Cunha <adrcunha@dcc.unicamp.br>
+       Documentation :- Adriano Cunha <adrcunha@dcc.unicamp.br>
+
+SU(1)    	UZIX System Administrator's Manual	    SU(1)

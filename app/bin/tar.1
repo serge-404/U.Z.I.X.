@@ -1,0 +1,33 @@
+TAR(1)		       UZIX File Utilities		   TAR(1)
+
+
+NAME
+       tar - tape/disk archiving utility
+
+USAGE
+       tar [xtv]f devname [filename] ....
+
+DESCRIPTION
+       This manual documents the   UZIX   version   of	cat. It's
+       been significantly  scaled  down for inclusion in the UZIX
+       release, and doesn't have the  help  or	version  commands
+       included in the GNU release.  In  addition,  quite  a  few
+       features are missing from this release.
+
+       tar is an archiver which batches files togher. However, it
+       doesn't compress. After you create the archive,	you  must
+       compress it. If your not piping to tar, you  must  specify
+       the f option.
+
+       One important thing about this version of tar, is that  it
+       can only read/extract/list tar files, not write to them.
+
+EXAMPLES
+       To extract all files from dog.tar, I'd type:
+	   tar xf dog.tar
+
+AUTHORS
+       Program :- David I. Bell <dbell@pdact.pd.necisa.oz.au>
+       Documentation :- Michael Strates <mstrates@croftj.net>
+
+TAR(1)		       UZIX File Utilities		   TAR(1)

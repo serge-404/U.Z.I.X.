@@ -1,0 +1,36 @@
+DOSWRITE(1)		  UZIX Utilities	      DOSWRITE(1)
+
+
+NAME
+       doswrite - write a file onto an MS(X)-DOS diskette
+
+USAGE
+       doswrite [-a] drive dosfile [uzixfile]
+
+DESCRIPTION
+       doswrite writes its stdin or a specific UZIX  file  to  an
+       MS(X)-DOS file.The diskette or partition must be formatted
+       and  have  an  MS(X)-DOS  file system  already  in  place,
+       including all the directories leading up to the file.
+
+       A drive code of A causes the program to use /dev/dosA, for
+       example, a link to /dev/fd0.  Similarly, to have hard disk
+       partition 1 be DOS drive C, /dev/dosC could be a  link  to
+       /dev/hd1, and so on for other drive codes. A normal device
+       name may also be used instead of a drive code. And,  also,
+       a drive code of A: causes the  program  to  use  /dev/fd0.
+       Similarly, a drive code of C: causes the  program  to  use
+       /dev/fd2. Yet, you can join drive code and dosfile in  one
+       argument, as A:DOSFILE.TXT or C:FUDEBA.ASC, etc.
+
+OPTIONS
+       -a     ASCII file.
+
+SEE ALSO
+       dosdir(1), dosread(1), dosdel(1), cr(1), ncr(1)
+
+AUTHORS
+       Program :- Michiel Huisjes
+       Documentation :- Adriano Cunha <adrcunha@dcc.unicamp.br>
+
+DOSWRITE(1)		  UZIX Utilities	      DOSWRITE(1)

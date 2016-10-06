@@ -1,0 +1,50 @@
+DF(1)			   UZIX File Utilities		    DF(1)
+
+
+NAME
+       df - summarize free disk space
+
+USAGE
+       df [-ikn]
+
+DESCRIPTION
+       This manual documents the UZIX version  of  df.	It's been
+       significantly  scaled  down  for  inclusion  in	the  UZIX
+       release, and doesn't have the  help  or	version  commands
+       included in the GNU release.Also,many options are missing.
+
+       df displays the amount of  disk	space  available  on  all
+       currently  mounted filesystems. Disk space is shown in 512
+       byte blocks by default.
+
+OPTIONS
+       -i
+	      List  inode  usage  information  instead	of  block
+	      usage.  An inode (short for ``index  node'')  is	a
+	      special  kind  of disk block that contains informa-
+	      tion about a file, such as its owner,  permissions,
+	      timestamps, and location on the disk.
+
+       -k
+	      Print  sizes  in	1K  blocks  instead  of  512-byte
+	      blocks.
+
+       -n
+	      Do not access /etc/mtab for getting each filesystem
+	      device and mouting point. Instead, show  filesystem
+	      as its position in mount table and mouting point as
+	      unknown (except for root filesystem).
+
+BUGS
+       This version  has  been	scaled	down  a  little  bit  for
+       inclusion in the UZIX. Many options are missing from  this
+       release, that many would expect from the GNU versions.
+
+       df doesn't show the mounting point of mounted filesystems,
+       except for the root fs.
+
+AUTHORS
+       Program :- Archi Schekochikhin <ARCHI@vlepp.serpukhov.su>
+       Documentation :- Adriano Cunha <adrcunha@dcc.unicamp.br>
+
+DF(1)			   UZIX File Utilities		    DF(1)

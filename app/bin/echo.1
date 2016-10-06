@@ -1,0 +1,46 @@
+ECHO(1) 	       UZIX Shell Utilities		  ECHO(1)
+
+
+NAME
+       echo - display a line of text
+
+USAGE
+       echo [-ne] [string ...]
+
+DESCRIPTION
+       This manual documents the UZIX version of  basename.  It's
+       been significantly  scaled  down for inclusion in the UZIX
+       release, and doesn't have the  help  or	version  commands
+       included in the GNU release.
+
+       echo writes each given string to the standard output, with
+       a space between them and a newline after the last one.
+
+OPTIONS
+       -n do not output the trailing newline.
+
+       -e enable  interpretation  of  the  following   backslash-
+	  escaped characters in the strings:
+	      \a    alert (bell)
+	      \b    backspace
+	      \c    suppress trailing newline
+	      \f    form feed
+	      \n    new line
+	      \r    carriage return
+	      \t    horizontal tab
+	      \v    vertical tab
+	      \\    backslash
+	      \nnn  the character whose ASCII code is nnn (octal)
+	      \xnn  the character whose ASCII code is nn (hex)
+
+BUGS
+       This version  has  been	scaled	down  a  little  bit  for
+       inclusion in the UZIX. Echo  is	complete  except  for the
+       --version and --help options.
+
+AUTHORS
+       Program :- David I. Bell <dbell@pdact.pd.necisa.oz.au>
+		  Archi Schekochikhin <ARCHI@vlepp.serpukhov.su>
+       Documentation :- Adriano Cunha <adrcunha@dcc.unicamp.br>
+
+ECHO(1) 	       UZIX Shell Utilities		  ECHO(1)

@@ -1,0 +1,49 @@
+FLD(1)			  UZIX Text Utilities		   FLD(1)
+
+
+NAME
+       fld - read and concatenate fields from in file
+
+USAGE
+       fld -u -z* -[b t s? i? fm1.n1,m2.n2] {infiles} [> outfile]
+
+DESCRIPTION
+       This manual documents the   UZIX   version   of	fld. It's
+       been significantly  scaled  down for inclusion in the UZIX
+       release, and doesn't have the  help  or	version  commands
+       included in the GNU release. Also, quite a few options are
+       missing.
+
+       Fld read a file,concatenates user-defined fields from this
+       file and output them to the standard output.
+
+OPTIONS
+       -? or -h shows help.
+       -u unpack tabs.
+       -p pack tabs.
+       -z* skip first * spaces.
+       -b skip leading blanks of field.
+       -t remove trailing spaces of field.
+       -s? declares the output fields separator as '?'(it will be
+       printed after the mentioned field).
+       -i? declares the input fields separator as as '?'.
+       -fm1.n1,m2.n2 defines field.
+       -f# gets field from user input.
+
+       The values after "-f" define starting and  ending position
+       of field: m1.n1 is field start (first char of field);m2.n2
+       is the field end(first char not in field).Value 'm' define
+       the number of fields, skipped from begin of line  (0 means
+       no skip). The value 'n' define the number of chars,skipped
+       in selected field. If "m1.n1" is omitted,field starts from
+       line begin. If "m2.n2" is omitted, the field  continues to
+       line end. Excluding omitted "m2.n2", omitting any of  four
+       values means "use 0 for this value".If defined -b, heading
+       spaces will  be	skipped  after	'm', but  before  'n'  is
+       applyed.
+
+AUTHORS
+       Program :- BAS
+       Documentation :- Adriano Cunha <adrcunha@dcc.unicamp.br>
+
+FLD(1)			  UZIX Text Utilities		   FLD(1)

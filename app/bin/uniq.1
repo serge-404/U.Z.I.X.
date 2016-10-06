@@ -1,0 +1,55 @@
+UNIQ(1) 		  UZIX Text Utilities		  UNIQ(1)
+
+
+NAME
+       uniq - remove duplicate lines from a sorted file
+
+USAGE
+       uniq [-cduzN.M+L] [-fields] [+letters] [file]
+
+DESCRIPTION
+       This manual documents the UZIX version  of uniq. It's been
+       significantly  scaled  down  for  inclusion  in	the  UZIX
+       release, and doesn't have the  help  or	version  commands
+       included in the GNU release.Also,many options are missing.
+
+       uniq prints the unique lines in a sorted file,  discarding
+       all but one of a run of matching lines.	It can optionally
+       show only lines that appear exactly once,  or  lines  that
+       appear more than once.  uniq requires sorted input because
+       it compares only consecutive lines.
+
+       uniq writes to the standard output. If the input  file  is
+       not specified, it reads from the standard input.
+
+OPTIONS
+       -u
+	      Only print unique lines.
+
+       -d
+	      Only print duplicate lines.
+
+       -c
+	      Print the number of times each line occurred  along
+	      with the line.
+
+       -z
+	      As -c, but print octal numbers.
+
+       -N.M   Skip over the first N  words  before  checking  for
+	      uniqueness. Skip over the first M letters  (in  the
+	      indicated field).  Note  that  fields  are  skipped
+	      before letters.
+
+       +L     Compare only L letters.
+
+BUGS
+       This version  has  been	scaled	down  a  little  bit  for
+       inclusion in the UZIX. Many options are missing from  this
+       release, that many would expect from the GNU versions.
+
+AUTHORS
+       Program :- BAS
+       Documentation :- Adriano Cunha <adrcunha@dcc.unicamp.br>
+
+UNIQ(1) 		  UZIX Text Utilities		  UNIQ(1)

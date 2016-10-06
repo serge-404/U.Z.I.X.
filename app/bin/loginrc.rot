@@ -1,0 +1,11 @@
+#
+# Simple script to be executed when user logs on system
+#
+clear
+#.setmsxchar
+echo Welcome to
+cat .uzixlogo
+#banner uzix0.1.6
+#echo -e \nThe fortune cookie of the boot:
+#fortune
+#echo -e \n

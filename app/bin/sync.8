@@ -1,0 +1,21 @@
+INIT(8) 	      UZIX Programmer's Manual		  INIT(8)
+
+
+NAME
+       sync - flush filesystem buffers
+
+USAGE
+       sync
+
+DESCRIPTION
+       Sync flushes any pending cache writes to your disk.Sync is
+       generally called before a system shutdown, etc..  although
+       using the proper command will ensure that  the  dirty  bit
+       on the filesystem is set to clean,  which  stops un-needed
+       disk checks at bootup.
+
+AUTHORS
+       Program :- Alistair Riddoch <ajr93@ecs.soton.ac.uk>
+       Documentation :- Michael Strates <mstrates@croftj.net>
+
+INIT(8) 	      UZIX Programmer's Manual		  INIT(8)

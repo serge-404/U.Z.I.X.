@@ -1,0 +1,52 @@
+WC(1)			  UZIX Text Utilities		    WC(1)
+
+
+NAME
+       wc - print the number of bytes, words, and lines in files
+
+USAGE
+       wc [-pwp] [filenames]
+
+DESCRIPTION
+       This manual documents the UZIX version  of wc.	It's been
+       significantly  scaled  down  for  inclusion  in	the  UZIX
+       release, and doesn't have the  help  or	version  commands
+       included in the GNU release. Also, a few options that many
+       would expect from the GNU versions are missing  from  this
+       release.
+
+       wc counts the number of bytes, whitespace-separated words,
+       and newlines in each given file, or the standard input  if
+       none are given.It prints one line of counts for each file,
+       and if the file was given as an argument,  it  prints  the
+       filename following the counts.If more than one filename is
+       given, wc prints a  final  line	containing the cumulative
+       counts, with the filename `total'.  The counts are printed
+       in  the	order: lines, words, bytes.
+
+       By default, wc prints all three counts.	Options can spec-
+       ify that only certain counts be printed.
+
+OPTIONS
+       -b
+	      Open files as binary stream.
+
+       -h
+	      Show program usage.
+
+       -p
+	      Count pages.
+
+       -w
+	      Find maximum line width.
+
+BUGS
+       This version  has  been	scaled	down  a  little  bit  for
+       inclusion in the UZIX. Many options are missing from  this
+       release, that many would expect from the GNU versions.
+
+AUTHORS
+       Program :- BAS
+       Documentation :- Adriano Cunha <adrcunha@dcc.unicamp.br>
+
+WC(1)			  UZIX Text Utilities		    WC(1)

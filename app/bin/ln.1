@@ -1,0 +1,40 @@
+LN(1)			   UZIX File Utilities		    LN(1)
+
+
+NAME
+       ln - make links between files
+
+USAGE
+       ln [-s] source... destination
+
+DESCRIPTION
+       This manual documents the UZIX version  of  ln.	It's been
+       significantly  scaled  down  for  inclusion  in	the  UZIX
+       release, and doesn't have the  help  or	version  commands
+       included in the GNU release.Also,many options are missing.
+
+       ln make links between files. If the last argument names an
+       existing directory, ln  links each other  given	file into
+       a   file     with     the     same     name     in    that
+       directory.  If only one file is given, it links that  file
+       into  the current directory.  Otherwise, if only two files
+       are given, it links the first onto the second.  It  is  an
+       error  if  the  last  argument is not a directory and more
+       than two files are given.  It makes hard links by default.
+
+OPTIONS
+       -s
+	      Make symbolic links instead of  hard  links.   This
+	      option produces an error message on systems that do
+	      not support symbolic links.
+
+BUGS
+       This version  has  been	scaled	down  a  little  bit  for
+       inclusion in the UZIX. Many options are missing from  this
+       release, that many would expect from the GNU versions.
+
+AUTHORS
+       Program :- David I. Bell <dbell@pdact.pd.necisa.oz.au>
+       Documentation :- Adriano Cunha <adrcunha@dcc.unicamp.br>
+
+LN(1)			   UZIX File Utilities		    LN(1)

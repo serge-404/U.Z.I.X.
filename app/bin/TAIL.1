@@ -1,0 +1,33 @@
+TAIL(1) 		 UZIX Text Utilities		  TAIL(1)
+
+
+NAME
+       tail - print the last few lines of a file
+
+USAGE
+       tail [-c n | -n n] [-f] [file] ...
+
+DESCRIPTION
+       This manual documents the UZIX version  of tail. It's been
+       scaled down for inclusion in the UZIX release, and doesn't
+       have the help or version  commands  included  in  the  GNU
+       release. Also, many options are missing.
+
+       tail print last  few lines  of  one  or  more  files.  The
+       default count is 10 lines.  The default file is  stdin. If
+       the value of n for the -c or -n  flags  starts  with  a  +
+       sign,  counting  starts  at the beginning, rather than the
+       end of the file.
+
+OPTIONS
+       -c     The count refers to characters.
+
+       -f     On FIFO or special file, keep reading after EOF.
+
+       -n     The count refers to lines.
+
+AUTHORS
+       Program :- Norbert Schlenker
+       Documentation :- Adriano Cunha <adrcunha@dcc.unicamp.br>
+
+TAIL(1) 		 UZIX Text Utilities		  TAIL(1)

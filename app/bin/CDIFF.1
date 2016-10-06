@@ -1,0 +1,36 @@
+CDIFF(1)		UZIX Text Utilities		 CDIFF(1)
+
+
+NAME
+       cdiff - context diff
+
+USAGE
+       cdiff [-cn] file1 file2
+
+DESCRIPTION
+       This manual documents the UZIX version of cdiff. It's been
+       scaled down for inclusion in the UZIX release, and doesn't
+       have the help or version  commands  included  in  the  GNU
+       release. Also, some options are missing.
+
+       cdiff  produces  a  context diff by first running diff and
+       then adding context.  Some update  programs,  like  patch,
+       can  use  context diffs to update files, even in the pres-
+       ence of other, independent changes.
+
+OPTIONS
+       -cn    Provide n lines of context.
+
+BUGS
+       This version  has  been	scaled	down  a  little  bit  for
+       inclusion in the UZIX. Some options are missing from  this
+       release, that many would expect from the GNU versions.
+
+SEE ALSO
+       cmp(1), diff(1), patch(1)
+
+AUTHORS
+       Program :- Larry Wall
+       Documentation :- Adriano Cunha <adrcunha@dcc.unicamp.br>
+
+CDIFF(1)		UZIX Text Utilities		 CDIFF(1)

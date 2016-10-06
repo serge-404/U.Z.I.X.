@@ -1,0 +1,38 @@
+KILL(1) 		    UZIX Utilities		  KILL(1)
+
+
+NAME
+       kill - kill a process from your system
+
+USAGE
+       kill [-signal] pid ....
+
+DESCRIPTION
+       This manual documents the UZIX version of kill. It's  been
+       significantly  shortened,   but	not  many  features  have
+       actually been removed. However, there may  be  differences
+       from the GNU version.
+
+       kill's usual use is to remove stray  processes  from  your
+       system, kill is sometimes  used	for  different	purposes,
+       such   as  telling  programs  different	things	with  the
+       {-signal} option.
+
+EXAMPLES
+       For example to kill a program that's running  at  1024,	I
+       would type:
+
+	   kill -9 1024
+
+       This would send signal 9 to the program, and  the  program
+       will then quit.
+
+OPTIONS
+       -signal is the signal you  wish	to  send  to the  running
+       process. Examples are HUP, INT, QUIT, KILL or 9.
+
+AUTHORS
+       Program :- David I. Bell <dbell@pdact.pd.necisa.oz.au>
+       Documentation :- Michael Strates <mstrates@croftj.net>
+
+KILL(1) 		    UZIX Utilities		  KILL(1)

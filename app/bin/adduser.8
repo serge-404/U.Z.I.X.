@@ -1,0 +1,40 @@
+ADDUSER(8)	      UZIX Programmer's Manual	       ADDUSER(8)
+
+
+NAME
+       adduser - add a user to the system
+
+USAGE
+       adduser
+
+DESCRIPTION
+       Adds  a	specified user,  called  username, to the system.
+
+       After executed, the program will ask the user  login,  his
+       full  name,  his  group	 ID,  user  ID,  home  directory,
+       default shell and password. Except for the login and  full
+       name, all other questions have default values that will be
+       used if you don't type anything.
+
+       You must be the root to add a new user to the system.
+
+LIMITATIONS
+       User  names  must  be 8 characters or fewer long, and must
+       contain only letters or numbers.
+
+       Obvious passwords are accepted.
+
+       Shadow password system is not supported.
+
+BUGS
+       This  version  has  been  scaled  down  a  little  bit for
+       inclusion in the UZIX. As  adduser  vary  from  system  to
+       system, it's not a big problem, since it  does  what  it's
+       supposed to.
+
+AUTHORS
+       Program :- Craig Hagan <hagan@opine.cs.umass.edu>
+		  Adriano Cunha <adrcunha@dcc.unicamp.br>
+       Documentation :- Adriano Cunha <adrcunha@dcc.unicamp.br>
+
+ADDUSER(8)	      UZIX Programmer's Manual	       ADDUSER(8)

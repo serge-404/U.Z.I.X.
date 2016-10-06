@@ -1,0 +1,58 @@
+TR(1)			  UZIX Text Utilities		    TR(1)
+
+
+NAME
+       tr - transliterate characters
+
+USAGE
+       tr from to [+start] [-end] [filein [fileout]]
+
+DESCRIPTION
+       This manual documents the   UZIX   version   of	 tr. It's
+       been significantly  scaled  down for inclusion in the UZIX
+       release, and doesn't have the  help  or	version  commands
+       included in the GNU release. In addition, many options are
+       missing from this release.
+
+       Tr transliterates characters from filein to  fileout.  The
+       characters for transliterating are "from",  and	those  to
+       transliterate into are "to". "start" is the start position
+       for transliteration and "end" is the ending  position  for
+       transliteration. If "from" has the same	length	of  "to",
+       characters in "to" are substituted by  the  characters  in
+       "from". If "to" is not given, the characters in "from" are
+       simply deleted from filein.If length of "from" are greater
+       than "to",all characterss in "from" beyond the last one to
+       match up with one in "to" translate into the last char  in
+       "to",  but   any  stream  of  consecutive   characters  so
+       translated  is  reduced	to  just  one  occurence  of  the
+       resulting char.
+
+SYNTAX
+       The recognized escape sequences are \r, \n, \t, \f, \b, \s
+       and \ddd. For ranges, a-e is the same as abcde (but e-a is
+       an empty range).
+
+       There are also the following recognized classes:
+
+       :z empty range
+       :a is the same as a-zA-Z.
+       :l is the same as a-z.
+       :u is the same as A-Z.
+       :m is the same as  -ï.
+       :b is the same as €-Ÿ.
+       :r is the same as  -ï€-Ÿ.
+       :d is the same as 0-9.
+       :n is the same as a-zA-Z0-9.
+       :s is the range \001-\040.
+       :. is the range including all ASCII other then \0.
+
+       For negation, if the first character of "from" is '^',then
+       any characters not in "from" match. In this case,"to" must
+       be null or only a single character.
+
+AUTHORS
+       Program :- BAS
+       Documentation :- Adriano Cunha <adrcunha@dcc.unicamp.br>
+
+TR(1)			  UZIX Text Utilities		    TR(1)

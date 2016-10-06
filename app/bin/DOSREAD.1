@@ -1,0 +1,37 @@
+DOSREAD(1)		  UZIX Utilities	       DOSREAD(1)
+
+
+NAME
+       dosread - read a file from an MS(X)-DOS diskette
+
+USAGE
+       dosread [-a] drive dosfile [uzixfile]
+
+DESCRIPTION
+       dosread reads one MS(X)-DOS file and writes it on standard
+       output or to file uzixfile on disk. The file name must use
+       slash, not backslash as a separator. ASCII files  have the
+       final CTRL-Z stripped, and carriage return plus  line feed
+       are mapped to line feed only.
+
+       A drive code of A causes the program to use /dev/dosA, for
+       example, a link to /dev/fd0.  Similarly, to have hard disk
+       partition 1 be DOS drive C, /dev/dosC could be a  link  to
+       /dev/hd1, and so on for other drive codes. A normal device
+       name may also be used instead of a drive code. And,  also,
+       a drive code of A: causes the  program  to  use  /dev/fd0.
+       Similarly, a drive code of C: causes the  program  to  use
+       /dev/fd2. Yet, you can join drive code and dosfile in  one
+       argument, as A:DOSFILE.TXT or C:FUDEBA.ASC, etc.
+
+OPTIONS
+       -a     ASCII file.
+
+SEE ALSO
+       dosdir(1), doswrite(1), dosdel(1), cr(1), ncr(1)
+
+AUTHORS
+       Program :- Michiel Huisjes
+       Documentation :- Adriano Cunha <adrcunha@dcc.unicamp.br>
+
+DOSREAD(1)		  UZIX Utilities	       DOSREAD(1)

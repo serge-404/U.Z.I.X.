@@ -1,0 +1,59 @@
+ED(1)			  UZIX Text Utilities		    ED(1)
+
+
+NAME
+       ed - a text editor
+
+USAGE
+       ed filename
+
+DESCRIPTION
+       This manual documents the   UZIX   version   of	ed.  It's
+       been significantly  scaled  down for inclusion in the UZIX
+       release, and doesn't have the  help  or	version  commands
+       included in the GNU release. In addition, many options are
+       missing from this release.
+
+       Ed is a line based textfile editor for UNIX.It can be used
+       to create, edit, and manipulate text based/readable files.
+
+       If ed is involked with a {filename}  specified,	it  opens
+       this file if it exists, or creates it, and will use it  as
+       the current document. Upon quitting ed,	any  changes  not
+       saved using the 'w' command will be lost.
+
+       Ed is similar to vi in many respects; in fact one  of  the
+       only major  differences	is  that  ed's	line  based.  So,
+       naturally, when you involke ed, it starts in command mode.
+
+       When an input command is issued, it  switches  into  input
+       mode (a=append, i=insert, c=change). In input mode you can
+       type and it will be added to the file.Command mode is used
+       explicitly for entering commands, and no input work can be
+       done there.
+
+COMMANDS
+
+       Although no comprehensive command listing is given in this
+       manual, here are some quick commands to get  you  started.
+       For more information, see the full  UNIX  ed  manual  page
+       (available from most standard UNIX systems).
+
+       (.)a = append text to the buffer after the addressed line,
+       which may be the address 0.
+
+       (.,.)c = changes lines in buffer.
+
+       (.,.)d = delete the addressed lines from your buffer.
+
+       q = quits ed
+
+       Q = quits ed unconditionally
+
+       w = write your file to disk.
+
+AUTHORS
+       Program :- David I. Bell <dbell@pdact.pd.necisa.oz.au>
+       Documentation :- Michael Strates <mstrates@croftj.net>
+
+ED(1)			  UZIX Text Utilities		    ED(1)

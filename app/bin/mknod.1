@@ -1,0 +1,37 @@
+MKNOD(1)	       UZIX File Utilities		 MKNOD(1)
+
+
+NAME
+       mknod - make special files
+
+USAGE
+       mknod [-m mode] filename {bcu} major minor
+
+DESCRIPTION
+       This  manual  documents	the  UZIX  version of mknod. It's
+       been significantly  scaled  down for inclusion in the UZIX
+       release, and doesn't have the  help  or	version  commands
+       included in the GNU release.
+
+       mknod creates a FIFO, character special device,	or  block
+       special file with the given name. The default mode is 0666
+       minus the bits set in your umask.
+
+OPTIONS
+       -m Set the mode of to the mode you specify after the -m on
+       the command line.
+
+       {bcu} Specify the type of file you want:
+	b - block (buffered) file
+	c or u - character (unbuffered) special file
+
+BUGS
+       This version  has  been	scaled	down  a  little  bit  for
+       inclusion in the UZIX. Basename is complete except for the
+       --version and --help options.
+
+AUTHORS
+       Program :- Alistair Riddoch <ajr93@ecs.soton.ac.uk>
+       Documentation :- Michael Strates <mstrates@croftj.net>
+
+MKNOD(1)	       UZIX File Utilities		 MKNOD(1)

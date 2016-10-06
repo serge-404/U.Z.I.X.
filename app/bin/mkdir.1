@@ -1,0 +1,34 @@
+MKDIR(1)	       UZIX File Utilities		 MKDIR(1)
+
+
+NAME
+       mkdir - make directories
+
+USAGE
+       mkdir [-p] [-m mode] directory
+
+DESCRIPTION
+       This  manual  documents	the  UZIX  version of mkdir. It's
+       been significantly  scaled  down for inclusion in the UZIX
+       release, and doesn't have the  help  or	version  commands
+       included in the GNU release.
+
+       mkdir creates a new, empty directory on your disk.
+
+OPTIONS
+       -m {mode} set the mode of the created directory	to  mode,
+       which is 0666 minus the bits set in your umask.
+
+       -p create any non-existant parents for the supplied mask.
+
+BUGS
+       This version  has  been	scaled	down  a  little  bit  for
+       inclusion in the UZIX. Quite a few  commands  are  missing
+       from this release (and the extended GNU	equivilants,  ie:
+       --parents).
+
+AUTHORS
+       Program :- Alistair Riddoch <ajr93@ecs.soton.ac.uk>
+       Documentation :- Michael Strates <mstrates@croftj.net>
+
+MKDIR(1)	       UZIX File Utilities		 MKDIR(1)

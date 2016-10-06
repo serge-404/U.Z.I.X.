@@ -1,0 +1,105 @@
+PS(1)			    UZIX Utilities		    PS(1)
+
+
+NAME
+       ps - report process status
+
+USAGE
+       ps [-][lusmahrn]
+
+DESCRIPTION
+       This manual documents  the  UZIX version  of ps. It's been
+       significantly  scaled  down  for  inclusion  in	the  UZIX
+       release, and doesn't have the  help  or	version  commands
+       included in  the  GNU  release.	Also,  many  options  are
+       missing.
+
+       ps gives a snapshot of the current processes.
+
+OPTIONS
+       Command	line  arguments may  optionally be preceeded by a
+       '-', but there is no need for it.
+       l    long format
+       u    user format: gives user name and start time
+       s    signal format
+       m    displays memory info
+       a    show processes of other users too
+       h    no header
+       r    running procs only
+       n    numeric output for USER
+
+FIELD DESCRIPTIONS
+       %CPU
+	    CPU consuming tax.
+
+       %MEM
+	    Memory consuming tax.
+
+       ALARM
+
+       COMMAND
+	    The name that the process was invoked with.
+
+       IGNORED
+	    Number of ignored signals by the process.
+
+       NI
+	    Process nice value.
+
+       PENDING
+	    Number of pending signals in the process.
+
+       PID
+	    ID of the process.
+
+       PPID
+	    ID of the parent of the process.
+
+       PRI
+	    The priority of the task.
+
+       SIGNAL
+	    Process signal 16-bit vector in numerical format.
+
+       SIZE
+	    Process size (code + data + stack).
+
+       STAT
+	    Information about the status  of  the  process.
+
+       START
+	    Process start time.
+
+       TIME
+	    How much CPU time process used.
+
+       TTY
+	    I/O terminal of the process.
+
+       UID
+	    ID of process owner.
+
+       USER
+	    Login of process owner.
+
+       WCHAN
+	    this  shows  the  address  or  the name of the kernel
+	    kernel function the task currently is sleeping in.
+
+NOTES
+       %CPU shows the cputime/realtime percentage in  the  period
+       of  time  process was running.
+
+BUGS
+       This version  has  been	scaled	down  a  little  bit  for
+       inclusion in the UZIX. Many options are missing from  this
+       release, that many would expect from the GNU versions.
+
+       This manual doesn't explain what is the ALARM field.
+
+AUTHORS
+       Program :- Archi Schekochikhin <ARCHI@vlepp.serpukhov.su>
+		  Adriano R. da Cunha <adrcunha@dcc.unicamp.br>
+       Documentation :- Adriano Cunha <adrcunha@dcc.unicamp.br>
+
+PS(1)			    UZIX Utilities		    PS(1)

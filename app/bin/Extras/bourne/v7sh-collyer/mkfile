@@ -1,0 +1,14 @@
+# makefile for v7 sh on APE
+</$objtype/mkfile
+
+TARG=v7sh
+OFILES=args.$O builtin.$O cmd.$O ctype.$O error.$O expand.$O fault.$O io.$O \
+	macro.$O main.$O msg.$O name.$O print.$O service.$O stak.$O string.$O \
+	word.$O xec.$O
+HFILES=ctype.h defs.h mac.h mode.h name.h stak.h sym.h timeout.h
+BIN=$home/bin/$objtype
+CFLAGS = -w -DPLAN9 -D_POSIX_SOURCE -D_BSD_EXTENSION
+CC=pcc -c
+LD=pcc
+
+</sys/src/cmd/mkone

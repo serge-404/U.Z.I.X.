@@ -1,0 +1,33 @@
+INIT(8) 	UZIX System Administrator's Manual	  INIT(8)
+
+
+NAME
+       init - process control initialization
+
+USAGE
+       /bin/init
+
+DESCRIPTION
+     Init
+       Init is one of the first processes to be started  on  many
+       UNIX systems. Init starts other processes,which is usually
+       getty and many others after the instance of getty.
+
+     Runlevels
+       Runlevels are 'system states' of initiation.  They control
+       what a computer will do when in	a  different  level,  for
+       example there is a shutdown runlevel.Runlevels aren't used
+       much/at all yet in UZIX,  and  more  information  will  be
+       included when init can change runlevels.
+
+     UZIX Usage
+       Init is pretty limited in UZIX, it simply starts when  the
+       computer starts,and terminates when the computer finishes.
+       You generally won't need to worry about init, in life,  it
+       should be started automagically.
+
+AUTHORS
+       Program :- Alistair Riddoch <ajr93@ecs.soton.ac.uk>
+       Documentation :- Michael Strates <mstrates@croftj.net>
+
+INIT(8) 	UZIX System Administrator's Manual	  INIT(8)

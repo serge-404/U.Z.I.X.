@@ -1,0 +1,54 @@
+VMEM 0			; 0=reserve RAM segments starting from upper, 1=from lower
+INT_IO 0                ; 0=do not interrupts during IO, else - do interrupts allways (for TTY)
+TTY 9600		; 4800, 9600, 19200, 38400
+IOBYTE 149              ; 149=95H - default console: CRT ; 148=94H - default console: TTY
+ASSIGN DRIVE A = FDD0		; floppy A
+ASSIGN DRIVE B = FDD1		; floppy B
+ASSIGN DRIVE C = MASTER 0	; mount 1-st partition of SD-card
+REM ASSIGN DRIVE D = SDCARD 1	; mount 2-nd partition of SD-card
+REM ASSIGN DRIVE D = MASTER 0	; mount 1-st partition of IDE-Master
+REM ASSIGN DRIVE D = SLAVE  1	; mount 2-nd partition of IDE-Slave
+REM ASSIGN DRIVE C = SLAVE  3	; mount last (4-th) partition of IDE-Slave
+autoformat_vdisk
+ASSIGN DRIVE E = vdisk 36	; in-memory "disk" 36kb (upto 255kb or 'inkey')
+fix_ramtop
+COLOR 15 1
+ECHO 27,'D',0           ; задержка ввода с клавиатуры (0..9)
+ECHO 27,'S',0           ; подзвучка клавиш (0-нет, 1-есть)
+ECHO 27,'Z',5,4,0       ; уст. позиции вывода часов
+ECHO 27,'Z',3,11        ; запуск часов с модификаторами
+ECHO 27,'R',4           ; тип курсора (стандарт VT-52)
+ECHO 12,10,10,10,10,10
+WIDTH 8
+ECHO
+ECHO 'BBBBB                     T       DDDDDD                 tm'
+ECHO 'B    B   EEEEE    SSSS    T        D    D    OOOOO    SSSS '
+ECHO 'B    B  E     E  S      TTTTT      D    DD  O     O  S     '
+ECHO 'BBBBB   EEEEEEE  SSSSS    T        D    DD  O     O  SSSSS '
+ECHO 'B    B  E             S   T        D    DD  O     O       S'
+ECHO 'B    B  E     E  S    S   T        D    D   O     O  S    S'
+ECHO 'BBBBB    EEEEE    SSSS     TT     DDDDDD     OOOOO    SSSS '
+ECHO
+PATH 15
+REM device = mshell30	; install shadow monitor (activate: ctrl+shft+J)
+SET @ = WIDTH		; CCP autoreplaces
+SET / = ECHO OFF & USER 0
+SET CD = ECHO OFF & USER
+SET LS = ECHO OFF & DIR
+SET RM = ECHO OFF & ERA
+SET CAT = ECHO OFF & TYPE
+SET VI = ECHO OFF & SED
+SET VEDIT = ECHO OFF & VI
+LPT F500
+cls
+echo '+-------------------------+'
+echo '|   Best-Dos version 2.0  |'
+echo '|   CP/M V2.2 compatible  |'
+echo '+-------------------------+'
+echo '| (c) Black Cat inc. 1996 |'
+echo '+-------------------------+'
+echo
+color 0 0
+width 6
+rem run NC.COM	; 'run' command canceling config.sys (jumps to .COM)
+                     Е                               
