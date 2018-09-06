@@ -2,18 +2,19 @@
 
 .SUFFIXES:	.c .obj .as .lib
 
-CPM		 = cpm -h
-CC	     = cpm -h c
-AS	     = cpm -h zas
-LINK	 = cpm -h link
-LIBR	 = cpm -h libr
-OBJHEX	 = cpm -h objtohex
+#DEFINES  = -DORI_UTIL
+DEFINES  = -DORI_UZIX
+#DEFINES  = -DORI_FDISK
+
+CPM      = cpm -h
+CC       = cpm -h c
+AS       = cpm -h zas
+LINK     = cpm -h link
+LIBR     = cpm -h libr
+OBJHEX   = cpm -h objtohex
 M80      = cpm m80n
 L80      = cpm l80m
-RM	     = rm
-#DEFINES = -DORI_UTIL
-#DEFINES = -DORI_UZIX
-DEFINES = -DORI_FDISK
+RM       = rm
 CFLAGS	 = -O -x
 ASFLAGS	 = -N
 OBJ_MKFS = md.obj fs.obj dmisc.obj dsk.obj dio.obj dfd.obj dtty.obj sc1.obj data.obj

@@ -259,7 +259,11 @@ GBL int sys_utime(VOID) {
 
 	if (path == NULL) {
 		UERR = EFAULT;
-Err:		return -1;
+Err:
+#ifdef ORI_UZIX
+		_ei();
+#endif
+		return -1;
 	}
 	if (bufp == NULL) {
 		bufp = &lcl;
@@ -398,7 +402,11 @@ GBL int sys_open(VOID) {
 		psleep(ino);	/* sleep process if no writer of reader */
 	return uindex;
 
-Err:	oft_deref(oftindex);	/* This will call i_deref() */
+Err:
+#ifdef ORI_UZIX
+	_ei();
+#endif
+	oft_deref(oftindex);	/* This will call i_deref() */
 Err1:	return (-1);
 }
 #undef name
@@ -484,14 +492,15 @@ GBL int sys_symlink(VOID) {
 	while (*oldname++ != 0)
 		UCNT = UCNT+1;	/* nbytes */
 	writei(ino);		/* write it */
-#ifdef ORI_UZIX
-	_ei();
-#endif
 	/* change mode to LNK */
 	ino->c_node.i_mode = (mode & S_UMASK) | S_IFLNK;
 	if (wr_inode(ino) < 0) goto Ret;
 	ret = 0;
-Ret:	if (ino != NULL)	i_deref(ino);
+Ret:
+#ifdef ORI_UZIX
+	_ei();
+#endif
+	if (ino != NULL)	i_deref(ino);
 	return ret;
 }
 #undef oldname
@@ -734,12 +743,12 @@ STATIC int chany(char *path, int val1, int val2, bool_t mode) {
 
 #ifdef ORI_UZIX
 	_di();
-	UDATA(u_argn1)=B_LDIRTO2(BUFSIZE/2, (void*)UDATA(u_argn1), (void*)TEMPDBUF);
-#endif
+	if ((ino = namei( (char *)B_LDIRTO2(BUFSIZE/2, (void*)UDATA(u_argn1), (void*)TEMPDBUF), NULL, 1)) == NULL)
+		goto Err1;
+	_ei();
+#else
 	if ((ino = namei(path, NULL, 1)) == NULL)
 		goto Err1;
-#ifdef ORI_UZIX
-	_ei();
 #endif
 	if (ino->c_node.i_uid != UDATA(u_euid) && !super()) {
 		i_deref(ino);
