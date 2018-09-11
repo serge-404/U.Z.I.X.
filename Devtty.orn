@@ -48,6 +48,7 @@ GBL void _putc(uchar c) {
 
 GBL uint _getc(VOID) {
 	register uchar ch=0;
+        if (VTY_ININT) return 0;		/*20180910*/
 	if (/*(!VTY_ININT) && * / (runticks & 1) && */ xbios(2))	{	/* 2=CONSTAT */   
 /* inkey delayer */
 /*		if (((ch=xbios(3)) == prevch) &&					
@@ -60,6 +61,7 @@ GBL uint _getc(VOID) {
 			prevticks=runticks;
 		} */
 		ch=xbios(3);				/* 3=CONIN */
+/*                if (ch==4) kprintf("^D");		/ * 20180910*/
 	}
 #if DEBUG > 0
 	if (ch==26) idump;	/* Control-Z, for debugging */
