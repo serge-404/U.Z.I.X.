@@ -1668,9 +1668,12 @@ dmaSav:	DEFW	0		; Temp storage of current DMA Address
 srchFD:	DEFW	0		; File Descriptor for Searches
 char:	DEFB	' '		; Byte storage for Conin/Conout
 cnt:	DEFW	0		; Count of waiting keys
+IF UZIX
+ttDatO:	DEFB	0,0		; Initial TTY Port Settings
+ELSE
 ttDat:	DEFB	0,0,0,0,0,0	; Working TTY Port Settings
 ttDatO:	DEFB	0,0,0,0,0,0	; Initial TTY Port Settings
-
+ENDIF
 dir:	DEFS	128		; Directory Buffer
 
 	DEFS	128
