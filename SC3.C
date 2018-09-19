@@ -43,6 +43,7 @@
 #undef NEED__PROCESS
 
 #include "extern.h"
+#include <string.h>
 
 /* Implementation of system calls */
 
@@ -56,10 +57,10 @@
 
 #ifdef __KERNEL__
 
-LCL int repack __P((char **argp, char **envp, uchar check));
+LCL int repack __P((/*char **argp, char **envp,*/ uchar check));
 LCL void *scop __P((register char **argv, uchar cnt, char *to, char *real));
 LCL uint ssiz __P((register char **argv, uchar *cnt, char **smin));
-LCL void exec2 __P((void));
+LCL void exec2 __P((inoptr inoemu));
 
 STATIC uint __argc;
 STATIC char **__argv;
@@ -107,11 +108,12 @@ LCL void *scop(argv, cnt, to, real)
 /* move all arguments to top of program memory or check their size */
 /* for move, stack can't be near the top of program memory and */
 /* PROGBASE area is used as draft area */
-LCL int repack(argp, envp, check)
-	char **argp;
-	char **envp;
+LCL int repack(/*argp, envp,*/ check)
 	uchar check;
 {
+	char **argp=(char **)UDATA(u_argn2);
+	char **envp=(char **)UDATA(u_argn3);
+
 	uint tot, et, asiz, esiz;
 	uchar acnt, ecnt;
 	register char *p = (void *)PROGBASE;
@@ -146,35 +148,40 @@ Err:		return 1;	/* no room for args */
 Ok:	return 0;
 }
 
-/* exec2() second step of execve - executed on system stack! */
-LCL void exec2(VOID) {
-	register char *progptr
-#ifndef ORI_UZIX	
-					, **p 
-#endif
-	;
-	register blkno_t pblk;
-	uchar blk = 0;
-	char *buf;
+uint cpmemu, cpmemusz, cpmemuld, cpmemust;	/* 20180917 */  /* CP/M emulator mode, size, loadaddr, startaddr */
+char *binemu = "/usr/lib/emu.ext";
 
-	/* Read in the rest of the program */
-	progptr = (char *)PROGBASE;
-	while (blk <= UCNT) {
-		if ((pblk = bmap(UDATA(u_ino), blk, 1)) != NULLBLK) {
-			buf = bread(UDATA(u_ino)->c_dev, pblk, 0);
+char* ReadRest(inoptr ino, char* addr, uint ucnt) {			/* Read in the rest of the program to destination process page */
+	register char *buf;
+	blkno_t pblk;
+	uint blk = 0;
+	while (blk <= ucnt) {
+		if ((pblk = bmap(ino, blk, 1)) != NULLBLK) {
+			buf = bread(ino->c_dev, pblk, 0);
 			if (buf != NULL) {
 #ifdef ORI_UZIX
-				B_LDIRTON(BUFSIZE, buf, progptr);	/* interbank copy to process space */
+				B_LDIRTON(BUFSIZE, buf, addr);	/* interbank copy to process space */
 #else
-				bcopy(buf, progptr, BUFSIZE);
+				bcopy(buf, addr, BUFSIZE);
 #endif
 				brelse((bufptr)buf);
 			}
 		}
-		progptr += BUFSIZE;
+		addr += BUFSIZE;
 		++blk;
 	}
-	i_deref(UDATA(u_ino));
+	i_deref(ino);
+	return addr;
+}
+
+/* exec2() second step of execve - executed on system stack! */
+LCL void exec2(inoptr inoemu) {
+#ifndef ORI_UZIX	
+	char **p 
+#endif
+	register char* progptr;
+	UDATA(u_ptab)->p_break = UDATA(u_break); 						/* from sys_execve() */
+	progptr = ReadRest(UDATA(u_ino), (char *)PROGBASE, UCNT); 		/* Read in the rest of the program to 100h address */
 	/* Zero out the free memory */
 #ifdef ORI_UZIX
 	B_ZERO(progptr, (uint) ((char *)__argv - progptr));
@@ -183,19 +190,21 @@ LCL void exec2(VOID) {
 	UDATA(u_ptab)->p_break = (void *)(((exeptr)PROGBASE)->e_bss);
 	UDATA(u_break) = (void *)(((exeptr)PROGBASE)->e_bss);
 #endif
+	if (cpmemu)
+		ReadRest(inoemu, (void*)cpmemuld, (cpmemusz + BUFSIZE - 1) >> BUFSIZELOG); 		/* Read in the rest of the program to 100h address */
 #if DEBUG > 1
 	UDATA(u_traceme) = 0;
 #endif
 #ifdef ORI_UZIX
 	/* Fill in UDATA(u_name) */
 	B_COPY(__argv, &UDATA(u_argn4), 2);
-	B_COPY((uint*)UDATA(u_argn4), UDATA(u_name), DIRNAMELEN);					/* *__argv in other page ! */
+	B_COPY((uint*)UDATA(u_argn4), UDATA(u_name), DIRNAMELEN);							/* *__argv in other page ! */
 	/* Shove argc and the address of argv just below argv */
 #ifdef UZIX_MODULE
 	RESET_MODULE();
 #endif
 	/* Machine dependant jump into the program, first setting the stack */
-	doexec(__argc, (uint)__argv, (uint)__envp);	/* NORETURN */
+	doexec(__argc, (uint)__argv, (uint)__envp, cpmemu ? cpmemust : PROGBASE-1);			/* NORETURN */
 #else
 	/* Fill in UDATA(u_name) */
 	bcopy(*__argv, UDATA(u_name), DIRNAMELEN);
@@ -212,18 +221,39 @@ LCL void exec2(VOID) {
 #endif
 }
 
+/* CASE insensitive string compare */
+/*
+int strucmp(char *d, char *s)	
+{
+	register char c1, *s1 = (char *)d, *s2 = (char *)s, c2;
+
+	while ( ( c1 = ((c1=*s1++) > 0x60 ? c1 & 0x5F : c1 )) == ( c2 = ((c2=*s2++) > 0x60 ? c2 & 0x5F : c2 )) && c1)
+		;
+	return c1 - c2;
+}
+*/
+int checkxperm(ino)
+	register inoptr ino;
+{
+	return ((getperm(ino) & S_IOEXEC) == 0 || getmode(ino) != S_IFREG || (ino->c_node.i_mode & (S_IEXEC | S_IGEXEC | S_IOEXEC)) == 0);
+}
+
 /*********************************************************
  SYSCALL execve(char *name, char *argv[], char *envp[]);
 *********************************************************/
 #define name (char *)UDATA(u_argn1)
+/*
 #define argv (char **)UDATA(u_argn2)
 #define envp (char **)UDATA(u_argn3)
+*/
 GBL int sys_execve(VOID) {
 	register inoptr ino;
 	register uchar *buf;
 	register sig_t *sp;
 	uchar magic;
 	uint mblk;
+    inoptr inoemu = NULL;			/* 20180917 */
+	char* cpmemuext;
 
 #ifdef ORI_UZIX
 	_di();
@@ -233,29 +263,61 @@ GBL int sys_execve(VOID) {
 		UERR = ENOENT;
 		goto Err1;
 	}
+	if (checkxperm(ino)) {
+		UERR = EACCES;
+		goto Ret;
+	}
+	cpmemu = 0;
+	cpmemuld = UZIXBASE;																						/* 20180917 */
+	cpmemusz = 0;
+	if ( ((uint)(void*)(cpmemuext=strrchr(name, '.')) - (uint)(void*)name) == (strlen(name)-4) ) {				/* if 3-char extension: filename.ext */
+	    strncpy(&(binemu[12]), cpmemuext, 4);																	/* copy extension to pattern */
+kprintf("%s starting\n",binemu);
+		if ( cpmemu = ((inoemu = namei(binemu, NULL, 1)) != 0) ) {												/* then search for /usr/lib/emu.* */
+			buf = bread(inoemu->c_dev, bmap(inoemu, 0, 1), 0);
+			if ((!buf)||(brelse((bufptr)buf) != 0)||( ((uint*)buf)[0] != 0xC945 ) ) {
+/* kprintf("\n%d\n",((uint*)buf)[0]); */
+				UERR = ENOEXEC;
+				goto Ret;   																					/* if invalid sigmature "E"C9 */
+			}
+			cpmemuld = ((uint*)buf)[1];						/* emu load address */
+			cpmemust = ((uint*)buf)[2];						/* emu start address */
+			cpmemusz = (uint)ISIZE(inoemu);					/* emu image length in bytes */ 
+			if ((cpmemuld+cpmemusz+768 > UZIXBASE)||(cpmemuld<11/*protect kernel call*/)) {						/* 768 = reserved for stack, env, argv, bss */
+				UERR = ENOMEM;
+				goto Ret;			
+			}
+			if (checkxperm(inoemu)) {
+				UERR = EACCES;
+				goto Ret;
+			}
+		}
+		else { 
+			UERR = ENOEMU;
+			goto Ret;
+		}
+	}
 #ifdef ORI_UZIX
 	_ei();
 #endif
 	mblk = (uint)ISIZE(ino);	/* image length in bytes */
-	if (PROGBASE + ISIZE(ino) >= UZIXBASE) { /* long operation! */
+	if (PROGBASE + ISIZE(ino) >= cpmemuld) { /* long operation! */
 		UERR = ENOMEM;
-		goto Ret;
-	}
-	if ((getperm(ino) & S_IOEXEC) == 0 ||
-	      getmode(ino) != S_IFREG ||
-	      (ino->c_node.i_mode & (S_IEXEC | S_IGEXEC | S_IOEXEC)) == 0) {
-		UERR = EACCES;
 		goto Ret;
 	}
 	/* save information about program size in blocks/top */
 	UCNT = (mblk + BUFSIZE - 1) >> BUFSIZELOG;
-	UBAS = (void *)(PROGBASE + mblk + 2048); /* 1024 /* min +1K stack */
+	if (cpmemu)
+		UBAS = (void *)(cpmemuld+cpmemusz+280);				/* board of env, argv */
+	else
+		UBAS = (void *)(PROGBASE + mblk + 2048); 			/* 1024 /* min +1K stack */
 	/* Read in the first block of the new program */
 	buf = bread(ino->c_dev, bmap(ino, 0, 1), 0);
 	if (buf == NULL) goto Ret;
 	magic = ((exeptr)buf)->e_magic;
 	if (brelse((bufptr)buf) != 0) goto Ret;
 	if (magic != EMAGIC) {
+kprintf("-6");
 		if (((uchar *)buf)[0] == '#' && ((uchar *)buf)[1] == '!')
 			UERR = ESHELL;
 		else	UERR = ENOEXEC;
@@ -280,25 +342,31 @@ GBL int sys_execve(VOID) {
 	 */
 	UDATA(u_ino) = ino;	/* Temporarly stash these here */
 #ifdef ORI_UZIX
-	UDATA(u_ptab)->p_break = (void *)(((exeptr)buf)->e_bss);
-	UDATA(u_break) = (void *)(((exeptr)buf)->e_bss);
-	setvectors();
+/* {e_bss=UDATA(u_break)}+256 is a temporary buffer in process space for some kernel calls */
+    mblk = (cpmemu ? cpmemuld+cpmemusz : ((exeptr)buf)->e_bss);	
+/*	UDATA(u_ptab)->p_break = (void*)mblk; */	/* moved to exec2() */
+	UDATA(u_break) = (void*)mblk; 
 #endif
-	if (repack(argv, envp, 1))	/* Check args size */
+/* Check args size */
+	if (repack(/*argv, envp,*/ 1))	
 		goto Ret;
-#ifndef ORI_UZIX
+#ifdef ORI_UZIX
+	setvectors();
+#else
 	tempstack(); 
 #endif
-	repack(argv, envp, 0);	/* Move arguments */
-	exec2();
+	repack(/*argv, envp,*/ 0);		/* Move arguments */
+	exec2(inoemu);
 
 Ret:	i_deref(ino);
+		if (inoemu) i_deref(inoemu);
 Err1:	return (-1);
 }
 #undef name
+/*
 #undef argv
 #undef envp
-
+*/
 #ifdef UZIX_MODULE
 
 #define proc_page0 UDATA(u_ptab)->p_swap[0]

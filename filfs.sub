@@ -329,7 +329,7 @@ failure exit
 umask 022
 get liberror.txt
 get fortune.dat
-
+bget emu.com
 
 cd /usr/man/man1
 failure exit

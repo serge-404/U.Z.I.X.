@@ -293,7 +293,7 @@ _xinitsys:
 #define arg ((uint*)TEMPDBUF)
 #define freefileentry(e)	((e) & 0x80)
 
-GBL void doexec(uint argc, uint argv, uint envp) {
+GBL void doexec(uint argc, uint argv, uint envp, uint start) {
 	register uchar j;
 
 	/* close all opened files (derived from parent while forking) except stdin\out\err */
@@ -306,7 +306,7 @@ GBL void doexec(uint argc, uint argv, uint envp) {
 	arg[3]=argv;
 	arg[2]=argc;
 	arg[1]=x_GoExit1;	/* UDATA(u_argn1) = ((int (*)())PROGBASE)(); sys_exit(); /* if program exited by RET */
-	arg[0]=PROGBASE-1;	/* address where to begin process execution with returning by stack: ei, org 100h, ... */
+	arg[0]=start;		/* address where to begin process execution with returning by stack: ei, org 100h, ... */
 	B_LDIRTON(10, arg, (uchar*)(argv-10));
 	*arg=argv-10;
 #asm	

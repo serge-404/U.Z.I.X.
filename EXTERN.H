@@ -565,7 +565,7 @@ extern void _abort __P((int status));
 extern void initsys __P((void));
 extern void setvectors __P((void));
 #ifdef ORI_UZIX
-extern void doexec __P((uint argc, uint argv, uint envp));
+extern void doexec __P((uint argc, uint argv, uint envp, uint start));
 #define	rdtod()
 #else
 extern void doexec __P((uint sp));

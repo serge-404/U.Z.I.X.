@@ -56,6 +56,10 @@ idebdos.com : idebdos.mac
 	$(M80) idebdos,=idebdos
 	$(L80) /p:100,idebdos,idebdos/n/e
 	
+emu.com : emu.mac
+	$(M80) emu,=emu
+	$(L80) /p:100,emu,emu/n/e
+	
 bd.com : $(OBJ_BD) bd.c
 	$(CC) $(CFLAGS) $(DEFINES) bd.c $(OBJ_BD)
 
@@ -78,7 +82,7 @@ fdisk.com : $(OBJ_FDSK) fdisk.c
 utils : idebdos.com bd.com fsck.com mkfs.com ucp.com 
 
 # set "DEFINES" to "-DORI_UZIX" and do "make clean" before doing "make kernel" !
-kernel : idebdos.com uzix.com
+kernel : emu.com idebdos.com uzix.com
 
 clean :
 	$(RM) $(OBJ_UZIX) data.obj XFS.obj ucs.obj bd.obj fsck.obj mkfs.obj ucp.obj uzix.obj F_MKFS.OBJ FDISK.OBJ FDISK1.OBJ FDISK2.OBJ

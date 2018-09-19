@@ -46,9 +46,10 @@
 #define ENOTEMPTY	39	/*-*/	/* 39 Directory not empty */
 #define ELOOP		40	/*-*/	/* 40 Too many symbolic links encountered */
 #define ESHELL		41	/*-*/	/* 41 It's a shell script */
+#define ENOEMU		42		/* 42 No /usr/lib/cpmemu.bin */
 #define ENOSYS		EINVFNC
 
-#define __ERRORS	40
+#define __ERRORS	42
 
 extern int sys_nerr;
 extern char *sys_errlist[];

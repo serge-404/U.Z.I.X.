@@ -20,6 +20,9 @@ typedef enum {
 #define TTY_RAW 	1	/* unbuffered, wait */
 #define TTY_RAW_UNBUFF	2	/* unbuffered, no wait */
 #define TTY_RAWCHAR	3	/* unbuffered, no wait, one char */
+#define TTY_QCOUNT	4	/* inp. query size = TIOCSETN in UZI180 */
+#define TTY_CONST	5	/* direct CPM BIOS CONSTAT */
+#define TTY_CONIN	6	/* direct CPM BIOS CONIN */
 
 struct swap_mmread {
 #ifdef ORI_UZIX

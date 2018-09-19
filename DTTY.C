@@ -237,6 +237,9 @@ GBL int tty_ioctl(minor, req, ptr)
 	else if ((uchar)req == TTY_RAW) 	rawmode = 1;
 	else if ((uchar)req == TTY_COOKED)	rawmode = 0;
 	else if ((uchar)req == TTY_RAWCHAR)	rawmode = 3;
+	else if ((uchar)req == TTY_QCOUNT) return ttyinq.q_count;	/* inp. query size = TIOCSETN in UZI180 */
+	else if ((uchar)req == TTY_CONST)  return xbios(2);			/* direct CPM BIOS CONSTAT : 0=notpressed */
+	else if ((uchar)req == TTY_CONIN)  return xbios(3);			/* direct CPM BIOS CONIN */
 	else	return -1;
 	return ret;
 #else	/* __KERNEL__ */
