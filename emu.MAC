@@ -1089,6 +1089,8 @@ AB95E:	LD	HL,00000H
 ; 2 - Return Console Input Status
 ;
 DOCONST:
+	JP  0EC96h		; temporary
+;	
 	LD	HL,TTY_CONST	;  ioctl fcn to read queue count
 	CALL TTYCTL		;   Execute ioctl on STDIN
 	LD	A,H
@@ -1098,6 +1100,8 @@ DOCONST:
 	RET
 ;
 DOCONIN:
+	JP  0EC99h		; temporary
+;
 	CALL	AB97A
 	LD	A,H
 	OR	L
