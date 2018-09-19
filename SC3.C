@@ -272,7 +272,6 @@ GBL int sys_execve(VOID) {
 	cpmemusz = 0;
 	if ( ((uint)(void*)(cpmemuext=strrchr(name, '.')) - (uint)(void*)name) == (strlen(name)-4) ) {				/* if 3-char extension: filename.ext */
 	    strncpy(&(binemu[12]), cpmemuext, 4);																	/* copy extension to pattern */
-kprintf("%s starting\n",binemu);
 		if ( cpmemu = ((inoemu = namei(binemu, NULL, 1)) != 0) ) {												/* then search for /usr/lib/emu.* */
 			buf = bread(inoemu->c_dev, bmap(inoemu, 0, 1), 0);
 			if ((!buf)||(brelse((bufptr)buf) != 0)||( ((uint*)buf)[0] != 0xC945 ) ) {
@@ -291,6 +290,7 @@ kprintf("%s starting\n",binemu);
 				UERR = EACCES;
 				goto Ret;
 			}
+kprintf("%s starting\n",binemu);
 		}
 		else { 
 			UERR = ENOEMU;
