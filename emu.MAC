@@ -10,7 +10,8 @@
 ;
 LOADADR EQU 0DE00h		; address where emulator resides at user process space
 ;
-X0000	EQU	00000H
+IOBYTE	EQU	3
+Y0000	EQU	00000H
 Y0001	EQU	00001H
 Y0003	EQU	00003H
 Y0005	EQU	00005H
@@ -48,7 +49,7 @@ BERR3:  DB      2
 BERR4:  DB      2
         DW      ARET			; file read/only
 ;
-BEGIN:	
+BEGIN:				; if BDOS space needed then move this starter block to BIOS end (to "use_once" code block)
 	POP	BC
 	LD	IX,00000H
 	ADD	IX,SP		; IX=SP
@@ -62,51 +63,53 @@ BEGIN:
 ;
 ; BDOS functions table
 ;
-TB250:	DEFW	AB2EC
-	DEFW	AB2FF
-	DEFW	AB327
-	DEFW	AB322
-	DEFW	AB32B
-	DEFW	AB32F
-	DEFW	AB2EF
-	DEFW	AB2FF
-	DEFW	AB3A4
-	DEFW	AB336
-	DEFW	AB36F
-	DEFW	AB3AE
-	DEFW	AB39D
-	DEFW	AB3AE
-	DEFW	AB3AE
-	DEFW	AB3B2
-	DEFW	AB426
-	DEFW	AB43D
-	DEFW	AB459
-	DEFW	AB4E5
-	DEFW	AB5C7
-	DEFW	AB5E6
-	DEFW	AB5EE
-	DEFW	AB620
-	DEFW	AB675
-	DEFW	AB3AE
-	DEFW	AB67C
-	DEFW	AB681
-	DEFW	AB3AE
-	DEFW	AB69D
-	DEFW	AB3AE
-	DEFW	AB6A1
-	DEFW	AB3AE
-	DEFW	AB5BF
-	DEFW	AB5DE
-	DEFW	AB6A5
-	DEFW	AB6EB
-	DEFW	AB3AE
-	DEFW	AB4F9
-	DEFW	AB500
-	DEFW	AB3AE
-	DEFW	AB3AE
-	DEFW	AB6F9
-	DEFW	AB3AE
-	DEFW	AB743
+TB250:
+	DEFW	BWARM	; BDOS_0	; 0
+	DEFW	BDOS_1	; 1
+	DEFW	BDOS_2	; 2
+	DEFW	BDOS_3	; 3
+	DEFW	BDOS_4	; 4
+	DEFW	BDOS_5	; 5
+	DEFW	BDOS_6	; 6
+	DEFW	BDOS_7	; 7
+	DEFW	BDOS_8	; 8
+	DEFW	BDOS_9	; 9
+	DEFW	BDOS_10	; 10 - ввод строки с клавиатуры в буфер строки
+	DEFW	BDOS_11	; 11 - опрос состояния клавиатуры в A: A=00 - не активна, A=0FFH - активна
+	DEFW	AB39D	; 12
+	DEFW	RETA0	; BDOS_11 ; 13
+	DEFW	RETA0	; BDOS_11 ; 14
+	DEFW	AB3B2   ; 15
+	DEFW	AB426   ; 16
+	DEFW	AB43D   ; 17
+	DEFW	AB459   ; 18
+	DEFW	AB4E5   ; 19
+	DEFW	AB5C7   ; 20
+	DEFW	AB5E6   ; 21
+	DEFW	AB5EE   ; 22
+	DEFW	AB620   ; 23
+	DEFW	AB675   ; 24
+	DEFW	RETA0	; BDOS_11	; 25
+	DEFW	AB67C   ; 26
+	DEFW	AB681   ; 27
+	DEFW	RETA0	; BDOS_11	; 28
+	DEFW	AB69D	; 29
+	DEFW	RETA0	; BDOS_11	; 30
+	DEFW	AB6A1	; 31
+	DEFW	RETA0	; BDOS_11	; 32
+	DEFW	AB5BF	; 33
+	DEFW	AB5DE	; 34
+	DEFW	AB6A5	; 35
+	DEFW	AB6EB	; 36
+; extended calls
+	DEFW	RETA0	; 37
+	DEFW	AB4F9	; 38
+	DEFW	AB500	; 39
+	DEFW	RETA0	; 40
+	DEFW	RETA0	; 41
+	DEFW	AB6F9	; 42
+	DEFW	RETA0	; 43
+	DEFW	AB743	; 44
 ;
 DOBDOS:	LD	(DB8D4),DE 	; B2AA
 	LD	(DB8D6),HL
@@ -114,7 +117,7 @@ DOBDOS:	LD	(DB8D4),DE 	; B2AA
 	LD	A,C
 	LD	(DB8D8),A
 	CP	01BH
-	JR	Z,AB2E8
+	CALL Z,AB681	
 	CP	02DH
 	LD	A,0FFH
 	LD	L,A
@@ -144,15 +147,12 @@ RETBDOS:POP	IY
 	OR	A
 ARET:RET
 ;
-AB2E8:	CALL	AB681
-	RET
+;BDOS_0:	JP	BWARM	; BIOSWARM
 ;
-AB2EC:	JP	BWARM	; BIOSWARM
-;
-AB2EF:	LD	A,E
+BDOS_6:	LD	A,E
 	CP	0FFH
-	JR	C,AB327
-	CALL	AB97A
+	JR	C,BDOS_2		
+	CALL GETCHAR
 	LD	B,A
 	LD	A,H
 	OR	L
@@ -161,11 +161,11 @@ AB2EF:	LD	A,E
 	LD	H,000H
 	RET
 ;
-AB2FF:	CALL	AB97A
+BDOS_1:	CALL GETCHAR
 	LD	B,A
 	LD	A,H
 	OR	L
-	JR	Z,AB2FF
+	JR	Z,BDOS_1		; wait for key pressed
 	LD	A,B
 AB308:	PUSH	AF
 	LD	C,A
@@ -178,7 +178,8 @@ AB308:	PUSH	AF
 	LD	L,00DH
 	RET
 ;
-AB317:	PUSH	AF
+TTYCOOKED:
+	PUSH	AF
 	PUSH	HL
 	LD	HL,TTY_COOKED	; 00000H	; tty NORMAL (queued) mode
 	CALL	TTYCTL
@@ -186,26 +187,36 @@ AB317:	PUSH	AF
 	POP	AF
 	RET
 ;
-AB322:	CALL	RETA0
+BDOS_3:	CALL	RETA0
 	JR	AB308
 ;
-AB327:	LD	C,E
+BDOS_2:	LD	C,E
 	JP	CONOUT
 ;
-AB32B:	LD	C,E
+BDOS_4:	LD	C,E
 	JP	RETA0
 ;
-AB32F:	LD	A,E
+BDOS_5:	LD	A,E
 	CP	00DH
 	RET	Z
 	JP	RETA0
 ;
-AB336:	LD	A,(DE)
+BDOS_7:
+	ld	a,(IOBYTE)
+	ld	l,a
+	ret
+;
+BDOS_8:	
+	ld	a,e
+	ld	(IOBYTE),a
+	RET
+;
+BDOS_9:	LD	A,(DE)
 	INC	DE
 	CP	024H
 	RET	Z
 	CP	00DH
-	JR	Z,AB336
+	JR	Z,BDOS_9
 	DEC	DE
 AB340:	PUSH	DE
 	LD	HL,00000H
@@ -225,9 +236,11 @@ AB34F:	DEC	HL
 	LD	HL,00001H	; stdout
 	PUSH	HL
 	LD	L,024H		; sys_readwrite -> write (24h)
-	PUSH	HL
-	RST		8		; CALL	X0008 ; call kernel
-	POP	HL
+;	PUSH	HL
+;	RST		8		; CALL	X0008 ; call kernel
+;	POP	HL
+call KERNEL
+;
 	POP	HL
 	POP	HL
 	POP	HL
@@ -237,8 +250,9 @@ DESTOR:	LD	DE,00000H
 	JR	NZ,AB340
 	RET
 ;
-AB36F:	PUSH	DE
-	CALL	AB317
+BDOS_10:
+	PUSH	DE
+	CALL TTYCOOKED
 	POP	DE
 	LD	A,(DE)
 	LD	C,A
@@ -251,10 +265,12 @@ AB36F:	PUSH	DE
 	LD	C,000H		; stdin
 	PUSH	BC
 	LD	HL,00017H	; sys_readwrite -> read (17h)
-	PUSH	HL
-	RST		8		; CALL	X0008	; call kernel
-	EX	DE,HL
-	POP	BC
+;	PUSH	HL
+;	RST		8		; CALL	X0008	; call kernel
+;	EX	DE,HL
+;	POP	BC
+call KERNEL
+;
 	POP	BC
 	POP	BC
 	POP	BC
@@ -267,22 +283,13 @@ AB36F:	PUSH	DE
 	LD	(HL),00DH
 	INC	DE
 	LD	(DE),A
-	LD	HL,TTY_RAW_UNBUFF	; 00002H	; tty RAW mode
-	CALL	TTYCTL
-	RET
+	JP	TTYRAWCHAR
 ;
 AB39D:	LD	HL,00022H
 	LD	(DB8D6),HL
 	RET
 ;
-AB3A4:	LD	E,0FFH
-	CALL	AB2EF
-	LD	A,L
-	OR	A
-	JR	Z,AB3A4
-	RET
-;
-AB3AE:	LD	HL,00000H
+BDOS_11:	LD	HL,00000H
 	RET
 ;
 AB3B2:	CALL	AB8B7
@@ -318,15 +325,17 @@ AB3DA:	EX	DE,HL
 	LD	HL,00000H
 	LD	DE,00000H
 	CALL	AB81F
-	JR	AB3AE
+	JR	BDOS_11
 ;
 AB415:	PUSH	DE
 	PUSH	HL
 	LD	HL,00014H		; sys_open
-	PUSH	HL
-	RST	8				; CALL	X0008	; call kernel
-	EX	DE,HL
-	POP	BC
+;	PUSH	HL
+;	RST	8				; CALL	X0008	; call kernel
+;	EX	DE,HL
+;	POP	BC
+call KERNEL
+;
 	POP	BC
 	POP	BC
 	LD	A,H
@@ -337,15 +346,17 @@ AB415:	PUSH	DE
 AB426:	CALL	AB835
 AB429:	PUSH	DE
 	LD	HL,00006H		; sys_close
-	PUSH	HL
-	RST	8				; CALL	X0008	; call kernel
-						; EX DE,HL ???
-	POP	BC				
+;	PUSH	HL
+;	RST	8				; CALL	X0008	; call kernel
+;						; EX DE,HL ???
+;	POP	BC				
+call KERNEL
+;
 	POP	BC
 AB433:	LD	A,H
 	AND	L
 	INC	A
-	JP	NZ,AB3AE
+	JP	NZ,BDOS_11
 	LD	HL,0FFFFH
 	RET
 ;
@@ -390,10 +401,12 @@ AB465:	LD	HL,DBA7D
 	PUSH	DE
 	PUSH	HL
 	LD	HL,0001BH		; sys_statfstat
-	PUSH	HL
-	RST	8				; CALL	X0008	; call kernel
-	EX	DE,HL
-	POP	BC
+;	PUSH	HL
+;	RST	8				; CALL	X0008	; call kernel
+;	EX	DE,HL
+;	POP	BC
+call KERNEL
+;
 	POP	BC
 	POP	BC
 	LD	A,H
@@ -426,10 +439,12 @@ AB4E5:	CALL	AB8B7
 	CALL	AB780
 	PUSH	HL
 	LD	HL,00021H		; sys_unlink
-	PUSH	HL
-	RST	8				; CALL	X0008	; call kernel
-	EX	DE,HL
-	POP	BC
+;	PUSH	HL
+;	RST	8				; CALL	X0008	; call kernel
+;	EX	DE,HL
+;	POP	BC
+call KERNEL
+;
 	POP	BC
 	JP	AB433
 ;
@@ -551,7 +566,7 @@ AB5CA:	CALL	BREAD
 AB5CF:	LD	IY,(DB8D4)
 	INC	(IY+020H)
 	OR	A
-	JP	Z,AB3AE
+	JP	Z,BDOS_11
 AB5DA:	LD	HL,00001H
 	RET
 ;
@@ -571,10 +586,12 @@ AB5EE:	CALL	AB8B7
 	CALL	AB780
 	PUSH	HL
 	LD	HL,00014H		; sys_open
-	PUSH	HL
-	RST	8				; CALL	X0008	; call kernel
-	EX	DE,HL
-	POP	BC
+;	PUSH	HL
+;	RST	8				; CALL	X0008	; call kernel
+;	EX	DE,HL
+;	POP	BC
+call KERNEL
+;
 	POP	BC
 	POP	BC
 	POP	BC
@@ -604,32 +621,38 @@ AB620:	CALL	AB8B7
 	LD	HL,DB8E6
 	PUSH	HL
 	LD	HL,00011H		; sys_link
-	PUSH	HL
-	RST	8				; CALL	X0008	; call kernel
-	EX	DE,HL
-	POP	BC
+;	PUSH	HL
+;	RST	8				; CALL	X0008	; call kernel
+;	EX	DE,HL
+;	POP	BC
+call KERNEL
+;
 	POP	BC
 	POP	BC
 	JR	C,AB671
 	LD	HL,DB8E6
 	PUSH	HL
 	LD	HL,00021H		; sys_unlink
-	PUSH	HL
-	RST	8				; CALL	X0008	; call kernel
-	EX	DE,HL
+;	PUSH	HL
+;	RST	8				; CALL	X0008	; call kernel
+;	EX	DE,HL
+;	POP	BC
+call KERNEL
+;
 	POP	BC
-	POP	BC
-	JP	NC,AB3AE
+	JP	NC,BDOS_11
 	LD	HL,TB8D9
 	PUSH	HL
 	LD	HL,00021H		; sys_unlink
-	PUSH	HL
-	RST	8				; CALL	X0008	; call kernel
-	EX	DE,HL
-	POP	BC
+;	PUSH	HL
+;	RST	8				; CALL	X0008	; call kernel
+;	EX	DE,HL
+;	POP	BC
+call KERNEL
+;
 	POP	BC
 	JR	C,AB671
-	JP	AB3AE
+	JP	BDOS_11
 ;
 AB671:	LD	HL,0FFFFH
 	RET
@@ -668,10 +691,12 @@ AB6A5:	CALL	AB8B7
 	PUSH	DE
 	PUSH	HL
 	LD	HL,0001BH		; sys_statfstat
-	PUSH	HL
-	RST	8				; CALL	X0008	; call kernel
-	EX	DE,HL
-	POP	BC
+;	PUSH	HL
+;	RST	8				; CALL	X0008	; call kernel
+;	EX	DE,HL
+;	POP	BC
+call KERNEL
+;
 	POP	BC
 	POP	BC
 	LD	IY,(DB8D4)
@@ -737,9 +762,11 @@ AB6F9:	CALL	AB735
 AB735:	LD	DE,DBA69
 	PUSH	DE
 	LD	HL,0001EH		; sys_time
-	PUSH	HL
-	RST	8				; CALL	X0008	; call kernel
-	POP	BC
+;	PUSH	HL
+;	RST	8				; CALL	X0008	; call kernel
+;	POP	BC
+call KERNEL
+;
 	POP	BC
 	RET
 ;
@@ -854,10 +881,12 @@ AB81F:	PUSH	IX
 	LD	HL,(DB8F3)
 	PUSH	HL
 	LD	HL,00019H		; sys_lseek
-	PUSH	HL
-	RST	8				; CALL	X0008	; call kernel
-	EX	DE,HL
-	POP	BC
+;	PUSH	HL
+;	RST	8				; CALL	X0008	; call kernel
+;	EX	DE,HL
+;	POP	BC
+call KERNEL
+;	
 	POP	BC
 	POP	BC
 	POP	BC
@@ -965,7 +994,8 @@ AB8CB:	CP	041H
 	OR	020H
 	RET
 ;
-;------
+;------ from BIOS beg ------ for space fill
+;
 AB0D7:
 	EX	DE,HL
 	DEC	DE
@@ -992,10 +1022,11 @@ AB0EB:
 	CP	020H
 	JR	Z,AB0EB
 	JR	AB0E2			; 21
-;------
 ;
-DB8D4:	DEFW	X0000
-DB8D6:	DEFW	X0000
+;------ from BIOS end ------
+;
+DB8D4:	DEFW	0
+DB8D6:	DEFW	0
 DB8D8:	DEFB	000H
 TB8D9:	DEFB	020H
 	DEFB	020H
@@ -1024,7 +1055,7 @@ DB8E6:	DEFB	020H
 	DEFB	020H
 	DEFB	020H
 	DEFB	000H
-DB8F3:	DEFW	X0000
+DB8F3:	DEFW	0
 TB8F5:	DEFB	000H
 	DEFB	000H
 	DEFB	000H
@@ -1039,7 +1070,7 @@ TB8F5:	DEFB	000H
 	DEFB	000H
 	DEFB	000H
 	DEFB	000H
-DB903:	DEFW	X0000
+DB903:	DEFW	0
 DB905:	DEFB	000H
 	DEFB	000H
 	DEFB	000H
@@ -1050,8 +1081,8 @@ DB905:	DEFB	000H
 	DEFB	000H
 	DEFB	000H
 	DEFB	000H
-DB90F:	DEFW	X0000
-DB911:	DEFW	X0000
+DB90F:	DEFW	0
+DB911:	DEFW	0
 ;
 BDOSEND:
 DEFS 256-LOW(BDOSEND-BDOSBEG)
@@ -1059,97 +1090,112 @@ BIOSBEG:
 ;
 BCOLD:	JP	DOWARM
 BWARM:	JP	DOWARM
-CONST:	JP	DOCONST
-CONIN:	JP	DOCONIN
-CONOUT:	JP	DOCONOUT
+CONSTAT:JP	0EC96h		; Orion UZIX clone allready have inbuild CP/M BIOS emulation (console functions CONSTAT/CONIN/CONOUT)	; DOCONSTAT
+CONIN:	JP	0EC99h		; Orion UZIX clone allready have inbuild CP/M BIOS emulation (console functions CONSTAT/CONIN/CONOUT)	; DOCONIN
+CONOUT:	JP	0EC9Ch		; Orion UZIX clone allready have inbuild CP/M BIOS emulation (console functions CONSTAT/CONIN/CONOUT)	; DOCONOUT
 LIST:	JP	RETA0
 PUNCH:	JP	RETA0
 READER:	JP	RETA0
 HOME:	JP	RETA0
-SELDSK:	JP	AB9A9
+SELDSK:	JP	DOSELDSK
 SETTRK:	JP	RETA0
 SETSEC:	JP	RETA0
-SETDMA:	JP	AB9AD
-BREAD:	JP	AB9B2
-BWRITE:	JP	AB9C7
+SETDMA:	JP	DOSETDMA
+BREAD:	JP	DOREAD
+BWRITE:	JP	DOWRITE
 LISTST:	JP	RETA0
 SECTRAN:JP	RETA0
 ;
-DOWARM:	CALL	AB317
+KERNEL:
+	POP	IX			; return address
+	PUSH	HL
+KERNEL1:
+	CALL	0008	; call kernel ; saves IX
+	EX	DE,HL		; uint returning value
+	POP	BC
+	JP	(IX)		; return
+;
+DOWARM:	CALL TTYCOOKED
 AB95E:	LD	HL,00000H
 	PUSH	HL
 	LD	l,00BH		; HL,0000BH		; sys_exit
-	PUSH	HL
-	RST	8				; CALL	X0008	; call kernel
-	EX	DE,HL
-	POP	HL
+;	PUSH	HL
+;	RST	8				; CALL	X0008	; call kernel
+;	EX	DE,HL
+;	POP	HL
+call KERNEL
+;
 	POP	HL
 	JR	AB95E
 ;
 ; 2 - Return Console Input Status
 ;
-DOCONST:
-	JP  0EC96h		; temporary
-;	
-	LD	HL,TTY_CONST	;  ioctl fcn to read queue count
-	CALL TTYCTL		;   Execute ioctl on STDIN
-	LD	A,H
-	OR	L		; Anything There?
-	RET	Z		; ..return Zero if Not
-	OR	0FFH		; Else signify char waiting
-	RET
+;DOCONSTAT:
+;	LD	HL,TTY_CONST	;  ioctl fcn to read queue count
+;	CALL TTYCTL		;   Execute ioctl on STDIN
+;	LD	A,H
+;	OR	L		; Anything There?
+;	RET	Z		; ..return Zero if Not
+;	OR	0FFH		; Else signify char waiting
+;	RET
 ;
-DOCONIN:
-	JP  0EC99h		; temporary
+;DOCONIN:
 ;
-	CALL	AB97A
-	LD	A,H
-	OR	L
-	LD	A,(DBA67)
-	RET	NZ
-	XOR	A
-	RET
+;	CALL GETCHAR
+;	LD	A,H
+;	OR	L
+;	LD	A,(CHARBUF)
+;	RET	NZ
+;	XOR	A
+;	RET
 ;
-AB97A:	LD	HL,00001H
+GETCHAR:				; A=keycode, HL=keypressed
+	LD	HL,00001H		; count to read (single char)
 	PUSH	HL
-	LD	DE,DBA67
+	LD	DE, CHARBUF		; buffer
 	PUSH	DE
-	LD	l,h		; HL,00000H
+	LD	l,h				; HL,00000H - file descriptor (stdin)
 	PUSH	HL
 	LD	L,017H			; sys_readwrite -> read (17h)
-AB988:	PUSH	HL
-	RST	8				; CALL	X0008	; call kernel
-	EX	DE,HL
+AB988:
+;	PUSH	HL
+;	RST	8				; CALL	X0008	; call kernel
+;	EX	DE,HL			; HL = actual readed
+;	POP	BC
+call KERNEL
+;
 	POP	BC
 	POP	BC
 	POP	BC
-	POP	BC
-	LD	A,(DBA67)
+	LD	A,(CHARBUF)
 	RET
 ;
-DOCONOUT:
-	LD	A,C
-	LD	DE,DBA67
-	LD	(DE),A
-	LD	HL,00001H
-	PUSH	HL
-	PUSH	DE
-	LD	HL,00001H
-	PUSH	HL
-	LD	L,024H
-	JR	AB988
+;DOCONOUT:
+;	LD	A,C
+;	LD	DE, CHARBUF
+;	LD	(DE),A
+;	LD	HL,00001H
+;	PUSH	HL
+;	PUSH	DE
+;	LD	HL,00001H
+;	PUSH	HL
+;	LD	L,024H
+;	JR	AB988
 ;
 RETA0:
 	XOR	A
 	RET
 ;
-AB9A9:	LD	HL,TBA3C
+DOSELDSK:
+	LD	HL,TBA3C
 	RET
 ;
-AB9AD:	LD	(DBA61),BC
+DOSETDMA:
+	LD	(DBA61),BC
 	RET
 ;
-AB9B2:	LD	A,017H
+DOREAD:
+	LD	A,017H
 	CALL	AB9D2
 	RET	C
 	OR	A
@@ -1162,7 +1208,8 @@ AB9B2:	LD	A,017H
 	XOR	A
 	RET
 ;
-AB9C7:	LD	A,024H
+DOWRITE:
+	LD	A,024H
 	CALL	AB9D2
 	RET	C
 	SUB	080H
@@ -1176,10 +1223,13 @@ AB9D5:	PUSH	DE
 	LD	HL,(DB8F3)
 	PUSH	HL
 	LD	E,A
-	PUSH	DE
-	RST	8		; CALL	X0008
-	EX	DE,HL
-	POP	BC
+;	PUSH	DE
+;	RST	8		; CALL	X0008
+;	EX	DE,HL
+;	POP	BC
+ex	de,hl
+call KERNEL
+;
 	POP	BC
 	POP	BC
 	POP	BC
@@ -1188,15 +1238,19 @@ AB9D5:	PUSH	DE
 AB9EA:	LD	A,001H
 	RET
 ;
+TTYRAWCHAR:
+	LD	hl, TTY_RAWCHAR ; TTY_RAW_UNBUFF	; 2			; HL,00002H
 TTYCTL:
 	PUSH	HL
 	LD	HL,00000H		; stdin
 	PUSH	HL
-	LD	HL,0000FH		; sys_ioctl
-	PUSH	HL
-	RST	8				; CALL	X0008  result in DE
-	ex	de,hl			; result in HL
-	POP	BC
+	LD	L,0FH			; H=0 sys_ioctl
+;	PUSH	HL
+;	RST	8				; CALL	X0008  result in DE
+;	ex	de,hl			; result in HL
+;	POP	BC
+call KERNEL	
+;
 	POP	BC
 	POP	BC
 	RET
@@ -1291,7 +1345,7 @@ DBA63:	DEFB	000H
 	DEFB	000H
 DBA65:	DEFB	000H
 	DEFB	000H
-DBA67:	DEFB	020H
+CHARBUF:DEFB	020H
 DBA68:	DEFB	000H
 DBA69:	DEFB	000H
 DBA6A:	DEFB	000H
@@ -1437,7 +1491,7 @@ ARGC	EQU	BIOSEND+2
 ENVP	EQU	BIOSEND+4
 SPSTOR	EQU	BIOSEND+6
 ;
-INITEMU:				; code below may be overwritten by UZIX stack after EMU started
+INITEMU:				; "use_once" - code below may be overwritten by UZIX stack after EMU started
 ;	LD	L,(IX+004H)
 ;	LD	H,(IX+005H)
 ;	LD	(ENVP),HL		; HL=envp
@@ -1447,13 +1501,25 @@ INITEMU:				; code below may be overwritten by UZIX stack after EMU started
 ;	LD	L,(IX+000H)
 ;	LD	H,(IX+001H)		; HL=argc
 ;	LD	(ARGC),HL
+;
+	ld	de,3			; Orion UZIX clone allready have inbuild CP/M BIOS emulation (console functions CONSTAT/CONIN/CONOUT)
+	ld	hl,(1)			; HL=ORIGINAL BIOSWARM
+	add	hl,de			; HL=CONSTAT
+	ld	(CONSTAT+1),hl
+	add	hl,de			; HL=CONIN
+	ld	(CONIN+1),hl
+	add	hl,de			; HL=CONOUT
+	ld	(CONOUT+1),hl
+	ld	hl,(9)
+	ld	(KERNEL1+1),hl	; save kernel entry point so area 0..0FFh can be used
 	ld	a,(0EFFFh)		; memory page marker
 	ld	(BERR1),a
 	ld	(BERR2),a
 	ld	(BERR3),a
 	ld	(BERR4),a
 ;	LD	(SPSTOR),SP
-	LD	DE,0005CH
+;
+	LD	 E,05CH		; D=0
 	CALL FCB10LDIR	; init FCB1
 	CALL FCB10LDIR	; init FCB2 
 	LD	IX,(ARGV)
@@ -1509,12 +1575,11 @@ AB061:	XOR	A
 	LD	(Y0005),A
 	LD	(Y0006),HL
 	LD	HL,BWARM	; BIOSWARM
-	LD	(X0000),A
+	LD	(Y0000),A
 	LD	(Y0001),HL
 	LD	HL,00095H
 	LD	(Y0003),HL	; set CPM IOBYTE to TTY (95) for all devices, set current drive to A: (00)
-	LD	l,TTY_RAW_UNBUFF	; 2			; HL,00002H
-	JP	TTYCTL		; set tty RAW mode
+	JP	TTYRAWCHAR		; set tty RAW mode
 ;
 AB098:	
 	ld	hl,AB0D7
@@ -1629,6 +1694,7 @@ DW TTYCTL
 ;	DEFB	000H
 ;
 BIOSEND:
+DEFS 256-LOW(BIOSEND-BIOSBEG)
 .dephase
 	END
 ;
