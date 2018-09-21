@@ -25,8 +25,10 @@ Orion-128 additional machine dependent subroutines for kernel
 #define JP      ((uchar)0xC3)
 
 #ifdef NO_RTC
-static uchar tod_sec;
+STATIC uchar tod_sec;
 #endif
+STATIC char TEMPDBUF[257];		/* do not move: TEMPDBUF+TEMPDBUF=diskbuffer[512] */
+STATIC char TEMPDBUFX[257];		/* do not move: TEMPDBUF+TEMPDBUF=diskbuffer[512] */
 
 #ifdef __KERNEL__
 /*
@@ -367,10 +369,10 @@ __abort:
 	push bc		; bc=status
 	push af
 	/* disable _service() */
-	ld	a, 50*5
+	ld	a, 50*3
 	ld	(_inint), a
 1:	ei
-	halt		        ; /* wait 5 seconds (about 5*50 interrupts) */
+	halt		        ; /* wait 3 seconds (about 3*50 interrupts) */
 	ld	a,(_inint)
 	dec	a
 	jr	z,2f

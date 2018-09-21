@@ -23,6 +23,7 @@ typedef enum {
 #define TTY_QCOUNT	4	/* inp. query size = TIOCSETN in UZI180 */
 #define TTY_CONST	5	/* direct CPM BIOS CONSTAT */
 #define TTY_CONIN	6	/* direct CPM BIOS CONIN */
+#define TTY_CONOUT	7	/* direct CPM BIOS CONOUT */
 
 struct swap_mmread {
 #ifdef ORI_UZIX

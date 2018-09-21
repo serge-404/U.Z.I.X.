@@ -440,8 +440,12 @@ GBL int sys_alarm(VOID) {
 #define p1 (char)UDATA(u_argn1)
 #define p2 (char)UDATA(u_argn2)
 GBL int sys_reboot(VOID) {
-	if (p1 == 'm' && p2 == 'e')
-		_abort(0);
+	if (p1 == 'm') {
+		if (p2 == 'e')
+			_abort(0);
+		if (p2 == 'h')
+			shootdown(0x6666);
+	}		
 	return EFAULT;
 }
 #undef p1

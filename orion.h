@@ -20,6 +20,9 @@
     D7 = 0/1 = FN10 BDOS service bit
 */
 
+extern char TEMPDBUF[];
+extern char TEMPDBUFX[];
+
 #ifdef ORI_UZIX
 
 #define switch_page (*((uchar *)COMMON_MEM+6))	/* page where to switch context */
@@ -27,9 +30,9 @@
 
 #define OLD_YINTVEC	((unsigned char *)0x0effa)		/* page:address, used only at kernel page   */
 #define _OLDYINTVEC 0effah							/* for store CP/M int50hz vector, in kernel page */
-#define TEMPDBUF 	(OLD_YINTVEC-513)   /* temporary disk buffer (512 bytes) inside kernel page */
-#define TEMPDBUFX	(OLD_YINTVEC-257)   /* a half of temporary disk buffer (256 bytes) inside kernel page */
-#define _TEMPDBUF _OLDYINTVEC-513
+/* #define TEMPDBUF 	(OLD_YINTVEC-513)   /* temporary disk buffer (512 bytes) inside kernel page */
+/* #define TEMPDBUFX	(OLD_YINTVEC-257)   /* a half of temporary disk buffer (256 bytes) inside kernel page */
+/* #define _TEMPDBUF _OLDYINTVEC-513 */
 #define UDATA_STASH 0xef80					/* local process udata copy, in processes pages */
 #define _UDATASTASH 0ef80h
 #define BNK_MARKER	((unsigned char *)0x0efff)		/* unique memory page number - 0..15 for 1Mb*/
@@ -37,7 +40,6 @@
 
 #else
 
-extern char TEMPDBUF[];
 #ifndef kprintf
 #define kprintf printf
 #endif	/* kprintf */

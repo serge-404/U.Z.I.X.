@@ -134,7 +134,7 @@ retintr:			UDATA(u_error) = EINTR;
 			goto retintr;
 		}
 		_ei();
-		if (nread++ == 0 && ch == EOFKEY)
+		if (nread++ == 0 && ((ch == EOFKEY)&&(rawmode<2)))
 NoKey:			return 0;		/* EOF */
 #ifdef ORI_UZIX
 		if ( *(((uchar*)&UDATA(u_base))+1) < 0xf0 )	 {		/* if buffer in process local memory */
@@ -162,7 +162,7 @@ NoKey:			return 0;		/* EOF */
 	nread = ttyinbuf[1];
 	ttyinbuf[nread + 2] = '\n';
 	bcopy(ttyinbuf + 2, UDATA(u_base), nread + 1);
-	return (ttyinbuf[2] == EOFKEY ? -1 : nread + 1);
+	return (((ttyinbuf[2]==EOFKEY)&&(rawmode<2)) ? -1 : nread + 1);
 #endif /* __KERNEL__ */
 }
 
@@ -237,9 +237,10 @@ GBL int tty_ioctl(minor, req, ptr)
 	else if ((uchar)req == TTY_RAW) 	rawmode = 1;
 	else if ((uchar)req == TTY_COOKED)	rawmode = 0;
 	else if ((uchar)req == TTY_RAWCHAR)	rawmode = 3;
-	else if ((uchar)req == TTY_QCOUNT) return ttyinq.q_count;	/* inp. query size = TIOCSETN in UZI180 */
-	else if ((uchar)req == TTY_CONST)  return xbios(2);			/* direct CPM BIOS CONSTAT : 0=notpressed */
-	else if ((uchar)req == TTY_CONIN)  return xbios(3);			/* direct CPM BIOS CONIN */
+	else if ((uchar)req == TTY_QCOUNT) return ttyinq.q_count;			/* inp. query size = TIOCSETN in UZI180 */
+	else if ((uchar)req == TTY_CONST)  return xbios(2);					/* direct CPM BIOS CONSTAT : 0=notpressed */
+	else if ((uchar)req == TTY_CONIN)  return xbios(3);					/* direct CPM BIOS CONIN */
+	else if ((uchar)req == TTY_CONOUT) return xbios(4,(uint)ptr);	    /* direct CPM BIOS CONOUT */
 	else	return -1;
 	return ret;
 #else	/* __KERNEL__ */
