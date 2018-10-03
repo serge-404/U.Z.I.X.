@@ -20,17 +20,9 @@ typedef enum {
 #define TTY_RAW 	1	/* unbuffered, wait */
 #define TTY_RAW_UNBUFF	2	/* unbuffered, no wait */
 #define TTY_RAWCHAR	3	/* unbuffered, no wait, one char */
-#define TTY_QCOUNT	4	/* inp. query size = TIOCSETN in UZI180 */
-#define TTY_CONST	5	/* direct CPM BIOS CONSTAT */
-#define TTY_CONIN	6	/* direct CPM BIOS CONIN */
-#define TTY_CONOUT	7	/* direct CPM BIOS CONOUT */
 
 struct swap_mmread {
-#ifdef ORI_UZIX
-	uchar	mm;
-#else
 	uchar	mm[2];
-#endif
 	uint	offset;
 	uint	size;
 	uchar	*buf;
@@ -38,30 +30,9 @@ struct swap_mmread {
 
 typedef struct {
 	getinfo_t req;
-	uint /*size_t*/	size;
+	size_t	size;
 	void	*ptr;
 } info_t;
-
-#ifdef TIOCGWINSZ	
-typedef struct {
-  unsigned short ws_row;	/* rows, in characters */
-  unsigned short ws_col;	/* columns, in characters */
-  unsigned short ws_xpixel;	/* horizontal size, pixels */
-  unsigned short ws_ypixel;	/* vertical size, pixels */
-} winsize;
-/* Example
-#include <sys/ioctl.h>
-#include <stdio.h>
-int main(int argc, char **argv)
-{
-  struct winsize sz;
-
-  ioctl(0, TIOCGWINSZ, &sz);
-  printf("Screen width: %i  Screen height: %i\n", sz.ws_col, sz.ws_row);
-  return 0;
-}
-*/
-#endif
 
 #endif
 

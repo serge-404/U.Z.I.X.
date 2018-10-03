@@ -9,8 +9,15 @@
 #define CLOCKS_PER_SEC	*(uchar *)63220	/* Must agree with kernel EXTERN.H */
 #define CLK_TCK 	*(uchar *)63220	/* That must be the same as HZ ???? */
 #else
+
+#ifdef	ORI_UZIX
+#define CLOCKS_PER_SEC	50
+#define CLK_TCK 		50	/* That must be the same as HZ ???? */
+#else
 #define CLOCKS_PER_SEC	18
-#define CLK_TCK 	18	/* That must be the same as HZ ???? */
+#define CLK_TCK 		18	/* That must be the same as HZ ???? */
+#endif
+
 #endif
 
 #ifndef CLOCK_T

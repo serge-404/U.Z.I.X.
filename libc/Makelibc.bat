@@ -51,13 +51,13 @@ for %%i in (*.AS_) do (
 for %%i in (*.C) do (
    REM  compile C-files to OBJ-files with optimization
    echo %%i
-   cpm -h c -o -x -DMAKE_ALL -c %%i
+   cpm -h c -o -x -DORI_UZIX -DMAKE_ALL -c %%i
 )
 
 for %%i in (*.CC) do (
    REM  compile C-files to OBJ-files without optimization
    echo %%i
-   cpm CPP -DCPM -DHI_TECH_C -Dz80 -DMAKE_ALL -I %%i $CTMP1.$$$
+   cpm CPP -DCPM -DHI_TECH_C -Dz80 -DORI_UZIX -DMAKE_ALL -I %%i $CTMP1.$$$
    cpm P1 $CTMP1.$$$ $CTMP2.$$$ $CTMP3.$$$
    cpm CGEN $CTMP2.$$$ $CTMP1.$$$
    cpm ZAS -X -N -o%%~ni.obj $CTMP1.$$$
@@ -79,10 +79,10 @@ cpm libr r libc.lib GETPW.obj
 cpm libr r libc.lib GETPWNAM.obj
 cpm libr r libc.lib GETPWUID.obj
 cpm libr r libc.lib GETPWENT.obj
-cpm libr r libc.lib SETPWENT.obj
 cpm libr r libc.lib PUTPWENT.obj
 cpm libr r libc.lib SETGRENT.obj
 cpm libr r libc.lib GETGRENT.obj
+cpm libr r libc.lib SETPWENT.obj
 cpm libr r libc.lib PERROR.obj
 cpm libr r libc.lib ERROR.obj
 cpm libr r libc.lib SYSTEM.obj
@@ -101,7 +101,10 @@ cpm libr r libc.lib SSCANF.obj
 cpm libr r libc.lib VSCANF.obj
 cpm libr r libc.lib VSSCANF.obj
 cpm libr r libc.lib VFSCANF.obj
+
 cpm libr r libc.lib GETS.obj
+cpm libr r libc.lib GETOPT.obj
+cpm libr r libc.lib GETPASS.obj
 cpm libr r libc.lib FPUTS.obj
 cpm libr r libc.lib FPUTC.obj
 cpm libr r libc.lib LSTAT.obj
@@ -114,8 +117,6 @@ cpm libr r libc.lib TERMCAP.obj
 cpm libr r libc.lib TMPNAM.obj
 cpm libr r libc.lib TPARAM.obj
 cpm libr r libc.lib TTYNAME.obj
-cpm libr r libc.lib GETOPT.obj
-cpm libr r libc.lib GETPASS.obj
 cpm libr r libc.lib PUTGETCH.obj
 cpm libr r libc.lib GETCWD.obj
 cpm libr r libc.lib FTELL.obj
@@ -140,6 +141,7 @@ cpm libr r libc.lib EXECV.obj
 cpm libr r libc.lib EXECVP.obj
 cpm libr r libc.lib EXECVPE.obj
 cpm libr r libc.lib EXECL.obj
+
 cpm libr r libc.lib ABORT.obj
 cpm libr r libc.lib CTIME.obj
 cpm libr r libc.lib DIFFTIME.obj
@@ -153,6 +155,7 @@ cpm libr r libc.lib LTOSTR.obj
 cpm libr r libc.lib LTOA.obj
 cpm libr r libc.lib ULTOA.obj
 cpm libr r libc.lib ITOA.obj
+cpm libr r libc.lib READDIR.obj
 cpm libr r libc.lib STRTOD.obj
 cpm libr r libc.lib STRTOK.obj
 cpm libr r libc.lib STRCAT.obj
@@ -171,8 +174,8 @@ cpm libr r libc.lib STRPBRK.obj
 cpm libr r libc.lib STRCHR.obj
 cpm libr r libc.lib STRCMP.obj
 cpm libr r libc.lib STRRCHR.obj
+
 cpm libr r libc.lib READLINK.obj
-cpm libr r libc.lib READDIR.obj
 cpm libr r libc.lib CLOSEDIR.obj
 cpm libr r libc.lib MKDIR.obj
 cpm libr r libc.lib OPENDIR.obj
