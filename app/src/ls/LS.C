@@ -27,7 +27,6 @@ static char sccsid[] = "@(#)ls.c	5.42 (Berkeley) 5/17/90";
 #include <stdlib.h>
 #include <types.h>
 #include <stat.h>
-#include <ioctl.h>
 #include <dirent.h>
 
 /* #include <string.h> */
