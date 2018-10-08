@@ -78,7 +78,7 @@ extern void	exit(int);
 
 extern unsigned char TotalDrives;
 
-char TEMPDBUF[BUFSIZE];
+/* char TEMPDBUF[BUFSIZE]; */
 
 #endif
 

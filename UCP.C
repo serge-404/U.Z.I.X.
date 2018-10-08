@@ -65,7 +65,7 @@
 
 extern void setuid(int uid);
 
-char TEMPDBUF[BUFSIZE];
+/* char TEMPDBUF[BUFSIZE]; */
 
 extern udata_t udata;
 

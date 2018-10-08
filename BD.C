@@ -76,7 +76,7 @@ extern char  bios(int, ...);
 extern unsigned char TotalDrives;
 extern PARTITION Drives[];
 
-char TEMPDBUF[BUFSIZE];
+/*char TEMPDBUF[BUFSIZE];*/
 
 void list_drives()
 {

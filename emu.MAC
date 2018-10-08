@@ -17,13 +17,13 @@ Y0003	EQU	00003H
 Y0005	EQU	00005H
 Y0006	EQU	00006H
 ;
-TTY_COOKED		EQU	0		; /* buffered */
-TTY_RAW 		EQU	1		; /* unbuffered, wait */
+TTY_COOKED	EQU	0		; /* buffered */
+TTY_RAW 	EQU	1		; /* unbuffered, wait */
 TTY_RAW_UNBUFF	EQU	2		; /* unbuffered, no wait */
-TTY_RAWCHAR		EQU	3		; /* unbuffered, no wait, one char */
-TTY_QCOUNT		EQU	4		; /* inp. query size = TIOCSETN in UZI180 */
-TTY_CONST		EQU	5		; /* direct CPM BIOS CONSTAT */
-TTY_CONIN		EQU	6		; /* direct CPM BIOS CONIN */
+TTY_RAWCHAR	EQU	3		; /* unbuffered, no wait, one char */
+TTY_QCOUNT	EQU	4		; /* inp. query size = TIOCSETN in UZI180 */
+TTY_CONST	EQU	5		; /* direct CPM BIOS CONSTAT */
+TTY_CONIN	EQU	6		; /* direct CPM BIOS CONIN */
 ;
 .phase LOADADR
 ;
@@ -55,6 +55,9 @@ BEGIN:				; if BDOS space needed then move this starter block to BIOS end (to "u
 	ADD	IX,SP		; IX=SP
 	LD	SP,LOADADR
 	CALL	INITEMU
+	LD	DE,TBA6D
+	LD	B,080H
+	CALL	MEMZERO
 	LD	HL,BWARM	; BIOSWRM
 	PUSH	HL
 	PUSH	HL		; ADDRESS FOR RETURNING BY RET OPCODE
@@ -75,41 +78,41 @@ TB250:
 	DEFW	BDOS_8	; 8
 	DEFW	BDOS_9	; 9
 	DEFW	BDOS_10	; 10 - ввод строки с клавиатуры в буфер строки
-	DEFW	BDOS_11	; 11 - опрос состояния клавиатуры в A: A=00 - не активна, A=0FFH - активна
-	DEFW	AB39D	; 12
-	DEFW	RETA0	; BDOS_11 ; 13
-	DEFW	RETA0	; BDOS_11 ; 14
-	DEFW	AB3B2   ; 15
-	DEFW	AB426   ; 16
-	DEFW	AB43D   ; 17
-	DEFW	AB459   ; 18
-	DEFW	AB4E5   ; 19
-	DEFW	AB5C7   ; 20
-	DEFW	AB5E6   ; 21
-	DEFW	AB5EE   ; 22
-	DEFW	AB620   ; 23
-	DEFW	AB675   ; 24
-	DEFW	RETA0	; BDOS_11	; 25
-	DEFW	AB67C   ; 26
-	DEFW	AB681   ; 27
-	DEFW	RETA0	; BDOS_11	; 28
-	DEFW	AB69D	; 29
-	DEFW	RETA0	; BDOS_11	; 30
-	DEFW	AB6A1	; 31
-	DEFW	RETA0	; BDOS_11	; 32
-	DEFW	AB5BF	; 33
-	DEFW	AB5DE	; 34
-	DEFW	AB6A5	; 35
-	DEFW	AB6EB	; 36
+	DEFW	CONSTAT	; 11 - опрос состояния клавиатуры в A: A=00 - не активна, A=0FFH - активна
+	DEFW	BDOS_12	; 12
+	DEFW	RETA0	; 13
+	DEFW	RETA0	; 14
+	DEFW	BDOS_15 ; 15
+	DEFW	BDOS_16 ; 16
+	DEFW	BDOS_17 ; 17
+	DEFW	BDOS_18 ; 18
+	DEFW	BDOS_19 ; 19
+	DEFW	BDOS_20 ; 20
+	DEFW	BDOS_21 ; 21
+	DEFW	BDOS_22 ; 22
+	DEFW	BDOS_23 ; 23
+	DEFW	BDOS_24 ; 24
+	DEFW	RETA0	; 25
+	DEFW	BDOS_26 ; 26
+	DEFW	BDOS_27 ; 27
+	DEFW	RETA0	; 28
+	DEFW	BDOS_29	; 29
+	DEFW	RETA0	; 30
+	DEFW	BDOS_31	; 31
+	DEFW	RETA0	; 32
+	DEFW	BDOS_33	; 33
+	DEFW	BDOS_34	; 34
+	DEFW	BDOS_35	; 35
+	DEFW	BDOS_36	; 36
 ; extended calls
 	DEFW	RETA0	; 37
-	DEFW	AB4F9	; 38
-	DEFW	AB500	; 39
+	DEFW	BDOS_38	; 38
+	DEFW	BDOS_39	; 39
 	DEFW	RETA0	; 40
 	DEFW	RETA0	; 41
-	DEFW	AB6F9	; 42
+	DEFW	BDOS_42	; 42
 	DEFW	RETA0	; 43
-	DEFW	AB743	; 44
+	DEFW	BDOS_44	; 44
 ;
 DOBDOS:	LD	(DB8D4),DE 	; B2AA
 	LD	(DB8D6),HL
@@ -117,7 +120,7 @@ DOBDOS:	LD	(DB8D4),DE 	; B2AA
 	LD	A,C
 	LD	(DB8D8),A
 	CP	01BH
-	CALL Z,AB681	
+	CALL	Z,BDOS_27	
 	CP	02DH
 	LD	A,0FFH
 	LD	L,A
@@ -285,15 +288,12 @@ call KERNEL
 	LD	(DE),A
 	JP	TTYRAWCHAR
 ;
-AB39D:	LD	HL,00022H
+BDOS_12:LD	HL,00022H
 	LD	(DB8D6),HL
 	RET
 ;
-BDOS_11:	LD	HL,00000H
-	RET
-;
-AB3B2:	CALL	AB8B7
-	CALL	AB43D
+BDOS_15:CALL	AB8B7
+	CALL	BDOS_17
 	LD	A,H
 	AND	L
 	INC	A
@@ -325,13 +325,16 @@ AB3DA:	EX	DE,HL
 	LD	HL,00000H
 	LD	DE,00000H
 	CALL	AB81F
-	JR	BDOS_11
+;	JR	RET0000
+;
+RET0000:LD	HL,00000H
+	RET
 ;
 AB415:	PUSH	DE
 	PUSH	HL
 	LD	HL,00014H		; sys_open
 ;	PUSH	HL
-;	RST	8				; CALL	X0008	; call kernel
+;	RST	8			; CALL	X0008	; call kernel
 ;	EX	DE,HL
 ;	POP	BC
 call KERNEL
@@ -343,7 +346,7 @@ call KERNEL
 	INC	A
 	RET
 ;
-AB426:	CALL	AB835
+BDOS_16:CALL	AB835
 AB429:	PUSH	DE
 	LD	HL,00006H		; sys_close
 ;	PUSH	HL
@@ -356,11 +359,13 @@ call KERNEL
 AB433:	LD	A,H
 	AND	L
 	INC	A
-	JP	NZ,BDOS_11
-	LD	HL,0FFFFH
+	Jr	NZ,RET0000
+;
+BDOS_29:
+RETFFFF:LD	HL,0FFFFH
 	RET
 ;
-AB43D:	LD	HL,0002EH
+BDOS_17:LD	HL,0002EH
 	LD	(DB8E6),HL
 	LD	DE,00000H
 	LD	HL,DB8E6
@@ -370,7 +375,7 @@ AB43D:	LD	HL,0002EH
 	LD	(DB8F3),HL
 	LD	HL,(DB8D4)
 	LD	(DB4E3),HL
-AB459:	LD	HL,(DB4E3)
+BDOS_18:LD	HL,(DB4E3)
 	LD	(DB8D4),HL
 	LD	HL,(DBA61)
 	LD	(DBA63),HL
@@ -435,7 +440,7 @@ AB4DA:	LD	DE,(DBA63)
 ;
 DB4E3:	DEFW	0
 ;
-AB4E5:	CALL	AB8B7
+BDOS_19:CALL	AB8B7
 	CALL	AB780
 	PUSH	HL
 	LD	HL,00021H		; sys_unlink
@@ -448,11 +453,11 @@ call KERNEL
 	POP	BC
 	JP	AB433
 ;
-AB4F9:	LD	A,024H
+BDOS_38:LD	A,024H
 	LD	(DBA68),A
 	JR	AB505
 ;
-AB500:	LD	A,017H
+BDOS_39:LD	A,017H
 	LD	(DBA68),A
 AB505:	CALL	AB835
 	CALL	AB7DC
@@ -556,29 +561,29 @@ AB5B9:	LD	A,B
 	JR	Z,AB5AA
 	JR	AB5B5
 ;
-AB5BF:	CALL	AB835
+BDOS_33:CALL	AB835
 	CALL	AB7C6
 	JR	AB5CA
 ;
-AB5C7:	CALL	AB835
+BDOS_20:CALL	AB835
 AB5CA:	CALL	BREAD
-	JR	C,AB5DA
+	JR	C,RET0001
 AB5CF:	LD	IY,(DB8D4)
 	INC	(IY+020H)
 	OR	A
-	JP	Z,BDOS_11
-AB5DA:	LD	HL,00001H
+	JP	Z,RET0000
+RET0001:LD	HL,00001H
 	RET
 ;
-AB5DE:	CALL	AB835
+BDOS_34:CALL	AB835
 	CALL	AB7C6
 	JR	AB5E9
 ;
-AB5E6:	CALL	AB835
+BDOS_21:CALL	AB835
 AB5E9:	CALL	BWRITE
 	JR	AB5CF
 ;
-AB5EE:	CALL	AB8B7
+BDOS_22:CALL	AB8B7
 	LD	HL,001B6H
 	PUSH	HL
 	LD	HL,00301H
@@ -605,7 +610,7 @@ call KERNEL
 	LD	(IY+00FH),000H
 	JP	AB3DA
 ;
-AB620:	CALL	AB8B7
+BDOS_23:CALL	AB8B7
 	PUSH	DE
 	CALL	AB780
 	LD	HL,TB8D9
@@ -640,7 +645,7 @@ call KERNEL
 call KERNEL
 ;
 	POP	BC
-	JP	NC,BDOS_11
+	Jr	NC,RET__00
 	LD	HL,TB8D9
 	PUSH	HL
 	LD	HL,00021H		; sys_unlink
@@ -651,21 +656,18 @@ call KERNEL
 call KERNEL
 ;
 	POP	BC
-	JR	C,AB671
-	JP	BDOS_11
+AB671:	JP	C,RETFFFF
+RET__00:JP	RET0000
 ;
-AB671:	LD	HL,0FFFFH
-	RET
-;
-AB675:	LD	HL,00001H
+BDOS_24:LD	HL,00001H
 	LD	(DB8D6),HL
 	RET
 ;
-AB67C:	LD	C,E
+BDOS_26:LD	C,E
 	LD	B,D
 	JP	SETDMA
 ;
-AB681:	LD	A,E
+BDOS_27:LD	A,E
 	CP	002H
 	JR	C,AB689
 	LD	A,0FFH
@@ -679,13 +681,10 @@ AB689:	LD	A,001H
 	LD	IX,TBA4C 	; 0BA4CH ??
 	RET
 ;
-AB69D:	LD	HL,0FFFFH
+BDOS_31:LD	HL,TBA4C	; 0BA4CH ??
 	RET
 ;
-AB6A1:	LD	HL,TBA4C	; 0BA4CH ??
-	RET
-;
-AB6A5:	CALL	AB8B7
+BDOS_35:CALL	AB8B7
 	CALL	AB780
 	LD	DE,TB8F5
 	PUSH	DE
@@ -709,27 +708,26 @@ call KERNEL
 	LD	HL,(DB905)
 	LD	(IY+023H),L
 	LD	(IY+024H),H
-	LD	HL,00000H
-	RET
+	Jr	RET_000
+;	LD	HL,00000H
+;	RET
 ;
 AB6D9:	LD	(IY+021H),000H
 	LD	(IY+022H),000H
 	LD	(IY+023H),L
 	LD	(IY+024H),H
-	LD	HL,0FFFFH
-	RET
+	JP	RETFFFF			;	LD	HL,0FFFFH   ;	RET
 ;
-AB6EB:	LD	HL,00020H
+BDOS_36:LD	HL,00020H
 	ADD	HL,DE
 	LD	A,(HL)
 	INC	HL
 	LD	(HL),A
 	INC	HL
 	LD	(HL),000H
-	LD	HL,00000H
-	RET
+RET_000:jp	RET0000			;	LD	HL,00000H   ;	RET
 ;
-AB6F9:	CALL	AB735
+BDOS_42:CALL	AB735
 	LD	A,(DBA6C)
 	AND	0FEH
 	SRL	A
@@ -770,7 +768,7 @@ call KERNEL
 	POP	BC
 	RET
 ;
-AB743:	CALL	AB735
+BDOS_44:CALL	AB735
 	LD	A,(DBA6A)
 	AND	0F8H
 	SRL	A
@@ -912,7 +910,7 @@ AB844:	LD	DE,TBA6D
 	LD	B,003H
 	CALL	AB88A
 	LD	B,015H
-	CALL	AB8B1
+	CALL	MEMZERO
 	LD	DE,(DB8D4)
 	INC	DE
 	LD	A,(DE)
@@ -969,7 +967,7 @@ AB8AA:	LD	A,020H
 	RET	Z
 	JR	AB8B2
 ;
-AB8B1:	XOR	A
+MEMZERO:XOR	A
 AB8B2:	LD	(DE),A
 	INC	DE
 	DJNZ	AB8B2
@@ -1005,14 +1003,6 @@ FCB10LDIR:
 	LDIR
 	RET					;11
 ;
-AB0E2:
-	LD	A,(HL)
-	CP	02AH
-	JR	Z,AB0EB
-	INC	HL
-	DJNZ	AB0E2
-	RET					; 9
-;
 AB0EB:
 	LD	(HL),03FH
 	INC	HL
@@ -1021,7 +1011,15 @@ AB0EB:
 	LD	A,(HL)
 	CP	020H
 	JR	Z,AB0EB
-	JR	AB0E2			; 21
+;	JR	AB0E2			; 21
+;
+AB0E2:
+	LD	A,(HL)
+	CP	02AH
+	JR	Z,AB0EB
+	INC	HL
+	DJNZ	AB0E2
+	RET					; 9
 ;
 ;------ from BIOS end ------
 ;
@@ -1116,6 +1114,9 @@ KERNEL1:
 	JP	(IX)		; return
 ;
 DOWARM:	CALL TTYCOOKED
+
+; if (chdir(wd)) PF("cd: %s\n", stringerr[errno]);		/* set current dir to initial dir */
+
 AB95E:	LD	HL,00000H
 	PUSH	HL
 	LD	l,00BH		; HL,0000BH		; sys_exit
@@ -1182,10 +1183,6 @@ call KERNEL
 ;	LD	L,024H
 ;	JR	AB988
 ;
-RETA0:
-	XOR	A
-	RET
-;
 DOSELDSK:
 	LD	HL,TBA3C
 	RET
@@ -1205,7 +1202,7 @@ DOREAD:
 	LD	DE,(DBA61)
 	ADD	HL,DE
 	LD	(HL),01AH
-	XOR	A
+RETA0:	XOR	A
 	RET
 ;
 DOWRITE:
@@ -1511,7 +1508,7 @@ INITEMU:				; "use_once" - code below may be overwritten by UZIX stack after EMU
 	add	hl,de			; HL=CONOUT
 	ld	(CONOUT+1),hl
 	ld	hl,(9)
-	ld	(KERNEL1+1),hl	; save kernel entry point so area 0..0FFh can be used
+	ld	(KERNEL1+1),hl		; save kernel entry point so area 0..0FFh can be used
 	ld	a,(0EFFFh)		; memory page marker
 	ld	(BERR1),a
 	ld	(BERR2),a
@@ -1519,7 +1516,18 @@ INITEMU:				; "use_once" - code below may be overwritten by UZIX stack after EMU
 	ld	(BERR4),a
 ;	LD	(SPSTOR),SP
 ;
-	LD	 E,05CH		; D=0
+	LD	A,0C3H			; setup BDOS and BIOS call vectors
+	LD	HL,BDOS
+	LD	(Y0005),A
+	LD	(Y0006),HL
+	LD	HL,BWARM		; BIOSWARM
+	LD	(Y0000),A
+	LD	(Y0001),HL
+	LD	HL,00095H
+	LD	(Y0003),HL		; set CPM IOBYTE to TTY (95) for all devices, set current drive to A: (00)
+	CALL	TTYRAWCHAR		; set tty RAW mode
+
+	LD	DE,05CH
 	CALL FCB10LDIR	; init FCB1
 	CALL FCB10LDIR	; init FCB2 
 	LD	IX,(ARGV)
@@ -1533,7 +1541,19 @@ AB037:	LD	L,(IX+000H)	; get argv[i]
 	INC	IX
 	LD	A,H
 	OR	L
-	JR	Z,AB061
+	JR	Z,AB061		; if end of argv array
+
+;;; char wd[PATHLEN]=INITEMU;
+;;; getcwd(wd,PATHLEN-1);								/* get and store initial path */
+
+; a1=ExtractFilePath(argv[i])
+; argv[i]=ExtractFileName(argv[i])
+; if (chdir(a1)) PF("cd: %s\n", stringerr[errno]);		/* set current dir to argument path */
+
+;;; _chdir:
+;;; ld hl,3
+;;; jp __sysint__
+
 	LD	A,020H
 	LD	(DE),A
 	INC	DE
@@ -1563,25 +1583,15 @@ AB061:	XOR	A
 	OR	A
 	LD	DE,0006DH
 	CALL	NZ,AB0F7
-	LD	DE,0005DH
+	LD	DE,0005CH
 	CALL	AB098
-	LD	DE,0006DH
-	CALL	AB098
-	LD	DE,TBA6D
-	LD	B,080H
-	CALL	AB8B1
-	LD	A,0C3H		; setup BDOS and BIOS call vectors
-	LD	HL,BDOS
-	LD	(Y0005),A
-	LD	(Y0006),HL
-	LD	HL,BWARM	; BIOSWARM
-	LD	(Y0000),A
-	LD	(Y0001),HL
-	LD	HL,00095H
-	LD	(Y0003),HL	; set CPM IOBYTE to TTY (95) for all devices, set current drive to A: (00)
-	JP	TTYRAWCHAR		; set tty RAW mode
+	LD	DE,0006CH
+;	CALL	AB098
 ;
 AB098:	
+	xor	a
+	ld	(de),a
+	inc	de
 	ld	hl,AB0D7
 	push hl
 	LD	L,E

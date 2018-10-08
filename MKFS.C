@@ -67,7 +67,7 @@ extern int d_init(void);
 
 extern unsigned char TotalDrives;
 
-char TEMPDBUF[BUFSIZE];
+/* char TEMPDBUF[BUFSIZE]; */
 
 #endif
 
