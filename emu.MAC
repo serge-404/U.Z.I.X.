@@ -11,19 +11,21 @@
 LOADADR EQU 0DE00h		; address where emulator resides at user process space
 ;
 IOBYTE	EQU	3
+FCB1	EQU	05Ch
+FCB2	EQU	06Ch
+;
 Y0000	EQU	00000H
 Y0001	EQU	00001H
 Y0003	EQU	00003H
 Y0005	EQU	00005H
 Y0006	EQU	00006H
 ;
+ENOENT		EQU 2		; /* 2 No such file or directory */
+;
 TTY_COOKED	EQU	0		; /* buffered */
 TTY_RAW 	EQU	1		; /* unbuffered, wait */
 TTY_RAW_UNBUFF	EQU	2		; /* unbuffered, no wait */
 TTY_RAWCHAR	EQU	3		; /* unbuffered, no wait, one char */
-TTY_QCOUNT	EQU	4		; /* inp. query size = TIOCSETN in UZI180 */
-TTY_CONST	EQU	5		; /* direct CPM BIOS CONSTAT */
-TTY_CONIN	EQU	6		; /* direct CPM BIOS CONIN */
 ;
 .phase LOADADR
 ;
@@ -1021,6 +1023,21 @@ AB0E2:
 	DJNZ	AB0E2
 	RET					; 9
 ;
+; INP: HL=filepath ; OUT: C if not found, NC if found (and de=lastslash); A=0 allways
+fndslsh:
+	ld	de,0
+fndslsh1:	
+	ld	a,(hl)
+	cp	'/'
+	jr	nz,fndslsh2
+	ld	d,h
+	ld	e,l
+fndslsh2:
+	or	a
+	ret	z
+	inc hl
+	jr	fndslsh1
+;
 ;------ from BIOS end ------
 ;
 DB8D4:	DEFW	0
@@ -1105,21 +1122,22 @@ LISTST:	JP	RETA0
 SECTRAN:JP	RETA0
 ;
 KERNEL:
-	POP	IX			; return address
+	POP	BC			; return address
+	ld	(KERNEL2+1),bc
 	PUSH	HL
 KERNEL1:
-	CALL	0008	; call kernel ; saves IX
+	CALL	0008	; call kernel ; saves IX, IY
 	EX	DE,HL		; uint returning value
 	POP	BC
-	JP	(IX)		; return
+KERNEL2:
+	JP	KERNEL2		; return
 ;
-DOWARM:	CALL TTYCOOKED
-
-; if (chdir(wd)) PF("cd: %s\n", stringerr[errno]);		/* set current dir to initial dir */
-
-AB95E:	LD	HL,00000H
+DOWARM:
+	LD	HL,00000H
+exiterr:
+	CALL TTYCOOKED		; saves HL, AF
 	PUSH	HL
-	LD	l,00BH		; HL,0000BH		; sys_exit
+	LD	l,00BH			; HL,0000BH		; sys_exit
 ;	PUSH	HL
 ;	RST	8				; CALL	X0008	; call kernel
 ;	EX	DE,HL
@@ -1127,7 +1145,7 @@ AB95E:	LD	HL,00000H
 call KERNEL
 ;
 	POP	HL
-	JR	AB95E
+	JR	DOWARM
 ;
 ; 2 - Return Console Input Status
 ;
@@ -1241,7 +1259,7 @@ TTYCTL:
 	PUSH	HL
 	LD	HL,00000H		; stdin
 	PUSH	HL
-	LD	L,0FH			; H=0 sys_ioctl
+	LD	L,0FH			; H=0 ; sys_ioctl
 ;	PUSH	HL
 ;	RST	8				; CALL	X0008  result in DE
 ;	ex	de,hl			; result in HL
@@ -1483,22 +1501,14 @@ DBA8C:	DEFB	000H
 	DEFB	0BAH
 	DEFB	0FFH
 	DEFB	0BAH
-ARGV	EQU	BIOSEND
-ARGC	EQU	BIOSEND+2
-ENVP	EQU	BIOSEND+4
-SPSTOR	EQU	BIOSEND+6
 ;
 INITEMU:				; "use_once" - code below may be overwritten by UZIX stack after EMU started
-;	LD	L,(IX+004H)
-;	LD	H,(IX+005H)
-;	LD	(ENVP),HL		; HL=envp
-	LD	L,(IX+002H)
-	LD	H,(IX+003H)		; HL=argv[]
-	LD	(ARGV),HL
-;	LD	L,(IX+000H)
-;	LD	H,(IX+001H)		; HL=argc
-;	LD	(ARGC),HL
-;
+	LD	e,(IX+002H)
+	LD	d,(IX+003H)		; =argv[]   ;  (IX+004H),(IX+005H)=envp   ; (IX+000H),(IX+001H)=argc
+	INC	de
+	INC	de				; skip argv[0] (executable name)
+	push	de			; DE=argv[1]
+	
 	ld	de,3			; Orion UZIX clone allready have inbuild CP/M BIOS emulation (console functions CONSTAT/CONIN/CONOUT)
 	ld	hl,(1)			; HL=ORIGINAL BIOSWARM
 	add	hl,de			; HL=CONSTAT
@@ -1508,13 +1518,12 @@ INITEMU:				; "use_once" - code below may be overwritten by UZIX stack after EMU
 	add	hl,de			; HL=CONOUT
 	ld	(CONOUT+1),hl
 	ld	hl,(9)
-	ld	(KERNEL1+1),hl		; save kernel entry point so area 0..0FFh can be used
+	ld	(KERNEL1+1),hl	; save kernel entry point so area 0..0FFh can be used
 	ld	a,(0EFFFh)		; memory page marker
 	ld	(BERR1),a
 	ld	(BERR2),a
 	ld	(BERR3),a
 	ld	(BERR4),a
-;	LD	(SPSTOR),SP
 ;
 	LD	A,0C3H			; setup BDOS and BIOS call vectors
 	LD	HL,BDOS
@@ -1525,16 +1534,15 @@ INITEMU:				; "use_once" - code below may be overwritten by UZIX stack after EMU
 	LD	(Y0001),HL
 	LD	HL,00095H
 	LD	(Y0003),HL		; set CPM IOBYTE to TTY (95) for all devices, set current drive to A: (00)
-	CALL	TTYRAWCHAR		; set tty RAW mode
+	CALL TTYRAWCHAR		; set tty RAW mode
+	
+	LD	DE,05CH			;
+	CALL FCB10LDIR		; init FCB1
+	CALL FCB10LDIR		; init FCB2 
 
-	LD	DE,05CH
-	CALL FCB10LDIR	; init FCB1
-	CALL FCB10LDIR	; init FCB2 
-	LD	IX,(ARGV)
-	LD	E,081H		; DE,00081H
-;	LD	C,000H		; C=0 after FCB10LDIR
-	INC	IX
-	INC	IX			; skip argv[0] - executable name
+	pop		ix			; IX=argv[1]
+	LD	E,081H			; DE,00081H
+;	LD	C,000H			; C=0 after FCB10LDIR
 AB037:	LD	L,(IX+000H)	; get argv[i]
 	INC	IX
 	LD	H,(IX+000H)
@@ -1542,18 +1550,33 @@ AB037:	LD	L,(IX+000H)	; get argv[i]
 	LD	A,H
 	OR	L
 	JR	Z,AB061		; if end of argv array
+	push de
 
-;;; char wd[PATHLEN]=INITEMU;
-;;; getcwd(wd,PATHLEN-1);								/* get and store initial path */
+	push	hl		
+	call fndslsh	; DE=lastslash if found, DE=0 if not found 
+	pop		hl		; HL=filename
+	ld	a,e
+	or	d
+	jr z,cont1
+	xor	a
+	ld (de),a		; split filepath from filename
+	inc de	
+	push de			; de=filename
+	push bc
 
-; a1=ExtractFilePath(argv[i])
-; argv[i]=ExtractFileName(argv[i])
-; if (chdir(a1)) PF("cd: %s\n", stringerr[errno]);		/* set current dir to argument path */
+	push hl			; push parameter (filepath for chdir)
+	ld hl,3			; sys_chdir
+	call KERNEL
+	pop bc			; balance stack
 
-;;; _chdir:
-;;; ld hl,3
-;;; jp __sysint__
+	ld  hl,ENOENT
+	jp	c, exiterr
+	pop bc
 
+	pop	hl			; hl=filename=argv[i]'
+cont1:
+	pop de
+	
 	LD	A,020H
 	LD	(DE),A
 	INC	DE
@@ -1565,7 +1588,7 @@ AB04A:	LD	A,(HL)
 	JR	C,AB058
 	CP	07BH
 	JR	NC,AB058
-	AND	05FH		; UPCASE for smal letters
+	AND	05FH		; UPCASE for small letters
 AB058:	LD	(DE),A
 	INC	HL
 	INC	DE
@@ -1578,130 +1601,171 @@ AB061:	XOR	A
 	LD	HL,00080H
 	LD	(HL),C		; CPM argv str formed
 	INC	HL
-	LD	DE,0005DH
-	CALL	AB0F7
-	OR	A
-	LD	DE,0006DH
-	CALL	NZ,AB0F7
-	LD	DE,0005CH
-	CALL	AB098
-	LD	DE,0006CH
-;	CALL	AB098
-;
-AB098:	
-	xor	a
-	ld	(de),a
-	inc	de
-	ld	hl,AB0D7
-	push hl
-	LD	L,E
-	LD	H,D
-	LD	B,00BH
-AB09C:	LD	A,(DE)
-	INC	DE
-	CP	022H
-	RET	Z		; jr z,AB0D7
-	CP	02BH
-	RET	Z		;,AB0D7
-	CP	02CH
-	RET	Z		;,AB0D7
-	CP	02EH
-	RET	Z		;,AB0D7
-	CP	02FH
-	RET	Z		;,AB0D7
-	CP	03AH
-	RET	Z		;,AB0D7
-	CP	03BH
-	RET	Z		;,AB0D7
-	CP	03DH
-	RET	Z		;,AB0D7
-	CP	05BH
-	RET	Z		;,AB0D7
-	CP	05DH
-	RET	Z		;,AB0D7
-	DJNZ AB09C
-	pop	af		; balance stack
-	LD	B,008H
+
+; сформирована SYSLINE с адреса HL=81h
+	LD      DE,FCB1
+	CALL    MAKEFCB ; CY = 1 - нет файла
+	LD      DE,FCB1+1
 	PUSH	HL
-	CALL	AB0E2
-	POP	HL
-	LD	BC,00008H
-	ADD	HL,BC
-	LD	B,003H
-	JP	AB0E2
+	CALL    CLR_FCB
+	POP     HL
+; сформирован FCB1 с адреса 5Ch
+
+	LD      DE,FCB2
+	CALL    MAKEFCB ; CY = 1 - нет файла
+	LD      DE,FCB2+1
+; сформировать FCB2 с адреса 6Ch
 ;
-AB0F7:	LD	A,(HL)
-	INC	HL
-	OR	A
-	RET	Z
-	CP	020H
-	JR	Z,AB103
-	CP	009H
-	JR	NZ,AB108
-AB103:	DEC	C
-	LD	A,C
-	JR	NZ,AB0F7
-	RET
-;
-AB108:	LD	B,008H
-	PUSH	DE
-	CALL	AB12D
+; Если CY=1, то заполнить память начиная с адреса в DE,
+; 8+3 пробелами (FileName)
+; Заполнить память после FileName 5 нулями.
+CLR_FCB:PUSH    DE
+	LD      A,' '
+	LD      B,11
+	CALL    C,LOOP_DE
 	POP	DE
-	OR	A
-	RET	Z
-	CP	020H
-	RET	Z
-	CP	02EH
-	JR	Z,AB123
-AB118:	LD	A,(HL)
-	INC	HL
-	OR	A
-	RET	Z
-	CP	020H
-	RET	Z
-	CP	02EH
-	JR	NZ,AB118
-AB123:	LD	A,E
-	ADD	A,008H
-	LD	E,A
-	LD	B,003H
-AB129:	LD	A,(HL)
-	INC	HL
-	OR	A
-	RET	Z
-AB12D:	CP	02EH
-	RET	Z
-	CP	020H
-	RET	Z
+	LD      HL,11
+	ADD	HL,DE
+	EX      DE,HL
+	LD      A,0
+	LD      B,5
+	Jr      LOOP_DE
+;
+; hl - строка в буфере
+; de - fcb
+MAKEFCB:PUSH    BC
+	PUSH	AF
+MF_0:   XOR     A               ; записать 0 по DE (в FCB)
 	LD	(DE),A
+	LD      A,(HL)          ; взять байт из буфера
+	OR      A
+	JR      Z,FILLFCB       ; строка кончилась - переход
+				; на FILLFCB
+	INC     HL              ; увеличить адрес по буферу
+	call	ISEQSP
+	JR      Z,MF_0
+; если код из буфера <21h или '=', то цикл на MF_0
+
+	LD      A,(HL)          ; взять след. байт с буфера
+	DEC     HL              ; уменьшить адрес по буферу
+	CP      ':'
+	JR      NZ,SKIP_SD
+; если next байт равен ':', то взять текущий байт мз буфера
+	LD      A,(HL)		; A=041h, a=061h
+	dec	a
+	AND     0FH
+	inc	a
+	LD      (DE),A
+; и занести в FCB как номер диска
+	INC	HL
+	INC	HL
+; пропустить номер диска и ':' в буфере
+
+SKIP_SD:LD      A,(HL)          ; взять байт из буфера
+	call	ISEQSP
+	JR      Z,FILLFCB
+; если код из буфера <21h или '=', то переход на FILLFCB
+
+	LD      BC,8FFh
 	INC	DE
-	DEC	C
-	LD	A,C
-	RET	Z
-	DJNZ	AB129
-	OR	0FFH
+; переставить DE с номера диска на first байт имени файла
+MF_1:   LD      A,(HL)
+	CP      '*'
+	JR      Z,MF_4
+; Если *, то переход на MF_4
+	CP      '.'
+	JR      Z,MF_2
+; Если ., то забить остальную часть FCB_NAME пробелами
+	call	ISEQSP
+	JR      Z,MF_3
+; Если <21h или =, то забить остальную часть FCB_NAME,
+; включая данную позицию, пробелами
+
+	LDI
+; если байт не равен '*' '.' <21h '=' то занести его в FCB
+	DJNZ    MF_1
+; цикл в пределах 8 байт (имя файла)
+
+	LD      A,(HL)  ; взять след. байт с буфера
+	CP      '.'     ; если '.', то переход на обработку
+	JR      Z,MF_EXT; расширения
+
+; если имя файла длиной более 8 символов, то расширение в
+; FCB заполнить пробелами
+	LD      B,3
+	LD      A,' '
+	CALL    LOOP_DE
+
+MF_EXIT:POP     AF
+	POP	BC
+	OR      A               ; CY = 0
 	RET
-DW BIOSBEG
-DW TTYCTL
 ;
-; FCB PATTERN
+XLOOP_DE:
+	LD      A,'?'
+; заполнить массив длиной reg.B, с адреса DE, кодом reg.A
+LOOP_DE:LD      (DE),A
+	INC     DE
+	DJNZ    LOOP_DE
+	RET
 ;
-;TB13D:	DEFB	000H
-;	DEFB	020H
-;	DEFB	020H
-;	DEFB	020H
-;	DEFB	020H
-;	DEFB	020H
-;	DEFB	020H
-;	DEFB	020H
-;	DEFB	020H
-;	DEFB	020H
-;	DEFB	020H
-;	DEFB	020H
-;	DEFB	000H
-;	DEFB	000H
-;	DEFB	000H
-;	DEFB	000H
+; заполнить имя и расширение файла в FCB символом '?', CY=1
+FILLFCB:LD      B,11
+	INC	DE
+	CALL    XLOOP_DE
+
+	POP     AF
+	POP     BC
+	SCF                     ; CY = 1
+	RET
+;
+MF_4:   CALL    XLOOP_DE        ; забить остаток FCB_NAME символом ?,
+	INC     HL
+	LD      B,3
+	LD	A,(HL)
+	call	ISEQSP
+	JR      Z,FILLQUE	; was: XFILLEXT ; also fill extension with '?' 
+; Если <21h или =, то заполнить расширение символом ' '
+; и перейти на MF_EXIT, иначе перейтм на MF_EXT
+	JR      MF_EXT
+;
+MF_3:   DEC     HL              ; цб77
+MF_2:   LD      A,' '
+	CALL    LOOP_DE
+
+; DE указывает на начало расширения в FCB
+MF_EXT: LD      BC,3FFH
+	INC	HL
+ACB81:	LD	A,(HL)
+	CP      '*'
+	JR      Z,FILLEXT
+; Если *, то заполнить расширение символом ? и перейти
+; на MF_EXIT, и INC HL (!)
+
+	call	ISEQSP
+	JR      Z,XFILLEXT
+; Если <21h или =, то заполнить расширение символом ' '
+; и перейти на MF_EXIT
+	LDI
+	DJNZ	ACB81
+; если байт не равен '*' <21h '=', то занести его в FCB
+	JR      MF_EXIT
+;
+FILLEXT:INC	HL		; fill the rest with '?'
+FILLQUE:CALL    XLOOP_DE
+	JR      MF_EXIT
+;
+XFILLEXT:			; fill the rest with ' '
+	LD      A,' '
+	CALL    LOOP_DE
+	JR      MF_EXIT
+;
+ISEQSP:	CP      ' '+1
+	JR      C,ISEQSP1
+	CP      '='
+	ret
+ISEQSP1:xor	a
+	ret
 ;
 BIOSEND:
 DEFS 256-LOW(BIOSEND-BIOSBEG)
