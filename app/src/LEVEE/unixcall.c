@@ -27,12 +27,22 @@
 #ifdef GCC
 #include <ioctls.h>
 #endif
+
+#if VT52
+#include <ioctl.h>
+#endif
+
 #include <string.h>
 /*
 #include <unistd.h>
 */
 extern int read(int d, void *buf, uint nbytes);
 extern int write(int d, void *buf, uint nbytes); 
+#ifdef ORI_UZIX
+char* CLKset="\033Z\003\001";  /* esc,'Z',3,byte - set clock mode */
+char* CLKoff="\033Z\003\002";  /* D0=1 for show, D0=0 for hide */
+#endif
+
 
 int
 min(int a, int b)
@@ -73,11 +83,22 @@ static struct termios old;
 void initcon(void)
 {
 #if !VT52
-    struct termios new; 
+    struct termios new;
+#else
+    register unsigned char i;
 #endif
 
     if (!ioset) {			/* preserve current terminal setup */
-#if !VT52
+#if VT52
+#ifdef ORI_UZIX
+	ioctl(STDIN_FILENO, TTY_RAWCHAR);
+        strput("\033Z\002");            /* get clock mode byte into CLKset[3] */
+        for (i=200; !read(0,&CLKset[3],1) && i ; i--);
+        if (! CLKset[3]) *CLKset=0;
+        strput(CLKoff);                 /* because clock moving with scrolled text */
+#endif
+        strput(CURon);
+#else
 	tcgetattr(0, &old);	
 
         erasechar = old.c_cc[VERASE];
@@ -98,17 +119,30 @@ void initcon(void)
 void fixcon(void)
 {
     if (ioset) {
-#if !VT52
-	 tcsetattr(0, TCSANOW, &old); 	/* restore original terminal setup */
+#if VT52
+#ifdef ORI_UZIX
+        strput(CLKset);
 #endif
-         ioset = 0;
+        strput(CURon);
+	ioctl(STDIN_FILENO, TTY_COOKED);
+#else
+        tcsetattr(0, TCSANOW, &old); 	/* restore original terminal setup */
+#endif
+        ioset = 0;
     }
 }
 
 int getKey(void)
 {
     unsigned char c;
-
-    read(0,&c,1);
-    return c;
+    while (!read(0,&c,1)) ;   /* for non-blocking read */
+#ifdef ORI_UZIX
+    switch (c) {
+	case 8:  return LTARROW;
+	case 4:  return RTARROW;
+	case 5:  return UPARROW;
+	case 24: return DNARROW;
+        default: return c;
+    }
+#endif
 }

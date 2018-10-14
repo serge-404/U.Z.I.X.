@@ -11,9 +11,11 @@
 #define SEEK_END 2
 #endif
 
+#ifndef STDIN_FILENO
 #define STDIN_FILENO	0
 #define STDOUT_FILENO	1
 #define STDERR_FILENO	2
+#endif
 
 extern int mkdir __P((char *, mode_t));
 extern int rmdir __P((char *));

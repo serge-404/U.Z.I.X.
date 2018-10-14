@@ -236,6 +236,7 @@ movearound(cmdtype cmd)
 	    error();
 	break;
     }
+    wr_stat();  /* ORI_UZIX */
     mvcur(yp, xp);
 }
 

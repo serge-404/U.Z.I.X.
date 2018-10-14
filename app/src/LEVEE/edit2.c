@@ -63,6 +63,7 @@ editcore(void)
 	    scroll(cmd==WINDOW_UP);		/* scroll the window */
 	else if (cmd==REDRAW_C) {			/* redraw the window */
 	    redisplay(TRUE);
+            wr_stat();  /* ORI_UZIX */
 	    mvcur(yp, xp);
 	}
 	else if (cmd==MARKER_C) {			/* set a marker */
@@ -218,6 +219,7 @@ scroll(bool down)
 	    }
     }
     strput(CURon);
+    wr_stat();  /* ORI_UZIX */
     setpos(skipws(curr));	/* initialize new position - first nonwhite */
     yp = setY(curr);
     mvcur(yp, xp);		/* go there */

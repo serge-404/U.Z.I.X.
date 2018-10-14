@@ -35,4 +35,6 @@ call ucc -o -c wildargs libvi.lib
 call ucc -o main libvi.lib
 
 del main.o
+del vi.old
+ren vi. vi.old
 ren main. vi.

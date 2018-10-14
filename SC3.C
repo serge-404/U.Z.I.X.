@@ -246,6 +246,17 @@ int checkxperm(ino)
 #define argv (char **)UDATA(u_argn2)
 #define envp (char **)UDATA(u_argn3)
 */
+
+int check3ext() {                                                 /* FILENAME.EXT */
+	register char* cpmemuext=strrchr(name, '.');
+	if ( ((uint)(void*)cpmemuext > (uint)(void*)name) &&
+             (strlen(name) - ((uint)(void*)cpmemuext - (uint)(void*)name) == 4) ) {
+	    strncpy(&(binemu[12]), cpmemuext, 4);	/* copy extension to pattern */
+            return 1;
+        }
+        return 0;
+}
+
 GBL int sys_execve(VOID) {
 	register inoptr ino;
 	register uchar *buf;
@@ -253,7 +264,6 @@ GBL int sys_execve(VOID) {
 	uchar magic;
 	uint mblk;
     inoptr inoemu = NULL;			/* 20180917 */
-	char* cpmemuext;
 
 #ifdef ORI_UZIX
 	_di();
@@ -270,9 +280,9 @@ GBL int sys_execve(VOID) {
 	cpmemu = 0;
 	cpmemuld = UZIXBASE;																						/* 20180917 */
 	cpmemusz = 0;
-	if ( ((uint)(void*)(cpmemuext=strrchr(name, '.')) - (uint)(void*)name) == (strlen(name)-4) ) {				/* if 3-char extension: filename.ext */
-	    strncpy(&(binemu[12]), cpmemuext, 4);																	/* copy extension to pattern */
-		if ( cpmemu = ((inoemu = namei(binemu, NULL, 1)) != 0) ) {												/* then search for /usr/lib/emu.* */
+	/* if 3-char extension: filename.ext */
+        if (check3ext()) {
+		if ( cpmemu = ((inoemu = namei(binemu, NULL, 1)) != 0) ) {		/* then search for /usr/lib/emu.* */
 			buf = bread(inoemu->c_dev, bmap(inoemu, 0, 1), 0);
 			if ((!buf)||(brelse((bufptr)buf) != 0)||( ((uint*)buf)[0] != 0xC945 ) ) {
 /* kprintf("\n%d\n",((uint*)buf)[0]); */

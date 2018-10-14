@@ -177,7 +177,7 @@ extern long gemdos();
 
 #define UPARROW	11
 #define DNARROW	10
-#define LTARROW	erase
+#define LTARROW	8      /* erase */
 #define RTARROW	12
 
 #if !TERMCAP
@@ -200,7 +200,11 @@ extern long gemdos();
 #if RMX
 #define ERASE	127
 #else
+#ifdef ORI_UZIX
+#define ERASE	127
+#else
 #define ERASE	8	/* ^H */
+#endif
 #endif
 
 #define TAB	9

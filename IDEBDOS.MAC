@@ -2,7 +2,7 @@
 ;
 DRIVER  equ     0       ; compile as AltairDos driver (with leading 128bytes signature block), COM-file otherwise
 DEBUG   equ     0       ; add debug info
-IDEPRO  equ     1       ; 1=OrionPRO IDE/RTC ide ports, 0=8255 PPA ports
+IDEPRO  equ     0       ; 1=OrionPRO IDE/RTC ide ports (57..5F), 0=8255 PPA ports (F400..F403)
 ;
 TITLE   'IDE/SD RAW I/O driver - BDOS extension for CP/M'
 ;

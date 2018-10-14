@@ -19,6 +19,9 @@
 #include "levee.h"
 #include "extern.h"
 
+char* INV1="\033""6";
+char* INV0="\033""7";
+
 bool PROC
 lvgetline(char *str)
 {
@@ -286,6 +289,9 @@ void fixmarkers(int base, int offset)
 PROC
 void wr_stat(void)
 {
+#ifdef ORI_UZIX
+    strput(INV1);
+#endif
     clrprompt();
     if (filenm[0] != 0) {
 	printch('"');
@@ -310,6 +316,10 @@ void wr_stat(void)
     }
     else
 	prints("-empty-");
+#ifdef ORI_UZIX
+/*  if  (editmode) prints(" INS"); */
+    strput(INV0);
+#endif
 } /* wr_stat */
 
 

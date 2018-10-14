@@ -21,6 +21,12 @@ typedef enum {
 #define TTY_RAW_UNBUFF	2	/* unbuffered, no wait */
 #define TTY_RAWCHAR	3	/* unbuffered, no wait, one char */
 
+#ifndef STDIN_FILENO
+#define STDIN_FILENO	0
+#define STDOUT_FILENO	1
+#define STDERR_FILENO	2
+#endif
+
 struct swap_mmread {
 	uchar	mm[2];
 	uint	offset;

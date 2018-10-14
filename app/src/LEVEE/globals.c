@@ -146,10 +146,10 @@ char *TERMNAME = "hardwired vt52",
 #if FLEXOS
      *UpS = NULL,	/* Reverse scrolling is painfully slow */
 #else
-     *UpS =  NULL,	/* "\033I", TODO: HOME+INSROW(1Bh+4Ah='L') */
+     *UpS = "\r\033L",	/* "\033I", HOME+INSROW(1Bh+4Ah='L') */
 #endif
-     *CURoff=  "\033:",	/* "\033f", */
-     *CURon =  "\033;";	/* "\033e"; */
+     *CURoff= NULL, /* "\033\072", "\033f", \072=':' */
+     *CURon = NULL; /* "\033\073"; "\033e"; \073=';' */
 #endif /*VT52*/
 
 #if TERMCAP
@@ -291,9 +291,9 @@ cmdtype movemap[128]={
     /*^@*/ BAD_COMMAND,
     /*^A*/ DEBUG_C,
     /*^B*/ HARDMACRO,
-    /*^C*/ BAD_COMMAND,
-    /*^D*/ WINDOW_UP,
-    /*^E*/ HARDMACRO,
+    /*^C*/ WINDOW_UP,           /* was: BAD_COMMAND, */
+    /*^D*/ GO_RIGHT,            /* was: WINDOW_UP, */
+    /*^E*/ HARDMACRO,           /* ORI:GO_UP, */
     /*^F*/ HARDMACRO,
     /*^G*/ FILE_C,
     /*^H*/ GO_LEFT,		/* also leftarrow  */
@@ -304,15 +304,15 @@ cmdtype movemap[128]={
     /*^M*/ CR_FWD,
     /*^N*/ BAD_COMMAND,
     /*^O*/ BAD_COMMAND,
-    /*^P*/ BAD_COMMAND,
+    /*^P*/ BAD_COMMAND,         /* 0x10 = 16 */
     /*^Q*/ BAD_COMMAND,
-    /*^R*/ BAD_COMMAND,
-    /*^S*/ BAD_COMMAND,
+    /*^R*/ WINDOW_DOWN,         /* was: BAD_COMMAND, */
+    /*^S*/ GO_LEFT,             /* was: BAD_COMMAND, */
     /*^T*/ BAD_COMMAND,
     /*^U*/ WINDOW_DOWN,
     /*^V*/ BAD_COMMAND,
     /*^W*/ BAD_COMMAND,
-    /*^X*/ BAD_COMMAND,
+    /*^X*/ GO_DOWN,             /* was: BAD_COMMAND, */
     /*^Y*/ HARDMACRO,
     /*^Z*/ BAD_COMMAND,
     /*^[*/ BAD_COMMAND,
