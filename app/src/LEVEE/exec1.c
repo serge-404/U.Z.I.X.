@@ -63,7 +63,7 @@ char *execstr;			/* if someone calls getarg in the	*/
 char *PROC
 getarg(void)
 {
-    char *rv;
+    register char *rv;
     rv = execstr;
     while (*execstr && !isspace(*execstr))
 	++execstr;
@@ -117,11 +117,10 @@ PROC
 setcmd(void)
 {
     bool no,b;
-/*    int len,i; */
     int j;
     char *num;
     register struct variable *vp;
-    register char *arg;
+    char *arg;
     
     if (arg = getarg()) {
 	do {
@@ -204,7 +203,8 @@ setcmd(void)
 
 /* print a macro */
 PROC
-printone(int i)
+printone(i)
+  register int i;
 {
     if (i >= 0) {
 	exprintln();
@@ -223,7 +223,7 @@ printone(int i)
 PROC
 printall(void)
 {
-    int i;
+    register int i;
     for (i = 0; i < MAXMACROS; i++)
 	if (mbuffer[i].token != 0)
 	    printone(i);
@@ -234,7 +234,8 @@ printall(void)
 PROC
 map(bool insert)
 {
-    register char *macro, c;
+    char *macro;
+    register char c;
     int i;
     		/* get the macro */
     if ((macro=getarg()) == NULL) {
@@ -270,14 +271,15 @@ map(bool insert)
 
 
 PROC
-undefine(int i)
+undefine(i)
+  register int i;
 {
-    register char *p;
+/*    register char *p; */
     if (i >= 0) {
 	movemap[mbuffer[i].token] = mbuffer[i].oldmap;
 	mbuffer[i].token = 0;
-	p = mbuffer[i].m_text;
-	free(p);
+/*	p = mbuffer[i].m_text; */
+	free((char*)mbuffer[i].m_text);
 	mbuffer[i].m_text = 0;
     }
 } /* undefine */
@@ -309,7 +311,7 @@ unmap(void)
 int PROC
 findarg(char *name)
 {
-    int j;
+    register int j;
     for (j = 0; j < argc; j++)
 	if (strcmp(argv[j],name) == 0)
 	    return j;
@@ -321,7 +323,7 @@ findarg(char *name)
 int PROC
 addarg(char *name)
 {
-    int where;
+    register int where;
     if ((where = findarg(name)) < 0)
 	return doaddwork(name, &argc, &argv);
     return where;
@@ -374,7 +376,7 @@ cutandpaste(void)
     int  num;
     char delim;
     register char *ip;
-    register char *dp;
+    char *dp;
     
     zerostack(&undo);
     ip = execstr;
@@ -432,9 +434,9 @@ splat:	errmsg("bad substitute");
 PROC
 inputf(char *fname, bool newbuf)
 {
-    int onright,	/* text moved right for :read */
-	fsize;		/* bytes read in */
-    register FILE *f;
+    register int onright;	/* text moved right for :read */
+    int fsize;			/* bytes read in */
+    FILE *f;
 
 
     if (newbuf)
@@ -508,7 +510,7 @@ inputf(char *fname, bool newbuf)
 PROC
 backup(char *name)
 {
-    char back[80];
+    register char back[80];
 
 #if UNIX
     strcpy(back, name);
@@ -678,10 +680,10 @@ readfile(void)
 PROC
 nextfile(bool prev)
 {
-    register char *name = NULL;
-    int newpc=pc,
+    char *name = NULL;
+    register int newpc=pc;
 /*	what,      */
-	myargc=0;
+    int myargc=0;
     char **myargv;
     bool newlist = NO;
     

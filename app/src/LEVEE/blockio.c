@@ -17,11 +17,14 @@
  * FITNESS FOR A PARTICULAR PURPOSE.
  */
 #include "levee.h"
-/* #include "extern.h" */
-extern core[];			/* data space */
+#include "extern.h"
+/*extern core[];			 data space */
 
-#include <stdio.h>
-#include <unistd.h>
+/*#include <stdio.h>
+#include <unistd.h>*/
+extern int read(int d, void *buf, uint nbytes);
+extern int write(int d, void *buf, uint nbytes);  
+
 /* read in a file -- return TRUE -- read file
 			    FALSE-- file too big
 */
@@ -39,7 +42,10 @@ int PROC addfile(FILE *f, int start, int endd, int *size)
 
 /* write out a file -- return TRUE if ok. */
 
-bool PROC putfile(FILE *f, int start, int endd)
+bool PROC putfile(f, start, endd)
+   FILE *f;
+   register int start;
+   int endd;
 {
     write(fileno(f), core+start, endd-start);
 }

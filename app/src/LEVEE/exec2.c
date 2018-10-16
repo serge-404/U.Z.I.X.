@@ -40,8 +40,8 @@ extern bool affirm;		/* cmd! */
 bool PROC
 do_file(char *fname, exec_type *mode, bool *noquit)
 {
-    char line[120];
-    register FILE *fp;
+    FILE *fp;
+    register char line[120];
     
     if ((fp = fopen(fname,"r")) != NULL) {
 	indirect = YES;
@@ -71,7 +71,8 @@ PROC doins(bool flag)
 
 
 /* figure out a address range for a command */
-char * PROC findbounds(char *ip)
+char * PROC findbounds(ip)
+  register char *ip;
 {
     ip = findparse(ip, &low, curr);	/* get the low address */
     if (low >= 0) {
@@ -95,8 +96,10 @@ char * PROC findbounds(char *ip)
 /* parse the command line for lineranges && a command */
 PROC parse(char *inp)
 {
-    int j,k;
+    register int j;
+    int k;
     char cmd[80];
+
     low = high = ERR;
     affirm = 0;
     if (*inp == '%') {
@@ -142,7 +145,7 @@ PROC parse(char *inp)
 PROC
 exec(char *cmd, exec_type *mode, bool *noquit)
 {
-    register int  what;
+    register int what;
     bool ok;
     
     what = parse(cmd);

@@ -33,7 +33,10 @@ moveleft(char *src, char *dest, int length)
 #ifndef moveright
 
 PROC
-moveright(char *src, char *dest, int length)
+moveright(src, dest, length)
+  char *src;
+  char *dest;
+  register int length;
 {
     src = &src[length];
     dest = &dest[length];
@@ -57,19 +60,20 @@ fillchar(char *src,int length, char ch)
 int PROC
 lvscan(int length, char tst, char ch, char *src)
 {
-    register int inc,l;
+    register int inc;
+    int l;
 
     if (length < 0)
 	inc = -1;
     else
 	inc = 1;
     if (tst == '!') {
-	for(l = ((int)inc)*length; l > 0; l--,src += (long)inc)
+	for(l = ((int)inc)*length; l > 0; l--,src += inc)
 	    if (*src != ch)
 		break;
     }
     else {
-	for(l = ((int)inc)*length; l > 0; l--,src += (long)inc)
+	for(l = ((int)inc)*length; l > 0; l--,src += inc)
 	    if (*src == ch)
 		break;
     }

@@ -179,9 +179,10 @@ gcount(void)
 }
 
 PROC
-docommand(cmdtype cmd)
+docommand(cmd)
+  register cmdtype cmd;
 {
-    register char cmdch;
+    char cmdch;
     int endp;		/* end position before change */
     cmdtype movecmd;	/* movement command for y, d, c */
     int     oldc;	/* old count */

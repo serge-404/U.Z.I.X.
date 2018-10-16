@@ -40,7 +40,9 @@
 #endif
 
 PROC
-mvcur(int y, int x)
+mvcur(y, x)
+  register int y;
+  int x;
 {
 #if VT52
 #else
@@ -137,7 +139,9 @@ println(void)
 static char hexdig[] = "0123456789ABCDEF";
 
 int PROC
-format(char *out, unsigned c)
+format(out, c)
+  char *out; 
+  register unsigned c;
 /* format: put a displayable version of c into out */
 {
     if (c >= ' ' && c < '') {
@@ -206,8 +210,8 @@ writeline(int y,int x,int start)
 {
     int endd,oxp;
     register int size;
-    char buf[MAXCOLS+1];
     register int bi = 0;
+    char buf[MAXCOLS+1];
 
     endd = fseekeol(start);
     if (start==0 || core[start-1] == EOL)

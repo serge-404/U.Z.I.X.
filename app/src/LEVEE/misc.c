@@ -77,7 +77,11 @@ peekc(void)
    endd is the last bit of whitespace found.
 */
 int PROC
-findDLE(int start, int *endd, int limit, int dle)
+findDLE(start, endd, limit, dle)
+  register int start; 
+  int *endd;
+  int limit;
+  int dle;
 {
     while ((core[start] == '\t' || core[start] == ' ') && start < limit) {
 	if (core[start] == '\t')
@@ -92,7 +96,8 @@ findDLE(int start, int *endd, int limit, int dle)
 
 
 int PROC
-skipws(int loc)
+skipws(loc)
+  register int loc;
 {
     while ((core[loc] == '\t' || core[loc] == ' ') && loc <= bufmax)
 	loc++;
@@ -188,15 +193,18 @@ cclass(int c)
     return 3;
 } /* cclass */
 #else
-cclass(unsigned char c)
+cclass(c)
+  register unsigned char c;
 {
     if (c == '\t' && !list)
 	return 2;
     if (c == '' || c < ' ')
 	return 1;
+#ifndef ORI_UZIX
 #if MSDOS==0
     if (c & 0x80)
 	return 3;
+#endif
 #endif
     return 0;
 } /* cclass */
@@ -249,7 +257,9 @@ error()
 
 
 /* the dirty work to start up a macro */
-PROC insertmacro(char *cmdstr, int count)
+PROC insertmacro(cmdstr, count)
+  register char *cmdstr;
+  int count;
 {
     if (macro >= NMACROS)
 	error();
@@ -310,9 +320,9 @@ void wr_stat(void)
     if (bufmax > 0) {
 	prints(" line ");
 	printi(to_line(curr));
-	prints(" -");
+/*	prints(" -");
 	printi((int)((long)(curr*100L)/(long)bufmax));
-	prints("%-");
+	prints("%-");*/
     }
     else
 	prints("-empty-");
@@ -413,7 +423,8 @@ line(char *s, int start, int endd, int *size)
 
 /* move to core[loc] */
 PROC
-void setpos(int loc)
+void setpos(loc)
+  register int loc;
 {
     lstart = bseekeol(loc);
     lend = fseekeol(loc);

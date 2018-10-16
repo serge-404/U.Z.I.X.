@@ -56,7 +56,9 @@ doyank(int low, int high)
 }
 
 bool PROC
-deletion(int low, int high)
+deletion(low, high)
+  register int low;
+  int high;
 {
     if (doyank(low, high))		/* fill yank buffer */
 	return delete_to_undo(&undo, low, high-low);

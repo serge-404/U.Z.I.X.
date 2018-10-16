@@ -303,7 +303,10 @@ class(char c)
 }
 
 int PROC
-skip(char *chars, int cp, int step)
+skip(chars, cp, step)
+  char *chars;
+  register int cp;
+  int step;
 /* skip past characters in a character class */
 {
     while (cp >= 0 && cp < bufmax && strchr(chars,core[cp]))
@@ -312,7 +315,9 @@ skip(char *chars, int cp, int step)
 }
 
 int PROC
-tow(int cp, int step)
+tow(cp, step)
+  register int cp;
+  int step;
 /* skip to the start of the next word */
 {
     while (cp >= 0 && cp < bufmax
@@ -358,7 +363,9 @@ moveword(int cp, bool forwd, bool toword)
 /* find a character forward on current line */
 
 int PROC
-fchar(int pos, int npos)
+fchar(pos, npos)
+  register int pos;
+  int npos;
 {
     do
 	pos += lvscan(lend-pos-1,'=',ch, &core[pos+1]) + 1;
@@ -371,7 +378,9 @@ fchar(int pos, int npos)
 /* find a character backward on the current line */
 
 int PROC
-bchar(int pos, int npos)
+bchar(pos, npos)
+  register int pos;
+  int npos;
 {
     do
 	pos += lvscan(-pos+lstart+1,'=',ch, &core[pos-1]) - 1;
@@ -418,7 +427,9 @@ back(int i)
 */
 
 int PROC
-sentence(int start, bool forwd)
+sentence(start, forwd)
+  register int start;
+  bool forwd;
 {
     do {
 	if (forwd)

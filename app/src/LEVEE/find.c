@@ -172,7 +172,8 @@ concatch(char c)
 }
 
 char PROC
-esc(char **s)
+esc(s)
+  register char **s;
 {
     if (**s != ESCAPE || *(1+*s) == 0)
 	return **s;
@@ -189,8 +190,8 @@ dodash(char *src)
 
 /* parse the innards of a [] */
 {
-    int k;
-    register char *start = src;
+    register int k;
+    char *start = src;
     char cs[128];
 
     fillchar(cs,sizeof(cs),FALSE);
@@ -448,7 +449,10 @@ findparse(char *src, int *idx, int start) /* driver for ?, /, && : lineranges */
 }
 
 int PROC
-nextline(bool advance, int dest, int count)
+nextline(advance, dest, count)
+  bool advance;
+  register int dest;
+  int count;
 {
     if (advance)
 	do {
@@ -464,13 +468,15 @@ nextline(bool advance, int dest, int count)
 }
 
 int PROC
-fseekeol(int origin)
+fseekeol(origin)
+  register int origin;
 {
     return(origin + lvscan(bufmax-origin-1,'=',EOL,&core[origin]));
 }
 
 int PROC
-bseekeol(int origin)
+bseekeol(origin)
+  register int origin;
 {
     return(origin + lvscan(-origin,'=',EOL,&core[origin-1]));
 }
