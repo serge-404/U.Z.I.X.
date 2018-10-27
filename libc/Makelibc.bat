@@ -43,7 +43,7 @@ for %%i in (*.AS) do (
 )
 
 for %%i in (*.AS_) do (
-   REM  compile UXIZ syscalls ASM-files to OBJ-files
+   REM  compile UZIX syscalls ASM-files to OBJ-files
    echo %%i
    cpm zas -X -N %%i
 )
@@ -69,6 +69,7 @@ REM c-lib modules
 echo make libc-uzi.lib
 
 cpm libr r libc.lib ASSERT.obj
+cpm libr r libc.lib BIOS.obj
 cpm libr r libc.lib CRYPT.obj
 cpm libr r libc.lib INITGRUP.obj
 cpm libr r libc.lib FGETGREN.obj
@@ -83,6 +84,7 @@ cpm libr r libc.lib PUTPWENT.obj
 cpm libr r libc.lib SETGRENT.obj
 cpm libr r libc.lib GETGRENT.obj
 cpm libr r libc.lib SETPWENT.obj
+
 cpm libr r libc.lib PERROR.obj
 cpm libr r libc.lib ERROR.obj
 cpm libr r libc.lib SYSTEM.obj
@@ -121,6 +123,7 @@ cpm libr r libc.lib PUTGETCH.obj
 cpm libr r libc.lib GETCWD.obj
 cpm libr r libc.lib FTELL.obj
 cpm libr r libc.lib FWRITE.obj
+
 cpm libr r libc.lib FGETS.obj
 cpm libr r libc.lib FGETC.obj
 cpm libr r libc.lib FREAD.obj
@@ -158,6 +161,7 @@ cpm libr r libc.lib ITOA.obj
 cpm libr r libc.lib READDIR.obj
 cpm libr r libc.lib STRTOD.obj
 cpm libr r libc.lib STRTOK.obj
+
 cpm libr r libc.lib STRCAT.obj
 cpm libr r libc.lib STRCPY.obj
 cpm libr r libc.lib STRCSPN.obj
@@ -191,6 +195,7 @@ cpm libr r libc.lib REALLOC.obj
 cpm libr r libc.lib CALLOC.obj
 cpm libr r libc.lib MALLOC.obj
 cpm libr r libc.lib ALLOCA.obj
+
 cpm libr r libc.lib FREE.obj
 cpm libr r libc.lib ATOI.obj
 cpm libr r libc.lib ATOL.obj
@@ -231,6 +236,7 @@ cpm libr r libc.lib ASMUL.obj
 cpm libr r libc.lib ALLSH.obj
 cpm libr r libc.lib ALRSH.obj
 cpm libr r libc.lib BITFIELD.obj
+
 cpm libr r libc.lib BRELOP.obj
 cpm libr r libc.lib LRELOP.obj
 cpm libr r libc.lib WRELOP.obj
@@ -274,6 +280,7 @@ cpm libr r libc.lib Geteuid.obj
 cpm libr r libc.lib Getfsys.obj
 cpm libr r libc.lib Getgid.obj
 cpm libr r libc.lib Getpid.obj
+
 cpm libr r libc.lib Getppid.obj
 cpm libr r libc.lib Getprio.obj
 cpm libr r libc.lib Getuid.obj
@@ -290,6 +297,7 @@ cpm libr r libc.lib Pipe.obj
 cpm libr r libc.lib Read.obj
 cpm libr r libc.lib Reboot.obj
 cpm libr r libc.lib Sbrk.obj
+
 cpm libr r libc.lib Setgid.obj
 cpm libr r libc.lib Setprio.obj
 cpm libr r libc.lib Setuid.obj
