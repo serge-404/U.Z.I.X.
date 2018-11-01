@@ -120,6 +120,7 @@ static	short	InverseOn=0, ii, jj;
 	void	*topwnd=NULL;			/* currently operating window (top window) */
 #ifdef ORI_UZIX
 	BOOL	AltairDos=TRUE;
+        int     kprintfile=STDOUT_FILENO;
         uchar bcount=0, FlushImmed=0;
         char bbuffer[MAXBUFFERING];
 #else
@@ -131,7 +132,7 @@ static	short	InverseOn=0, ii, jj;
 #ifdef ORI_UZIX
 void bflush() {
    if (bcount) {
-     write(STDOUT_FILENO, bbuffer, bcount);
+     write(kprintfile, bbuffer, bcount);
      bcount=0;
    }
 }
@@ -153,7 +154,7 @@ void bputch(char ch) {
 void bputs(char* st) {
 #ifdef ORI_UZIX
         bflush();
-        write(STDOUT_FILENO, st, strlen(st));
+        write(kprintfile, st, strlen(st));
 #else
 	while (*st) bios(NCONOUT, *(st++));
 #endif

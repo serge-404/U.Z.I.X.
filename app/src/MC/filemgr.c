@@ -28,6 +28,8 @@ static ushort ii;
 static char bd;
 #endif
 extern ushort Min(ushort a, ushort b);
+extern int rmdir (char *path);
+extern int rename(char *oldname, char *newname);
 
 BYTE xff=0xff;
 
@@ -221,13 +223,18 @@ FRESULT openORDfile(fileinfo)
 FRESULT OS_open(OSFILE* FileObject, char* path, BYTE Flags)
 {
   register BYTE res=FR_NO_FILE;
+#ifdef ORI_UZIX
+  struct stat *statbf;
+#endif
   switch (FileObject->OSType=GetOSType(path)) {
 #ifdef ORI_UZIX
     case FTYPEUZIX:
-        if ( (*((int*)FileObject) = open(path, 0)) < 0)  /* *((int*)FileObject) = fhandle */
-          return FR_NO_FILE;                             /* TODO: stat file and exclude DIRs DEVs and so on */
-        else
-	  return FR_OK;
+        statbf = &(((UFIL*)(void*)FileObject)->statbuf);
+        if ( (((UFIL*)(void*)FileObject)->fhandle = open(path, 0)) <= 0)  /* *((int*)FileObject) = fhandle */
+          break;                                                        /* TODO: call create() if Flags have FA_CREATE_ALWAYS bit */
+	if ((stat(path, statbf) < 0) || S_ISDIR(statbf->st_mode) || S_ISDEV(statbf->st_mode)) 
+	  break;
+	return FR_OK;
 #else
     case FTYPECPM:
 	memset(FileObject, 0 , sizeof(CFIL));
@@ -263,10 +270,11 @@ FRESULT OS_open(OSFILE* FileObject, char* path, BYTE Flags)
 #endif
     case FTYPEFAT:
 	res=f_open((void*)FileObject, path, Flags);
-	return res;
+	break;
     default:
 	return FR_INVALID_NAME;
   }
+  return res;
 }
 
 FRESULT OS_close(FileObject)
@@ -277,7 +285,7 @@ FRESULT OS_close(FileObject)
       return f_close((void*)FileObject);
 #ifdef ORI_UZIX
     case FTYPEUZIX:
-        close(*((int*)FileObject));
+        close(((UFIL*)(void*)FileObject)->fhandle);
 	return FR_OK;
 #else
     case FTYPECPM:
@@ -314,7 +322,7 @@ FRESULT OS_read(OSFILE* FileObject, void* buf, WORD cnt, WORD* readed)
       return f_read((void*)FileObject, buf, cnt, readed);
 #ifdef ORI_UZIX
     case FTYPEUZIX:
-        if ((*readed=read(*((int*)FileObject), buf, cnt)) <= 0) {
+        if ((*readed=read(((UFIL*)(void*)FileObject)->fhandle, buf, cnt)) <= 0) {
 	   *readed=0;
            return FR_RW_ERROR;
         }
@@ -357,7 +365,7 @@ FRESULT OS_write(OSFILE* FileObject, void* buf, WORD cnt, WORD* written)
       return f_write((void*)FileObject, buf, cnt, written);
 #ifdef ORI_UZIX
     case FTYPEUZIX:
-	if (*written=write(*((int*)FileObject), buf, cnt) < 0) {
+	if (*written=write(((UFIL*)(void*)FileObject)->fhandle, buf, cnt) < 0) {
            *written=0;
            return FR_RW_ERROR;
         }
@@ -400,12 +408,19 @@ FRESULT OS_write(OSFILE* FileObject, void* buf, WORD cnt, WORD* written)
 BOOL OS_delete(path)
   register char* path;
 {
+#ifdef ORI_UZIX
+  struct stat buf;
+#endif
   switch (GetOSType(path)) {
     case FTYPEFAT:
       return (f_unlink(koi2alt(path))==FR_OK); 
 #ifdef ORI_UZIX
     case FTYPEUZIX:
-	return FALSE;
+	if(stat(path, &buf)) return FALSE;
+	if ((buf.st_mode&S_IFMT) == S_IFDIR) 
+	   return !rmdir(path);
+	else
+	   return !unlink(path);
 #else
     case FTYPECPM:
 	memset(&yfcb, 0 , sizeof(CFCB));
@@ -434,7 +449,7 @@ BOOL OS_rename(char* src, char* dst)
   }
 #ifdef ORI_UZIX
   else if ((tsrc==FTYPEUZIX) && (tdst==FTYPEUZIX)) {
-	return FALSE;
+	return rename(src, dst);
   }
 #else
   else if ((tsrc==FTYPECPM) && (tdst==FTYPECPM)) {

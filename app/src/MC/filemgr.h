@@ -9,6 +9,36 @@ File management functions
 
 #include <hitech.h>
 #include "ff.h"
+#ifdef ORI_UZIX
+#include <stat.h>
+#endif
+
+#define FIND_ENUM	0
+#define FIND_FIRST	1
+#define FIND_FREE	2
+
+#define FTYPEUNK	0
+#define FTYPECPM	1
+#define FTYPEFAT	2
+
+#ifdef ORI_UZIX
+
+#define FTYPEUZIX	4
+typedef struct {
+ struct stat statbuf;
+ int	fhandle;	/* file handle */
+} UFIL;
+
+#else
+
+#define FTYPEORD	3
+typedef struct {
+ uchar	fileDSK;	/* ORDOS disk (0=ROM, 1,2..=RAM )    */
+ ushort	fileBEG;	/* ORDOS file begin address	     */
+ ushort	fileEND;	/* ORDOS file end address	     */
+ ushort	filePTR;	/* ORDOS file next operation address */
+ char   name[16]; 
+} OFIL;
 
 typedef struct {
   BYTE	dr;		/* drive code */
@@ -31,38 +61,19 @@ typedef struct {
   BYTE  prevuid;
 } CFIL;
 
-typedef struct {
- uchar	fileDSK;	/* ORDOS disk (0=ROM, 1,2..=RAM )    */
- ushort	fileBEG;	/* ORDOS file begin address	     */
- ushort	fileEND;	/* ORDOS file end address	     */
- ushort	filePTR;	/* ORDOS file next operation address */
- char   name[16]; 
-} OFIL;
-
-typedef struct {
- int	fhandle;	/* file handle */
-} UFIL;
-
-#define FIND_ENUM	0
-#define FIND_FIRST	1
-#define FIND_FREE	2
-
-#define FTYPEUNK	0
-#define FTYPECPM	1
-#define FTYPEFAT	2
-#ifdef ORI_UZIX
-#define FTYPEORD	3
-#endif
-#define FTYPEUZIX	4
-
 #define RAMTOP		61440
+
+#endif
 
 typedef struct {
   union {		/* union allways first for typecasts to CFIL, FIL, OFIL */
-    CFIL fileCPM;	/* CPM file structure   */
     FIL  fileFAT;	/* FAT file structure   */
-    OFIL fileORD;	/* ORDOS file structure */
+#ifdef ORI_UZIX
     UFIL fileUZX;       /* UZIX */
+#else
+    CFIL fileCPM;	/* CPM file structure   */
+    OFIL fileORD;	/* ORDOS file structure */
+#endif
   } ufl;
   BYTE	OSType;		/* UNKNOWN, CPM, FAT, ORD, UZIX */
 } OSFILE;

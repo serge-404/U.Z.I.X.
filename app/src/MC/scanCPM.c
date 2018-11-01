@@ -10,12 +10,12 @@
 #include "filemgr.h"
 #include "stringz.h"
 
+#ifndef ORI_UZIX
+
 extern CFCB yfcb;
 extern char buffer[MAX_BUFF+1];
 extern FRESULT res; 
 extern FILINFO finfo;
-
-#ifndef ORI_UZIX
 
 FRESULT scanCPM(char* path, dir_callback OnFile)
 {

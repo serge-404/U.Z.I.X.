@@ -9,6 +9,14 @@
 #include "filemgr.h"
 #include "stringz.h"
 
+#ifdef ORI_UZIX
+#include <errno.h>
+#include <syscalls.h>
+extern int execvp(char *pathname, char *argv[]);          /* exec.h */
+extern int waitpid(int pid, int *stat_loc, int options);  /* wait.h */
+extern int kprintfile;
+#endif
+
 #define __MENU
 
 #define CODE_KOI8	0
@@ -48,7 +56,7 @@ char HelpStr[]=
   "\n\nExample: FAT copy 1:/test/aaa.bbb /home/cc.ddd";  
 
 char UsageStr[]="\nUse `mc HELP` to read about command systax, `mc MENU` for panels commander.\n";
-char TitleStr[]="\nMiniCommander v1.4. Serving files on FAT and generic volumes. (c)2018 Serge\0x0d";
+char TitleStr[]="\nMiniCommander v1.4. Serving files on FAT and generic volumes. (c)2018 Serge";
 
 #else
 char HelpStr[]=
@@ -249,13 +257,12 @@ BOOL do_ren(char* src, char* dst)
 
 BOOL do_type(char* path, int codeset)
 {
-#ifdef ORI_UZIX
-  register BOOL IsORD=FALSE;
-#else
+#ifndef ORI_UZIX
   register BOOL IsORD=IsORDpath(path);
 #endif
   cnt=0;
   if (IsFATpath(path)) koi2alt(path);
+  memset(&fsrc, 0, sizeof(fsrc));
   res = OS_open(&fsrc, path, FA_OPEN_EXISTING | FA_READ);
   if (res) perror("f_open", res);
 #ifndef ORI_UZIX
@@ -264,7 +271,7 @@ BOOL do_type(char* path, int codeset)
 #endif
   while (cnt!=27) {
     res = OS_read(&fsrc, buffer, MAX_BUFF, &br);
-    if (res || (! br)) break;     
+    if (res || (! br)) break;
     buffer[MAX_BUFF]=0; 
     if (codeset==CODE_ALT)
       alt2koi(buffer); 
@@ -272,27 +279,28 @@ BOOL do_type(char* path, int codeset)
       ch=buffer[bw];
       if ((codeset==CODE_KOI7) && (ch>0x5f) && (ch<0x80)) ch|=0x80;
       if (ch==0x1A) break; 
-      bios(NCONOUT, ch);
+      bputch(ch);
+#ifdef ORI_UZIX
+      if (ch=='\x0a') {
+#else
       if (ch=='\x0d') {
-#ifndef ORI_UZIX
         if (IsORD) bios(NCONOUT, '\x0a');
 #endif
 	if ((++cnt)==ScreenHeight) {
-	  cnt=Inkey();
-	  if (cnt==27) break;	/* ESC */
+	  if ((cnt=Inkey())==27) break;	/* ESC */
 	  cnt=0; 
 	}
       }
+#ifndef ORI_UZIX
       if (prevch=='\x0d') {
 	if (ch=='\x0a')
 	  IsORD=FALSE;
         else {
-#ifndef ORI_UZIX
 	  if ((! IsORD)&&(ch!='\x0d')) bios(NCONOUT, '\x0a');
 	  IsORD=ch!='\x0d';
-#endif
 	}
       }
+#endif
       prevch=ch;
     }
   }
@@ -402,6 +410,53 @@ void UnMountFAT(Index)
   }
 }
 
+#ifdef ORI_UZIX
+#define ARGC_MAX 10
+void do_exec(int bargc, char* bargv[])
+{
+	int pid1 = 0, pid2 = 0, bgp = 0, status;
+        register int i;
+	char *xargv[ARGC_MAX];
+
+kprintf("\n EXEC: %s \n", bargv[0]);
+
+        xargv[ARGC_MAX-1] = 0;
+	bgp = (strcmp(bargv[bargc-1],"&") == 0);
+	if (bgp) bargv[--bargc] = 0;
+	if ((pid1 = fork()) < 0) {
+		kprintf(" fork failed\n");
+		return;
+	}
+	if (pid1) {
+		status = 0;
+		if (bgp)
+			kprintf("[%d]: %s\n", pid1, bargv[0]);
+		else
+			while ((((pid2 = waitpid(-1 /*WAIT_ANY*/, &status, 0) ) < 0) &&
+				(errno == EINTR)) || (pid2 != pid1));
+		ioctl(0 /*STDIN_FILENO*/, 0 /*TTY_COOKED*/);
+		if (status & 0x00ff) {
+                        kprintfile=2; /*STDERR_FILENO*/
+			kprintf("pid %d: %s (signal %d)\n", pid1,
+				(status & 0x80) ? "core dumped" : "killed",
+				(status & 0x7f));
+                        kprintfile=1; /*STDOUT_FILENO*/
+		}
+		return;
+	}
+	/* We are the child, so run the program. */
+	execvp(bargv[0], bargv);
+	if (errno == ESHELL) {
+		for (i = ARGC_MAX-2; i > 0; --i)
+			xargv[i] = bargv[i-1];
+		xargv[0] = "/bin/sh";
+		execvp(xargv[0], xargv);
+	}
+	kprintf(" %s: error %d\n",bargv[0], errno);
+	exit(1);
+}
+#endif
+
 void ProcessParams(__argc, __argv[])
 	int __argc;
 	register char* __argv[];
@@ -429,8 +484,15 @@ void ProcessParams(__argc, __argv[])
     else if (eq(CmdLine, "FMTORD", __argc==3))
       do_fmtord(__argv[2]);
 #endif
-    else
+    else {
+#ifdef ORI_UZIX
+      if (MenuMode) {
+        if (*CmdLine) do_exec(__argc, __argv);
+      }
+      else
+#endif
       do_help();
+    }
 }
 
 int main (argc, argv)
@@ -441,7 +503,7 @@ int main (argc, argv)
     bputs(TitleStr);
 #ifdef __MENU
 #ifdef ORI_UZIX
-    for (ch=0; ch<ScreenHeight; ch++) bputs("\0x1b\0x4c");   /* Insert line = ESC+L */
+    for (ch=0; ch<ScreenHeight; ch++) bputs("\0x13\0x1b\0x4c");   /* Insert line = ESC+L */
     MenuMode=TRUE;
     do_menu();
 #else

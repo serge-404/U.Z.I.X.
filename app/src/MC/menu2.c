@@ -139,17 +139,11 @@ void UpdatePanel(int index)
   BYTE OsType;
   char* path=&(Path[index][0]);
   lb1=FileList[index];
-
-DBGPRT("UP1 ");
-
   PanelPath(path, index);
   OsType=GetOSType(path);
   Panel[index]->Caption=path;
   ListBoxClear(lb1, FALSE);
   lbItems=lb1->Items;
-
-DBGPRT("UP2 ");
-
   switch (OsType) {
    case FTYPEFAT:
      if (! *path) break;
@@ -176,17 +170,8 @@ DBGPRT("UP2 ");
    default: ;
   }
   if (lbItems->Count) lb1->ItemIndex=0;
-
-DBGPRT("UP3 ");
-
   SetWindow(Panel[index], WP_CAPTION);
-
-DBGPRT("UP4 ");
-
   ControlUpdate(lb1);
-
-DBGPRT("UP5 ");
-
 }
 
 void cmdputch(char ch)
@@ -255,7 +240,7 @@ short WndKeyPressed(wnd, key)
 	wRow=wnd->Row+3;
 	if (wnd1=WindowOpen(wCol, wRow,
 #ifdef ORI_UZIX
-                            17, 13,
+                            18, 13,
 #else
 	                    21, 20,
 #endif
@@ -263,7 +248,7 @@ short WndKeyPressed(wnd, key)
 	  wnd1->Caption=" Select disk ";
 	  SetWindow(wnd1, WP_CAPTION);
 #ifdef ORI_UZIX
-          if (lb1=CreateListBox(wnd1, 2, 2, 12, 9, FALSE)) {
+          if (lb1=CreateListBox(wnd1, 3, 2, 12, 9, FALSE)) {
 	    lb1->Columns=1;
 	    lb1->Items->Count=9;
 #else

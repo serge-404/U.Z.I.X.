@@ -7,7 +7,9 @@
 #include "stringz.h"
 #include "screen.h"
 
+#ifndef ORI_UZIX
 extern CFCB yfcb;
+#endif
 extern char buffer[MAX_BUFF+1];
 extern FRESULT res; 
 extern FILINFO finfo;

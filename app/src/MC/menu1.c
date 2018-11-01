@@ -78,34 +78,17 @@ void promptxy()
 
 void PrintKeyBar()
 {
-
-DBGPRT("PKB1> ");
-
   FullScreen();
   GotoXY(0, 22); 
-
-DBGPRT("PKB2> ");
-
 #ifdef ORI_UZIX
   kprintf("MC> ");
-
-DBGPRT("PKB3> ");
-
-/*  ClrEoln(); */
 #else
   kprintf("FAT> ");
 #endif
   PrintAligned(CmdLine, ScreenWidth-5, AL_LEFT, ' ');
   GotoXY(0, 23); 
-  kprintf("^EXSD=Cur ^Z=Ins ^Q=Del ^T=Typ ^I=Pnl ^M=Cpy ^N=Mnu ^R=Dsk ^A=Mkd ^B=Ren ^C=Ext");
-
-DBGPRT("PKB4> ");
-
-/*  ClrEoln(); */
+  kprintf("^EXSD=Cur ^R=Dsk ^N=Mnu ^I=Pnl ^Z=Ins ^Q=Del ^T=Typ ^M=Cpy ^A=Mkd ^B=Ren ^C=Ext");
   WndScreen();
-
-DBGPRT("PKB5> ");
-
 }
 
 void cmdexec(BOOL ClrScr)	/* TYPE A:AAA.AAA */
@@ -203,7 +186,7 @@ void ExecCmd(uchar cmd, ushort pnl)	/* lb1 = active listbox */
   BYTE OsType;
   int nextpnl=(pnl) ? 0 : 1;		/* inverse panel path - for another panel operations */
 
-  if ((*Item=='/') && (cmd!=CMD_DEL) && (cmd!=CMD_REN)) return;
+  if ((*Item=='/') && (cmd!=CMD_DEL) && (cmd!=CMD_REN) && (cmd!=CMD_LINE)) return;
   if (pnl) pnl=1;
   pos2=Path[nextpnl];		/* dstpath */
   pos1=Path[pnl];		/* srcpath */
@@ -243,13 +226,15 @@ void ExecCmd(uchar cmd, ushort pnl)	/* lb1 = active listbox */
     strcpy(CmdLine, cmdptr);
     strcat(CmdLine, StrSpace);
     strcat(CmdLine, pos1);
-    if (((OsType=GetOSType(pos1)==FTYPEFAT)||(OsType==FTYPEUZIX)) && (*Item!='/'))
+    if ( (((OsType=GetOSType(pos1))==FTYPEFAT)&&(*Item!='/')) ||
+         ((OsType==FTYPEUZIX)&& pos1[1]) )
       strcat(CmdLine, "/");
     strcat(CmdLine, Item);
     if (twopar) {
       strcat(CmdLine, StrSpace);
       strcat(CmdLine, (cmd==CMD_REN) ? pos1 : pos2);
-      if (((OsType=GetOSType(pos2)==FTYPEFAT)||(OsType==FTYPEUZIX)) && (*Item!='/'))
+      if ( (((OsType=GetOSType(pos2))==FTYPEFAT)&&(*Item!='/')) ||
+           ((OsType==FTYPEUZIX)&& pos2[1]) )
         strcat(CmdLine, "/");
       if (cmd==CMD_REN)
         return;					/* TODO: GetString dialog */
@@ -260,6 +245,7 @@ void ExecCmd(uchar cmd, ushort pnl)	/* lb1 = active listbox */
   }
   twopar=(cmd==CMD_TYPE)||(cmd==CMD_ATYPE)||(cmd==CMD_KTYPE)||(cmd==CMD_LINE);
   if (twopar) {
+    bputs("\n");                                /* also does bflush() */
     Item=topwnd;
     topwnd=NULL;				/* stop window buffering */
     FullScreen();
