@@ -287,6 +287,9 @@ BOOL do_type(char* path, int codeset)
         if (IsORD) bios(NCONOUT, '\x0a');
 #endif
 	if ((++cnt)==ScreenHeight) {
+#ifdef ORI_UZIX
+          bflush();
+#endif
 	  if ((cnt=Inkey())==27) break;	/* ESC */
 	  cnt=0; 
 	}
@@ -411,18 +414,18 @@ void UnMountFAT(Index)
 }
 
 #ifdef ORI_UZIX
-#define ARGC_MAX 10
-void do_exec(int bargc, char* bargv[])
+void do_exec(int bargc, char* xargv[])  /* xargv[0] reserved=empty on beginning, params list starting in xargv[1] */
 {
 	int pid1 = 0, pid2 = 0, bgp = 0, status;
         register int i;
-	char *xargv[ARGC_MAX];
+	char* *bargv=&xargv[1];
 
-kprintf("\n EXEC: %s \n", bargv[0]);
+kprintf("\n EXEC: %d `%s` %x\n", bargc, bargv[0], bargv);
+for (i = 0; i<bargc && Inkey()!=27; i++) kprintf(" `%s`", bargv[i]);
 
-        xargv[ARGC_MAX-1] = 0;
 	bgp = (strcmp(bargv[bargc-1],"&") == 0);
 	if (bgp) bargv[--bargc] = 0;
+	ioctl(0 /*STDIN_FILENO*/, 0 /*TTY_COOKED*/);
 	if ((pid1 = fork()) < 0) {
 		kprintf(" fork failed\n");
 		return;
@@ -434,7 +437,7 @@ kprintf("\n EXEC: %s \n", bargv[0]);
 		else
 			while ((((pid2 = waitpid(-1 /*WAIT_ANY*/, &status, 0) ) < 0) &&
 				(errno == EINTR)) || (pid2 != pid1));
-		ioctl(0 /*STDIN_FILENO*/, 0 /*TTY_COOKED*/);
+		ioctl(0 /*STDIN_FILENO*/, 3 /*TTY_RAWCHAR*/);
 		if (status & 0x00ff) {
                         kprintfile=2; /*STDERR_FILENO*/
 			kprintf("pid %d: %s (signal %d)\n", pid1,
@@ -445,11 +448,18 @@ kprintf("\n EXEC: %s \n", bargv[0]);
 		return;
 	}
 	/* We are the child, so run the program. */
+
+kprintf("\n EXECVP1: `%s` \n", bargv[0]);
+Inkey();
+
 	execvp(bargv[0], bargv);
+
+kprintf("\n EXECVP2: `%s` \n", bargv[1]);
+Inkey();
+
 	if (errno == ESHELL) {
-		for (i = ARGC_MAX-2; i > 0; --i)
-			xargv[i] = bargv[i-1];
-		xargv[0] = "/bin/sh";
+		/* xargv[0] = "/bin/sh"; */
+                xargv[0] = getenv("SH");
 		execvp(xargv[0], xargv);
 	}
 	kprintf(" %s: error %d\n",bargv[0], errno);
@@ -462,26 +472,26 @@ void ProcessParams(__argc, __argv[])
 	register char* __argv[];
 {
     UpperCase(CmdLine);
-    if (eq(CmdLine, "INFO", __argc==3))
+    if (eq(CmdLine, "INFO", __argc==2))
       do_info(__argv[2]);
-    else if (eq(CmdLine, "DIR", __argc==3))
+    else if (eq(CmdLine, "DIR", __argc==2))
       do_dir(__argv[2]);
-    else if (eq(CmdLine, StrType, __argc==3))
+    else if (eq(CmdLine, StrType, __argc==2))
       do_type(__argv[2], CODE_KOI8);
-    else if (eq(CmdLine, StrAType, __argc==3))
+    else if (eq(CmdLine, StrAType, __argc==2))
       do_type(__argv[2], CODE_ALT);
-    else if (eq(CmdLine, StrKType, __argc==3))
+    else if (eq(CmdLine, StrKType, __argc==2))
       do_type(__argv[2], CODE_KOI7);
-    else if (eq(CmdLine, StrCopy, __argc==4))
+    else if (eq(CmdLine, StrCopy, __argc==3))
       do_copy(__argv[2], __argv[3]);
-    else if (eq(CmdLine, StrMkdir, __argc==3))
+    else if (eq(CmdLine, StrMkdir, __argc==2))
       do_mkdir(__argv[2]);
-    else if (eq(CmdLine, StrDel, __argc==3))
+    else if (eq(CmdLine, StrDel, __argc==2))
       do_del(__argv[2]);
-    else if (eq(CmdLine, StrRen, __argc==4))
+    else if (eq(CmdLine, StrRen, __argc==3))
       do_ren(__argv[2], __argv[3]);
 #ifndef ORI_UZIX
-    else if (eq(CmdLine, "FMTORD", __argc==3))
+    else if (eq(CmdLine, "FMTORD", __argc==2))
       do_fmtord(__argv[2]);
 #endif
     else {

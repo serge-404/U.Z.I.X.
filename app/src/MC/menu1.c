@@ -4,7 +4,14 @@
 
 #define MAX_PATH	100
 #define PanelCount	2
-#define	PromptLen	5		
+
+#ifdef ORI_UZIX
+#define PromptStr "MC> "
+#define	PromptLen	4
+#else
+#define PromptStr "FAT> "
+#define	PromptLen	5
+#endif
 
 #define FTYPECPM	1
 #define FTYPEFAT	2
@@ -20,7 +27,7 @@
 #define CMD_REN		6
 #define CMD_MKDIR	7
 
-#define MAX_ARGV	4
+#define MAX_ARGV	10
 
 extern	short	WndRow, WndCol, WndWidth, WndHeight;
 extern TWINDOW* Panel[PanelCount], *wnd1;
@@ -72,21 +79,17 @@ void WndScreen()
 void promptxy()
 {
   FullScreen();
-  GotoXY(PromptLen+CmdLinePos, 22);
+  GotoXY(PromptLen+CmdLinePos, ScreenHeight-2);
   WndScreen();
 }
 
 void PrintKeyBar()
 {
   FullScreen();
-  GotoXY(0, 22); 
-#ifdef ORI_UZIX
-  kprintf("MC> ");
-#else
-  kprintf("FAT> ");
-#endif
-  PrintAligned(CmdLine, ScreenWidth-5, AL_LEFT, ' ');
-  GotoXY(0, 23); 
+  GotoXY(0, ScreenHeight-2);
+  kprintf(PromptStr);
+  PrintAligned(CmdLine, ScreenWidth-PromptLen, AL_LEFT, ' ');
+  GotoXY(0, ScreenHeight-1);
   kprintf("^EXSD=Cur ^R=Dsk ^N=Mnu ^I=Pnl ^Z=Ins ^Q=Del ^T=Typ ^M=Cpy ^A=Mkd ^B=Ren ^C=Ext");
   WndScreen();
 }
@@ -95,7 +98,7 @@ void cmdexec(BOOL ClrScr)	/* TYPE A:AAA.AAA */
 {
   register int ii;
   cmdptr=CmdLine;
-  for (ii=1; ii<=MAX_ARGV; ii++) {
+  for (ii=1; ii<=MAX_ARGV; ii++) {   /* kargv[0] reserved for do_exec */
     while (*cmdptr==' ') cmdptr++;
     if (! *cmdptr) break;
     kargv[ii]=cmdptr;
@@ -103,7 +106,7 @@ void cmdexec(BOOL ClrScr)	/* TYPE A:AAA.AAA */
     if (! *cmdptr) break;
     *cmdptr++=0;
   }
-  if (ii>1) ProcessParams(ii+1, kargv);
+  if (ii>1) ProcessParams(ii, kargv);
   *CmdLine=0;
   if (ClrScr) ClearScreen();
   PrintKeyBar();
@@ -129,15 +132,28 @@ BYTE GetOSDrive(drv)
 char* PanelPath(char* buf, ushort index)
 {
   register ushort drv=DRV[index];
+  char* cpos;
+/*
+#define Inkey	(int)kgetch
+kprintf(" PanelPath drv=%c", drv);
+Inkey();
+*/
   switch (GetOSDrive(drv)) {				/* FAT drv = {'0'...'7'} */
     case FTYPEFAT:
       *buffer=buffer[1]=0;
-      strcpy(buffer,strrchr(buf,':'));
-      ksprintf(buf, "%c:%s", drv, buffer+1);
+      if (cpos=strrchr(buf,':')) {
+        strcpy(buffer,cpos);
+        ksprintf(buf, "%c:%s", drv, buffer+1);
+      }
+      else
+        ksprintf(buf, "%c:/", drv);
       break;
 #ifdef ORI_UZIX
     case FTYPEUZIX:					/* UZIX drv = {'/'} */
-      if (! *buf) ksprintf(buf, "%c", '/');
+      if ((! *buf)||(*buf!='/')) {
+        *buf='/';
+        buf[1]=0;
+      }
       break;
 #else
     case FTYPECPM:					/* CPM drv = {'A'...'P'} */
