@@ -1,16 +1,17 @@
 USEUNIT("UCP.C");
 USEUNIT("UCPSUB.C");
 USEUNIT("XFS.C");
-USEUNIT("..\..\System\KERNEL\MACHDEP.C");
-USEUNIT("..\..\System\KERNEL\DEVIO.C");
-USEUNIT("..\..\System\KERNEL\FILESYS.C");
-USEUNIT("..\..\System\KERNEL\DEVFLOP.C");
-USEUNIT("..\..\System\KERNEL\DEVMISC.C");
-USEUNIT("..\..\System\KERNEL\SCALL1.C");
-USEUNIT("..\..\System\KERNEL\SCALL2.C");
+USEUNIT(".\KERNEL\MACHDEP.C");
+USEUNIT(".\KERNEL\DEVIO.C");
+USEUNIT(".\KERNEL\FILESYS.C");
+USEUNIT(".\KERNEL\DEVFLOP.C");
+USEUNIT(".\KERNEL\DEVMISC.C");
+USEUNIT(".\KERNEL\SCALL1.C");
+USEUNIT(".\KERNEL\SCALL2.C");
 USEUNIT("UTILDOS.C");
 USERES("ucp.res");
 //---------------------------------------------------------------------------
 This file is used by the project manager only and should be treated like the project file
 
-main
+
+main

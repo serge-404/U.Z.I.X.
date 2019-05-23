@@ -70,6 +70,46 @@
 
 char DriveImage[MAXDRIV][MAX_PATH];
 
+char bootblock[512] = {
+	0xEB, 0xFE, 0x90, 'U',	'Z',  'I',  'X',  'd',
+	'i',  's',  'k',  0x00, 0x02, 0x02, 0x01, 0x00,
+	0x00, 0x00, 0x00, 0xA0, 0x05, 0xF9, 0x00, 0x00,
+	0x09, 0x00, 0x02, 0x00, 0x00, 0x00, 0xD0, 0x36,
+	0x56, 0x23, 0x36, 0xC0, 0x31, 0x1F, 0xF5, 0x11,
+	0x4A, 0xC0, 0x0E, 0x09, 0xCD, 0x7D, 0xF3, 0x0E,
+	0x08, 0xCD, 0x7D, 0xF3, 0xFE, 0x1B, 0xCA, 0x22,
+	0x40, 0xF3, 0xDB, 0xA8, 0xE6, 0xFC, 0xD3, 0xA8,
+	0x3A, 0xFF, 0xFF, 0x2F, 0xE6, 0xFC, 0x32, 0xFF,
+	0xFF, 0xC7, 0x57, 0x41, 0x52, 0x4E, 0x49, 0x4E,
+	0x47, 0x21, 0x07, 0x0D, 0x0A, 0x0A, 0x54, 0x68,
+	0x69, 0x73, 0x20, 0x69, 0x73, 0x20, 0x61, 0x6E,
+	0x20, 0x55, 0x5A, 0x49, 0x58, 0x20, 0x64, 0x69,
+	0x73, 0x6B, 0x2C, 0x20, 0x6E, 0x6F, 0x6E, 0x20,
+	0x62, 0x6F, 0x6F, 0x74, 0x61, 0x62, 0x6C, 0x65,
+	0x2E, 0x0D, 0x0A, 0x55, 0x73, 0x69, 0x6E, 0x67,
+	0x20, 0x69, 0x74, 0x20, 0x75, 0x6E, 0x64, 0x65,
+	0x72, 0x20, 0x4D, 0x53, 0x58, 0x44, 0x4F, 0x53,
+	0x20, 0x63, 0x61, 0x6E, 0x20, 0x64, 0x61, 0x6D,
+	0x61, 0x67, 0x65, 0x20, 0x69, 0x74, 0x2E, 0x0D,
+	0x0A, 0x0A, 0x48, 0x69, 0x74, 0x20, 0x45, 0x53,
+	0x43, 0x20, 0x66, 0x6F, 0x72, 0x20, 0x42, 0x41,
+	0x53, 0x49, 0x43, 0x20, 0x6F, 0x72, 0x20, 0x61,
+	0x6E, 0x79, 0x20, 0x6B, 0x65, 0x79, 0x20, 0x74,
+	0x6F, 0x20, 0x72, 0x65, 0x62, 0x6F, 0x6F, 0x74,
+	0x2E, 0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
+
 int rdev = 0;
 //uchar *syserror = &udata.u_error;
 
@@ -178,11 +218,100 @@ int file_exists(char* fname)
     return 0;
 }
 
-int UdiCreateArchive(char* fname)
+int dwrite(blk, addr)
+	uint blk;
+	void *addr;
 {
-  return 0;
+	char *buf = bread(rdev, blk, 2);
+
+	if (buf == NULL) {
+		MessageBox(0, "mkfs: disk device error", "Error", 0);
+		return -1;
+	}
+	bcopy(addr, buf, BUFSIZE);
+	bfree((bufptr)buf, 2);
+        return 0;
 }
 
+/* This makes a filesystem */
+dev_t dev;
+direct_t dirbuf[DIRECTPERBLOCK] = {
+	{ ROOTINODE, "." },
+	{ ROOTINODE, ".."}
+};
+dinode_t inode[DINODESPERBLOCK];
+
+int UdiCreateArchive(char* fname, uint fsize, uint isize, uint rsize)
+{
+	uint j, lm;
+	filesys_t fs;
+	char zeroed[BUFSIZE];
+	char *buf = bread(rdev, 0, 0);
+
+	if (buf == NULL) {
+		MessageBox(0, "mkfs: disk device read error", "Error", 0);
+		return -1;
+	}
+	/* Preserve disk data (number of sectors, format type, etc) */
+	for (j = 11; j < 30; j++) bootblock[j] = buf[j];
+	/* Preserve other relevant data (we just use first 256 bytes) */
+	for (j = 256; j < 512; j++) bootblock[j] = buf[j];
+	/* Write new boot block */
+	bfree((bufptr)buf, 0);
+	bootblock[0x10] = rsize;
+	dwrite(0,bootblock);
+	/* Zero out the blocks */
+	bzero(zeroed, BUFSIZE);
+//	if (_quick) {
+//		dwrite(fsize-1,zeroed); 	/* Last block */
+//		lm = SUPERBLOCK+1+rsize+isize;	/* Super+Reserv+Inodes */
+//	}
+//	else
+          lm = fsize;			/* All blocks of filesys */
+	j = 1;
+	while (j < lm) {
+		dwrite(j++, zeroed);
+	}
+	/* Initialize the super-block */
+	bzero(&fs,sizeof(fs));
+	fs.s_mounted = SMOUNTED;	/* Magic number */
+	fs.s_reserv = SUPERBLOCK+1+rsize;
+	fs.s_isize = isize;
+	fs.s_fsize = fsize;
+	fs.s_tinode = DINODESPERBLOCK * isize - 2;
+	/* Free each block, building the free list */
+	j = fsize - 1;
+	while (j > SUPERBLOCK+1+rsize+isize) {
+		if (fs.s_nfree == FSFREEBLOCKS) {
+			dwrite(j, (char *) &fs.s_nfree);
+			fs.s_nfree = 0;
+			bzero(fs.s_free,sizeof(fs.s_free));
+		}
+		fs.s_tfree++;
+		fs.s_free[fs.s_nfree++] = j--;
+	}
+	/* The inodes are already zeroed out */
+	/* create the root dir */
+	inode[ROOTINODE].i_mode = S_IFDIR | 0755;
+	inode[ROOTINODE].i_nlink = 3;
+	inode[ROOTINODE].i_size = sizeof(direct_t)*2;
+	inode[ROOTINODE].i_addr[0] = SUPERBLOCK+1+rsize+isize;
+	/* Reserve reserved inode */
+	inode[0].i_nlink = 1;
+	inode[0].i_mode = ~0;
+	/* Free inodes in first inode block */
+	j = ROOTINODE+1;
+	while (j < DINODESPERBLOCK) {
+		if (fs.s_ninode == FSFREEINODES)
+			break;
+		fs.s_inode[fs.s_ninode++] = j++;
+	}
+	dwrite(SUPERBLOCK+1+rsize, inode);
+	dwrite(SUPERBLOCK+1+rsize+isize, dirbuf);
+	/* Write out super block */
+	dwrite(SUPERBLOCK, &fs);
+        return 0;
+}
 
 struct dirent *readdir(DIR *dir)
 {
@@ -697,9 +826,9 @@ HANDLE __export WINAPI OpenArchivePart(char *ArcName, DWORD PartOffset, DWORD Pa
   }
   strncat(ArcFileName, ArcName, sizeof(ArcFileName)-strlen(ArcName)-1);
   ArcFileName[sizeof(ArcFileName)-1]=0;
-  if (! file_exists(ArcName))
-    UdiCreateArchive(ArcName);
   xfs_init(rdev, 0, Panic, ArcName);            // mount
+  if (! file_exists(ArcName))
+    UdiCreateArchive(ArcName, 1440, 25, 100);   // 720k floppy
   res=UdiGetCatalog(ArcName /*ArcFileName*/);
   xfs_end(rdev);                                // umount
   if (res>=0) {
@@ -799,12 +928,12 @@ int __export WINAPI PackFiles(char *PackedFile, char *SubPath, char *SrcPath, ch
 {
     int Result = 0;
     char  src_path[MAX_PATH], sub_path[MAX_PATH];
+    xfs_init(rdev, 0, Panic, PackedFile);            // mount
     if (! file_exists(PackedFile))
-      UdiCreateArchive(PackedFile);
-    xfs_init(rdev, 0, Panic, PackedFile);           // mount
+      UdiCreateArchive(PackedFile, 1440, 25, 100);   // 720k floppy
     if ((UdiGetCatalog(PackedFile)<0) || (! AddList))
     {
-      xfs_end(rdev);                                // unmount
+      xfs_end(rdev);                                 // unmount
       return E_UNKNOWN_FORMAT;
     }
     while (*AddList)
@@ -901,9 +1030,10 @@ HANDLE __export WINAPI CreateArchivePart(char *ArcName, DWORD PartOffset, DWORD 
   }
   strncat(ArcFileName, ArcName, sizeof(ArcFileName)-strlen(ArcName)-1);
   ArcFileName[sizeof(ArcFileName)-1]=0;
-  xfs_init(rdev, 0, Panic, ArcName);            // mount
-  res=UdiCreateArchive(ArcName);
-  xfs_end(rdev);                                // umount
+  xfs_init(rdev, 0, Panic, ArcName);                // mount
+  res=(min(65536, PartSize))/512;                     // filesys size
+  res=UdiCreateArchive(ArcName, res, res>>6, 128);  // res/64
+  xfs_end(rdev);                                    // umount
   return res;
 }
 

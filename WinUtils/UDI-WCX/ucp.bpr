@@ -4,10 +4,10 @@
   <MACROS>
     <VERSION value="BCB.05.03"/>
     <PROJECT value="ucp.exe"/>
-    <OBJFILES value="UCP.obj UCPSUB.obj XFS.obj ..\..\System\KERNEL\MACHDEP.obj 
-      ..\..\System\KERNEL\DEVIO.obj ..\..\System\KERNEL\FILESYS.obj 
-      ..\..\System\KERNEL\DEVFLOP.obj ..\..\System\KERNEL\DEVMISC.obj 
-      ..\..\System\KERNEL\SCALL1.obj ..\..\System\KERNEL\SCALL2.obj UTILDOS.obj"/>
+    <OBJFILES value="UCP.obj UCPSUB.obj XFS.obj .\KERNEL\MACHDEP.obj 
+      .\KERNEL\DEVIO.obj .\KERNEL\FILESYS.obj 
+      .\KERNEL\DEVFLOP.obj .\KERNEL\DEVMISC.obj 
+      .\KERNEL\SCALL1.obj .\KERNEL\SCALL2.obj UTILDOS.obj"/>
     <RESFILES value="ucp.res"/>
     <IDLFILES value=""/>
     <IDLGENFILES value=""/>
@@ -21,7 +21,7 @@
       Dss50.bpi TeeQR50.bpi VCLIB50.bpi Vclmid50.bpi vclie50.bpi Inetdb50.bpi 
       Inet50.bpi NMFast50.bpi webmid50.bpi bcbie50.bpi dclocx50.bpi 
       bcb2kaxserver50.bpi"/>
-    <PATHCPP value=".;..\..\System\KERNEL"/>
+    <PATHCPP value=".;.\KERNEL"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -31,13 +31,13 @@
     <USERDEFINES value="_DEBUG;BCB_COMPILER;PC_UTILS_TARGET;__DEVIO__COMPILATION;NO_ASM"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL;USEPACKAGES"/>
     <MAINSOURCE value="ucp.bpf"/>
-    <INCLUDEPATH value="..\..\..\..\..\..\..\..\CBuilder5\Source\Vcl;include;$(BCB)\include;$(BCB)\include\vcl;..\..\System\KERNEL;..\..\Lib\INCLUDE;..\..\Lib\INCLUDE\sys"/>
-    <LIBPATH value="..\..\..\..\..\..\..\..\CBuilder5\Source\Vcl;..\..\System\KERNEL;$(BCB)\lib\obj;$(BCB)\lib;..\..\lib\include"/>
+    <INCLUDEPATH value="..\..\..\..\..\..\..\..\CBuilder5\Source\Vcl;include;$(BCB)\include;$(BCB)\include\vcl;.\KERNEL;..\..\Lib\INCLUDE;..\..\Lib\INCLUDE\sys"/>
+    <LIBPATH value="..\..\..\..\..\..\..\..\CBuilder5\Source\Vcl;.\KERNEL;$(BCB)\lib\obj;$(BCB)\lib;..\..\lib\include"/>
     <WARNINGS value="-w-par"/>
   </MACROS>
   <OPTIONS>
     <IDLCFLAGS value="-I..\..\..\..\..\..\..\..\CBuilder5\Source\Vcl -Iinclude -I$(BCB)\include 
-      -I$(BCB)\include\vcl -I..\..\System\KERNEL -I..\..\Lib\INCLUDE 
+      -I$(BCB)\include\vcl -I.\KERNEL -I..\..\Lib\INCLUDE 
       -I..\..\Lib\INCLUDE\sys -src_suffix cpp -D_DEBUG -DBCB_COMPILER 
       -DPC_UTILS_TARGET -D__DEVIO__COMPILATION -DNO_ASM -boa"/>
     <CFLAG1 value="-Od -H=$(BCB)\lib\vcl50.csm -Hc -Vx -Ve -X- -r- -a1 -b- -k -y -v -vi- -tWC 
@@ -82,8 +82,8 @@ Comments=A part of freeware UZIX project
 
 [HistoryLists\hlIncludePath]
 Count=6
-Item0=include;$(BCB)\include;$(BCB)\include\vcl;..\..\System\KERNEL;..\..\Lib\INCLUDE;..\..\Lib\INCLUDE\sys
-Item1=include;$(BCB)\include;$(BCB)\include\vcl;..\..\System\KERNEL
+Item0=include;$(BCB)\include;$(BCB)\include\vcl;.\KERNEL;..\..\Lib\INCLUDE;..\..\Lib\INCLUDE\sys
+Item1=include;$(BCB)\include;$(BCB)\include\vcl;.\KERNEL
 Item2=include;$(BCB)\include;$(BCB)\include\vcl
 Item3=$(BCB)\include;$(BCB)\include\vcl;include
 Item4=$(BCB)\include;$(BCB)\include\vcl;.\include
@@ -91,8 +91,8 @@ Item5=$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
 Count=3
-Item0=..\..\System\KERNEL;$(BCB)\lib\obj;$(BCB)\lib;..\..\lib\include
-Item1=..\..\System\KERNEL;$(BCB)\lib\obj;$(BCB)\lib
+Item0=.\KERNEL;$(BCB)\lib\obj;$(BCB)\lib;..\..\lib\include
+Item1=.\KERNEL;$(BCB)\lib\obj;$(BCB)\lib
 Item2=$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
