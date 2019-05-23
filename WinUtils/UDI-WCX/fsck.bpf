@@ -1,0 +1,12 @@
+USEUNIT("FSCK.C");
+USERES("fsck.res");
+USEUNIT("..\..\System\KERNEL\DEVIO.C");
+USEUNIT("..\..\System\KERNEL\MACHDEP.C");
+USEUNIT("..\..\System\KERNEL\FILESYS.C");
+USEUNIT("..\..\System\KERNEL\DEVFLOP.C");
+USEUNIT("..\..\System\KERNEL\DEVMISC.C");
+USEUNIT("UTILDOS.C");
+//---------------------------------------------------------------------------
+This file is used by the project manager only and should be treated like the project file
+
+main
