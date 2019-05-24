@@ -652,14 +652,10 @@ int xrmdir(path)
 int UdiGetCatalog(char* fname)
 {
   char topdir[MAX_PATH]="/";
-  int Result;
   DisposeFileList(FileList);
   DriveImage[rdev][MAX_PATH-1]=0;
-  if (!Result) {
-    PPrevFRec=NULL;                               // starting from root
-    Result=lsdir(topdir,0,NULL);
-  }
-  return Result;
+  PPrevFRec=NULL;                               // starting from root
+  return lsdir(topdir,0,NULL);
 }
 
 int UdiFileExtract(char* OdiArchiveName, PFileRec PFRec, char* OutName)
@@ -707,18 +703,18 @@ char* ConvSlash(char* path) {
 
 int UdiFilePack(char* OdiArchiveName, char* SrcFileName, char* ArchFileName)
 {
-  int res;
+  int res=-1;
   HANDLE fh;
   DWORD fa;
   int mode;
-  FILETIME cft, aft, mft;  /* NT filetime */
-  time_t uft;              /* UZIX filetime */
+  FILETIME cft, aft, mft;      /* NT filetime */
+  time_t uft;                  /* UZIX filetime */
   struct utimbuf times;
   if ((SrcFileName[strlen(SrcFileName)-1]=='\\')&&(ArchFileName[strlen(ArchFileName)-1]=='\\')) {
     mode = S_IFDIR;
     SrcFileName[strlen(SrcFileName)-1]=0;
     ArchFileName[strlen(ArchFileName)-1]=0;
-    res=xmkdir(ConvSlash(ArchFileName));
+    res=xmkdir(ConvSlash(ArchFileName));                
   }
   else {
     mode = 0;
@@ -736,11 +732,11 @@ int UdiFilePack(char* OdiArchiveName, char* SrcFileName, char* ArchFileName)
        if (fa & FILE_ATTRIBUTE_HIDDEN)                              mode&= ~(S_IRWXG|S_IRWXO);        //  -rwx------
        UZIXchmod(ConvSlash(ArchFileName), mode);
     }
-    fh = CreateFile(SrcFileName, FILE_WRITE_ATTRIBUTES, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    fh = CreateFile(SrcFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL|FILE_FLAG_BACKUP_SEMANTICS, NULL);
     GetFileTime(fh, &cft, &aft, &mft);
     CloseHandle(fh);
     FileTimeToLocalFileTime(&aft, &cft);                        // access time
-    FileTimeToDosDateTime(&cft, &uft.t_date, &uft.t_time);      // use cft as a buffer
+    FileTimeToDosDateTime(&cft, &uft.t_date, &uft.t_time);      // use cft as a buffer (UZIXutime not allow to change creation time)
     times.actime = uft;
     FileTimeToLocalFileTime(&mft, &cft);                        // modify time
     FileTimeToDosDateTime(&cft, &uft.t_date, &uft.t_time);
@@ -781,9 +777,9 @@ char* UdiGetInfo(char* ArcNm)
   uint j;
   fsptr fsys;
   info_t info;
-  int bused, bfree, iused, ifree;
-  xfs_init(rdev, 0, Panic, CheckFN(ArcNm));            // mount
-  for (j = 0; j < 8; ++j) {
+  int bused, bfree, iused, ifree, res;
+  res=xfs_init(rdev, 0, Panic, CheckFN(ArcNm));            // mount
+  for (j = 0; (j < 8) && (!res); ++j) {
   	if (!UZIXgetfsys(j, &info) &&
   	    (fsys = (fsptr)info.ptr)->s_mounted) {
                 bused = (fsys->s_fsize - fsys->s_isize) - fsys->s_tfree - fsys->s_reserv;
@@ -813,9 +809,9 @@ char* UdiGetInfo(char* ArcNm)
 
 /////////////////////////////// exported plugin functions ///////////////////////
 
-HANDLE __export WINAPI OpenArchivePart(char *ArcName, DWORD PartOffset, DWORD PartN)
+HANDLE __export WINAPI OpenArchivePart(char *ArcName, DWORD PartOffset, DWORD PartN)    // PartOffset in sectors (not a byte)
 {
-  int res;
+  int res=-1;
   PartitionOffset=PartOffset*512;
   FileListPos = 0;
   FileListItem=PrevFileListItem=NULL;
@@ -826,10 +822,11 @@ HANDLE __export WINAPI OpenArchivePart(char *ArcName, DWORD PartOffset, DWORD Pa
   }
   strncat(ArcFileName, ArcName, sizeof(ArcFileName)-strlen(ArcName)-1);
   ArcFileName[sizeof(ArcFileName)-1]=0;
-  xfs_init(rdev, 0, Panic, ArcName);            // mount
-  if (! file_exists(ArcName))
-    UdiCreateArchive(ArcName, 1440, 25, 100);   // 720k floppy
-  res=UdiGetCatalog(ArcName /*ArcFileName*/);
+  if (! xfs_init(rdev, 0, Panic, ArcName)) {    // mount
+    if (! file_exists(ArcName))
+      UdiCreateArchive(ArcName, 1440, 25, 100);   // 720k floppy
+    res=UdiGetCatalog(ArcName /*ArcFileName*/);
+  }
   xfs_end(rdev);                                // umount
   if (res>=0) {
     FileListItem=PrevFileListItem=FileList;                      // points to first item
@@ -904,9 +901,9 @@ int __export WINAPI ProcessFile(HANDLE hArcData, int Operation, char *DestPath, 
 #else
       FileRec = PrevFileListItem;
 #endif
-      xfs_init(rdev, 0, Panic, DriveImage[rdev]);          // mount
-      res=UdiFileExtract(ArcFileName, FileRec, OutName);
-      xfs_end(rdev);                                       // umount
+      if (! (res=xfs_init(rdev, 0, Panic, DriveImage[rdev])))  // mount
+        res=UdiFileExtract(ArcFileName, FileRec, OutName);
+      xfs_end(rdev);                                           // umount
       switch (res) {
         case             0: return 0;
         case ERR_FILE_STRU: return E_BAD_DATA;
@@ -926,27 +923,28 @@ int __export WINAPI CloseArchive(HANDLE hArcData)
 
 int __export WINAPI PackFiles(char *PackedFile, char *SubPath, char *SrcPath, char *AddList, int Flags)
 {
-    int Result = 0;
     char  src_path[MAX_PATH], sub_path[MAX_PATH];
-    xfs_init(rdev, 0, Panic, PackedFile);            // mount
-    if (! file_exists(PackedFile))
-      UdiCreateArchive(PackedFile, 1440, 25, 100);   // 720k floppy
-    if ((UdiGetCatalog(PackedFile)<0) || (! AddList))
-    {
-      xfs_end(rdev);                                 // unmount
-      return E_UNKNOWN_FORMAT;
-    }
-    while (*AddList)
-    {
-      Result=UdiFilePack(PackedFile,
-                         StrSlashCat(FPath, SrcPath, AddList, FALSE),
-                         StrSlashCat(FPath2, SubPath, AddList, TRUE));
-      if (Result<0)
-        break;
-      else
-        if ((Flags & PK_PACK_MOVE_FILES) != 0)
-          DeleteFile(strcat(AddSlash(SrcPath), AddList));
-      AddList += strlen(AddList) + 1;
+    int Result =xfs_init(rdev, 0, Panic, PackedFile);   // mount
+    if (! Result) {
+      if (! file_exists(PackedFile))
+        UdiCreateArchive(PackedFile, 1440, 25, 100);      // 720k floppy
+      if ((UdiGetCatalog(PackedFile)<0) || (! AddList))
+      {
+        xfs_end(rdev);                                    // unmount
+        return E_UNKNOWN_FORMAT;
+      }
+      while (*AddList)
+      {
+        Result=UdiFilePack(PackedFile,
+                           StrSlashCat(FPath, SrcPath, AddList, FALSE),
+                           StrSlashCat(FPath2, SubPath, AddList, TRUE));
+        if (Result<0)
+          break;
+        else
+          if ((Flags & PK_PACK_MOVE_FILES) != 0)
+            DeleteFile(strcat(AddSlash(SrcPath), AddList));
+        AddList += strlen(AddList) + 1;
+      }
     }
     xfs_end(rdev);                                // unmount
     return Result;
@@ -957,19 +955,20 @@ int __export WINAPI DeleteFiles(char *PackedFile, char *DeleteList)
   int Result = E_UNKNOWN_FORMAT;
   if (file_exists(PackedFile))
   {
-    xfs_init(rdev, 0, Panic, PackedFile);          // mount
-    if (UdiGetCatalog(PackedFile)<0)
-    {
-      xfs_end(rdev);                               // unmount
-      return Result;
-    }
-    Result = 0;
-    while (*DeleteList)
-    {
-      Result=UdiFileDelete(PackedFile, DeleteList);
-      if (Result<0)
-        break;
-      DeleteList += strlen(DeleteList) + 1;
+    if (! (Result=xfs_init(rdev, 0, Panic, PackedFile))) {    // mount
+      if (UdiGetCatalog(PackedFile)<0)
+      {
+        xfs_end(rdev);                                        // unmount
+        return Result;
+      }
+      Result = 0;
+      while (*DeleteList)
+      {
+        Result=UdiFileDelete(PackedFile, DeleteList);
+        if (Result<0)
+          break;
+        DeleteList += strlen(DeleteList) + 1;
+      }
     }
     xfs_end(rdev);                                // unmount
   }
@@ -989,10 +988,10 @@ char* __export WINAPI GetPartInfo(char *OdiArchiveName)
 
 int __export WINAPI CanYouHandleThisFile(char *FileName)
 {
-  int Res;
+  int Res=-1;
   Panic=0;
-  xfs_init(rdev, 0, Panic, FileName);            // mount
-  Res=UdiGetCatalog(FileName);
+  if (! xfs_init(rdev, 0, Panic, FileName))      // mount
+    Res=UdiGetCatalog(FileName);
   xfs_end(rdev);                                 // umount
   Panic=1;
   return (Res>=0);
@@ -1017,7 +1016,7 @@ void __export WINAPI ConfigurePacker(HANDLE Parent, DWORD DllInstance)
   MessageBox(Parent, FPath, "Information", MB_OK+MB_ICONINFORMATION);
 }
 
-HANDLE __export WINAPI CreateArchivePart(char *ArcName, DWORD PartOffset, DWORD PartN, DWORD PartSize)
+HANDLE __export WINAPI CreateArchivePart(char *ArcName, DWORD PartOffset, DWORD PartN, DWORD PartSize)   // PartOffset,PartSize in sectors (not a byte)
 {
   int res;
   PartitionOffset=PartOffset*512;
@@ -1030,10 +1029,10 @@ HANDLE __export WINAPI CreateArchivePart(char *ArcName, DWORD PartOffset, DWORD 
   }
   strncat(ArcFileName, ArcName, sizeof(ArcFileName)-strlen(ArcName)-1);
   ArcFileName[sizeof(ArcFileName)-1]=0;
-  xfs_init(rdev, 0, Panic, ArcName);                // mount
-  res=(min(65536, PartSize))/512;                     // filesys size
-  res=UdiCreateArchive(ArcName, res, res>>6, 128);  // res/64
-  xfs_end(rdev);                                    // umount
+  res=min(65536, PartSize);                           // filesys size (limited to 32Mb)
+  xfs_init(rdev, 0, Panic, ArcName);                   // mount
+  res=UdiCreateArchive(ArcName, res, res>>5, 128);    // >>6 ?
+  xfs_end(rdev);                                      // umount
   return res;
 }
 
