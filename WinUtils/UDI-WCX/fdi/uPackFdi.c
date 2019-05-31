@@ -199,7 +199,7 @@ int xfs_init(int bootdev, char* fname)
    rdev=bootdev;
    strncpy(DriveImage[rdev],fname,MAX_PATH-1);
    DriveImage[rdev][MAX_PATH-1]=0;
-   sprintf(FPath2, "%d:", rdev);
+   sprintf(FPath2, "%d:", PartitionN);
    if (!(res=f_mount(&ffs[rdev], FPath2, 0))) {         /* Mount the default drive. res=0 if OK */
      if (res=f_chdrive(FPath2))                         /* Set drive 2 as current drive */
        return res;
