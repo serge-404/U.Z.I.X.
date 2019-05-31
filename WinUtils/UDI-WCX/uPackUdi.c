@@ -407,7 +407,7 @@ int lsdir(char *dir, int depth, PFileRec PPrevDir)
 //    time_t uft;   /* UZIX filetime */
 
     if((dp = opendir(dir)) == NULL) {
-        fprintf(stderr,"cannot open directory: %s\n", dir);
+        MessageBox(0, dir, "Cannot open directory:", MB_ICONERROR+MB_OK);
         return ERR_FILE_STRU;
     }
     UZIXchdir(dir);
