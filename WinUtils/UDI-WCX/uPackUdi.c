@@ -67,6 +67,9 @@
 //time_t tod; 	/* Time of day */
 
 #define PluginTitle "UZIX disk images (UDI) serving plugin. (p)2019 Serge"
+#define SystemTracks "UseThis_ToAccess_SystemTracks"
+#define SystemBin  "System.bin"
+TSystemBinRec SystemBinRec;
 
 char DriveImage[MAXDRIV][MAX_PATH];
 
@@ -218,9 +221,7 @@ int file_exists(char* fname)
     return 0;
 }
 
-int dwrite(blk, addr)
-	uint blk;
-	void *addr;
+int dwrite(uint blk, void* addr)
 {
 	char *buf = bread(rdev, blk, 2);
 

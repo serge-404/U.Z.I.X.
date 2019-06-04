@@ -59,5 +59,16 @@ extern int UZIXumount __P((char *spec));
 extern int UZIXtime __P((void *tvec));
 
 extern int UZIXgetfsys __P((dev_t dev, void *buf));
+
+typedef struct {
+          unsigned int SystemBinValid;
+          char Name[23];
+          unsigned int RegionOffset;
+          unsigned int RegionSize;
+          unsigned int Size;
+          unsigned int Date; // in format of FileGetDate() function
+          unsigned char CRC;
+} TSystemBinRec;
+
 #endif
 

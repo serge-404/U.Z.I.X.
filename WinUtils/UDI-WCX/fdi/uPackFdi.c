@@ -203,8 +203,9 @@ int xfs_init(int bootdev, char* fname)
    if (!(res=f_mount(&ffs[rdev], FPath2, 0))) {         /* Mount the default drive. res=0 if OK */
      if (res=f_chdrive(FPath2))                         /* Set drive 2 as current drive */
        return res;
-     else
+     else {
        return f_chdir("/");                             /* Change current direcoty of the current drive to root directory) */
+     }
    }
    return res;
 }
@@ -500,18 +501,30 @@ char* CheckFN(char* name)
 
 char* FdiGetInfo(char* ArcNm)
 {
+  int res;
   FATFS *fs;
   DWORD fre_clust, fre_sect, tot_sect;
-  int res = f_getfree("", &fre_clust, &fs);
-  if (res) return "Error: f_getfree";
-  /* Get total sectors and free sectors */
-  tot_sect = (fs->n_fatent - 2) * fs->csize;
-  fre_sect = fre_clust * fs->csize;
-  /* Get volume label of the default drive */
-  f_getlabel("", FPath2, 0);
-  /* Print the free space (assuming 512 bytes/sector) */
-  sprintf(TmpBuf,"VolumeLabel: `%s`\n%10lu KiB total drive space.\n%10lu KiB available.\n%10lu number of sectors per cluster",
-	         FPath2, tot_sect / 2, fre_sect / 2, fs->csize);
+  if ((ArcNm)&&(strlen(ArcNm)>2)&&(ArcNm[1]==':')&&(*ArcNm>='0')&&(*ArcNm<'4')) {
+    PartitionN=*ArcNm-'0';
+    strncpy(ArcFileName,ArcNm,sizeof(ArcFileName)-1);
+    ArcFileName[sizeof(ArcFileName)-1]=0;
+    ArcNm++;
+    ArcNm++;
+    rdev=0;
+  }
+  if (! xfs_init(0, ArcNm)) {                           /* setts FPath2 */
+    res = f_getfree(FPath2, &fre_clust, &fs);
+    if (res) return "Error: f_getfree";
+    /* Get total sectors and free sectors */
+    tot_sect = (fs->n_fatent - 2) * fs->csize;
+    fre_sect = fre_clust * fs->csize;
+    /* Get volume label of the default drive */
+    f_getlabel("", FPath2, 0);
+    /* Print the free space (assuming 512 bytes/sector) */
+    sprintf(TmpBuf,"VolumeLabel: `%s`\n%10lu KiB total space.\n%10lu KiB available.\n%10lu sector(s) per cluster",
+     	         FPath2, tot_sect / 2, fre_sect / 2, fs->csize);
+    xfs_end(0);
+  }
   return TmpBuf;
 }
 
@@ -746,10 +759,16 @@ HANDLE __export WINAPI CreateArchivePart(char *ArcName, DWORD PartOffset, DWORD 
   }
   strncat(ArcFileName, ArcName, sizeof(ArcFileName)-strlen(ArcName)-1);
   ArcFileName[sizeof(ArcFileName)-1]=0;
-  res=min(65536, PartSize);                           // filesys size (limited to 32Mb)
-  xfs_init(rdev, ArcName);                            // mount
-  res=FdiCreateArchive(ArcName, FM_ANY, 0, PartN);    // >>6 ?
-  xfs_end(rdev);                                      // umount
+//  xfs_init(rdev, ArcName);                            // mkfs does disk_initialize() iself
+   rdev=0;
+   strncpy(DriveImage[rdev],ArcName,MAX_PATH-1);        // instead of xfs_init
+   DriveImage[rdev][MAX_PATH-1]=0;
+  res=FdiCreateArchive(ArcName, FM_ANY, 0, PartN);      //
+//  xfs_end(rdev);                                      // umount
+  if (fHandle) {
+    fclose(fHandle);                                    // instead of xfs_end (no umount)
+    fHandle=NULL;
+  }
   return (HANDLE)res;
 }
 

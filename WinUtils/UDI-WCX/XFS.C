@@ -38,6 +38,7 @@
 #include "xfs.h"
 
 extern char DriveImage[MAXDRIV][255];
+extern TSystemBinRec SystemBinRec;
 
 char *stringerr[] = {
 	"0",
@@ -119,6 +120,14 @@ GBL int xfs_init(dev_t bootdev, uchar waitfordisk, int Panic, char* fname)
 		i_ref(root_ino);
 	}
 	rdtime(&udata.u_time);
+#ifdef BCB_COMPILER
+  SystemBinRec.SystemBinValid=0;
+/*
+    FS.Seek(PhySectorSize * BOOT.DPB.SEC * BOOT.DPB.OFF + PartitionOffset - sizeof(BOOT.SystemBinRec), soFromBeginning);  // 20160909 - for sysgen special catalog/file
+    FS.Read(BOOT.SystemBinRec, sizeof(BOOT.SystemBinRec));
+    BOOT.SystemBinValid:=DPBcrc(PBootDPB(pointer(@BOOT.SystemBinRec))^)=BOOT.SystemBinRec.CRC;
+*/
+#endif
         return 0;
 }
 
