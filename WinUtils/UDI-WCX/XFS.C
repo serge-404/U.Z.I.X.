@@ -34,11 +34,42 @@
 #else
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #endif
 #include "xfs.h"
 
-extern char DriveImage[MAXDRIV][255];
+#ifdef UDIWCX
+#include <sys\stat.h>
+
+typedef struct {
+	uchar 	mediaid;	/* opened file descriptor */
+#ifdef BCB_COMPILER
+	void* 	fHandle;	/* opened file descriptor */
+        unsigned long fOffset;  /* partition offset into image file */
+        unsigned long fParSize; /* partition size in 512b blocks */
+#endif  /*  BCB_COMPILER */
+	uint	size;		/* pseudo floppy size in blocks */
+} fdinfo_t;
+extern STATIC fdinfo_t fdinfo[MAXDRIV];
+
 extern TSystemBinRec SystemBinRec;
+extern unsigned int  SystemBinValid;
+extern unsigned long SystemRegOffset;
+extern unsigned long SystemRegSize;
+extern unsigned long PartitionOffset;
+extern unsigned long DriveImageSize;
+extern time_t DriveImageTime;
+
+unsigned char crc66(TSystemBinRec* SysBinRec)
+{
+  int ii;
+  unsigned char Res=0x66;
+  for (ii=0; ii<sizeof(TSystemBinRec)-3; ii++)
+    Res+=((unsigned char*)SysBinRec)[ii];
+  return Res;
+}
+#endif
+extern char DriveImage[MAXDRIV][255];
 
 char *stringerr[] = {
 	"0",
@@ -87,6 +118,11 @@ char *stringerr[] = {
 
 GBL int xfs_init(dev_t bootdev, uchar waitfordisk, int Panic, char* fname)
 {
+        void* fHandle=NULL;
+        info_t info;
+        fsptr fsys;
+        struct stat st;
+
         strncpy(DriveImage[bootdev],fname,254);
 	arch_init();
 	bufinit();
@@ -120,13 +156,24 @@ GBL int xfs_init(dev_t bootdev, uchar waitfordisk, int Panic, char* fname)
 		i_ref(root_ino);
 	}
 	rdtime(&udata.u_time);
-#ifdef BCB_COMPILER
-  SystemBinRec.SystemBinValid=0;
-/*
-    FS.Seek(PhySectorSize * BOOT.DPB.SEC * BOOT.DPB.OFF + PartitionOffset - sizeof(BOOT.SystemBinRec), soFromBeginning);  // 20160909 - for sysgen special catalog/file
-    FS.Read(BOOT.SystemBinRec, sizeof(BOOT.SystemBinRec));
-    BOOT.SystemBinValid:=DPBcrc(PBootDPB(pointer(@BOOT.SystemBinRec))^)=BOOT.SystemBinRec.CRC;
-*/
+#ifdef UDIWCX
+        SystemBinValid=0;
+        SystemRegSize=0;
+        if (!UZIXgetfsys(0, &info) &&
+  	    ((fsys = (fsptr)info.ptr)->s_mounted) &&
+            (fsys->s_reserv>5)) {                // minimum system size = 6-2 = 4blocks = 2kb
+          SystemRegSize=(fsys->s_reserv-2)*512;
+          SystemRegOffset=PartitionOffset+1024;
+          if (fseek(fdinfo[0].fHandle, SystemRegSize+SystemRegOffset-sizeof(SystemBinRec), SEEK_SET))
+            return -1;
+          if (fread(&SystemBinRec, sizeof(SystemBinRec), 1, fdinfo[0].fHandle)!=1)
+            return -1;
+          SystemBinValid=(crc66(&SystemBinRec)==SystemBinRec.CRC);
+        }
+        if (stat(fname, &st) == 0) {
+                DriveImageSize=st.st_size;
+                DriveImageTime=st.st_mtime;
+        }
 #endif
         return 0;
 }
@@ -394,5 +441,6 @@ GBL int UZIXtime(tvec)
 	udata.u_argn1 = (XUINT)tvec;
 	return sys_time();
 }
+
 
 

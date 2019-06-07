@@ -15,6 +15,10 @@
 #define  ERR_WRONG_DPB_CRC   -8
 #define  ERR_WRONG_DISK_SIZE -9
 
+#define VIRTUAL_FOLDER          1
+#define VIRTUAL_BOOTBIN         2
+#define VIRTUAL_SYSTEMBIN       3
+
 typedef struct s_FileRec {
                struct s_FileRec *ParentDir;
                struct s_FileRec *PrevItem;
@@ -22,6 +26,7 @@ typedef struct s_FileRec {
                DWORD FileSize;
                DWORD FileTime;
                DWORD FileAttr;
+               int IsVirtual;                   // 1=BOOTBIN 2=SYSTEMBIN
                char FileName[MAX_PATH];
 } FileRec_t;
 

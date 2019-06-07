@@ -28,6 +28,7 @@
 #define __MAIN__COMPILATION
 #define PC_UTILS_TARGET
 #define BCB_COMPILER
+#define UDIWCX
 //#define BCB_DEBUG
 #define NO_ASM
 
@@ -63,13 +64,35 @@
 #include "fcntl.h"
 #include "dirent.h"
 
+typedef struct {
+	uchar 	mediaid;	/* opened file descriptor */
+#ifdef BCB_COMPILER
+	void* 	fHandle;	/* opened file descriptor */
+        unsigned long fOffset;  /* partition offset into image file */
+        unsigned long fParSize; /* partition size in 512b blocks */
+#endif  /*  BCB_COMPILER */
+	uint	size;		/* pseudo floppy size in blocks */
+} fdinfo_t;
+extern STATIC fdinfo_t fdinfo[MAXDRIV];
+
+extern unsigned char crc66(TSystemBinRec* SysBinRec);
+
 //udata_t udata;
 //time_t tod; 	/* Time of day */
 
 #define PluginTitle "UZIX disk images (UDI) serving plugin. (p)2019 Serge"
 #define SystemTracks "UseThis_ToAccess_SystemTracks"
+#define BootBin    "boot.bin"
 #define SystemBin  "System.bin"
 TSystemBinRec SystemBinRec;
+
+unsigned int  ShowBootBin;
+unsigned int  ShowSystemBin;
+unsigned int  SystemBinValid=0;
+unsigned long SystemRegOffset=0;
+unsigned long SystemRegSize=0;
+unsigned long DriveImageSize;
+unsigned long DriveImageTime;
 
 char DriveImage[MAXDRIV][MAX_PATH];
 
@@ -124,9 +147,10 @@ int xunlink __P((char *path));
 int xrmdir __P((char *path));
 //
 int FileListPos = 0;
-char TmpBuf[MAX_PATH], FPath[MAX_PATH], FPath2[MAX_PATH];
+char TmpBuf[MAX_PATH], TmpBuf2[MAX_PATH], FPath[MAX_PATH], FPath2[MAX_PATH];
 char ArcFileName[MAX_PATH];
 char IniFileName[MAX_PATH];
+char BootBinFilename[MAX_PATH];
 DWORD PartitionOffset = 0;
 DWORD PartitionN = 0;
 int Panic = 0;
@@ -145,7 +169,18 @@ char* AddSlash(char *sss)
 
 void GetIniSettings(char *IniName)
 {
-return;
+  ShowBootBin=GetPrivateProfileInt("PARAMS", "ShowBootBin", 1, IniName);
+  ShowSystemBin=GetPrivateProfileInt("PARAMS", "ShowSystemBin", 1, IniName);
+  GetPrivateProfileString("PARAMS", "BootBinFilename", "boot.bin", BootBinFilename, sizeof(BootBinFilename)-1 , IniName);
+}
+
+void SetIniSettings(char *IniName)
+{
+  sprintf(FPath2, "%d", ShowBootBin);
+  WritePrivateProfileString("PARAMS", "ShowBootBin", FPath2, IniName);
+  sprintf(FPath2, "%d", ShowSystemBin);
+  WritePrivateProfileString("PARAMS", "ShowSystemBin", FPath2, IniName);
+  WritePrivateProfileString("PARAMS", "BootBinFilename", BootBinFilename, IniName);
 }
 
 void DisposeFileList(PFileRec FirstMember)
@@ -202,6 +237,7 @@ int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason, void* lpReserved
       }
    case DLL_PROCESS_DETACH:      // finalization
       {
+        SetIniSettings(IniFileName);
         // opened with FreeLibrary -   if(lpvReserved == NULL)
         DisposeFileList(FileList);
         break;
@@ -430,6 +466,7 @@ int lsdir(char *dir, int depth, PFileRec PPrevDir)
       PFRec->ParentDir= PPrevDir;
       PFRec->NextItem = NULL;
       PFRec->PrevItem = PPrevFRec;
+      PFRec->IsVirtual=FALSE;
       if (PPrevFRec)
         PPrevFRec->NextItem = PFRec;
       if (! FileList)
@@ -473,6 +510,7 @@ int lsdir(char *dir, int depth, PFileRec PPrevDir)
         PFRec->ParentDir= PPrevDir;
         PFRec->NextItem = NULL;
         PFRec->PrevItem = PPrevFRec;
+        PFRec->IsVirtual= FALSE;
         if (PPrevFRec)
           PPrevFRec->NextItem = PFRec;
         if (! FileList)
@@ -650,23 +688,126 @@ int xrmdir(path)
 
 /*========*/
 
+void UnixTimeToFileTime(DWORD t, LPFILETIME pft)
+{
+     // Note that LONGLONG is a 64-bit value
+     LONGLONG ll=t;
+     ll=ll*10000000 + 116444736000000000;
+     pft->dwLowDateTime = (DWORD)ll;
+     pft->dwHighDateTime = ll >> 32;
+}
+
+typedef union {
+      DWORD wdt;
+      struct {
+        WORD btime;
+        WORD bdate;
+      } dt;
+} FUDT;
+
 int UdiGetCatalog(char* fname)
 {
+  int res;
+  FILETIME ft, lft;      /* NT filetime */
+  FUDT udt;
+  PFileRec PFRec=NULL, PFSysDir=NULL;
   char topdir[MAX_PATH]="/";
+
   DisposeFileList(FileList);
   DriveImage[rdev][MAX_PATH-1]=0;
   PPrevFRec=NULL;                               // starting from root
-  return lsdir(topdir,0,NULL);
+  res=lsdir(topdir,0,NULL);                     // get real folder/files
+// FileTime for virtual folder/files taken from image file timestamp
+  UnixTimeToFileTime(DriveImageTime, &ft);
+  FileTimeToLocalFileTime(&ft, &lft);           // adjust locale
+  FileTimeToDosDateTime(&lft, &udt.dt.bdate, &udt.dt.btime);      // use aft as a buffer (UZIXutime not allow to change creation time)
+// virtual folder for system tracks access
+  if (ShowBootBin || (ShowSystemBin && (SystemRegSize>0))) {
+    LastItem = PFRec = malloc(sizeof(FileRec_t));                       /* alloc current dirrectory record */
+    strncpy(PFRec->FileName, SystemTracks, sizeof(PFRec->FileName)-1);
+    PFRec->FileAttr=faDirectory+faReadOnly;
+    PFRec->FileTime=udt.wdt;
+    PFRec->FileSize=0;                             //
+    PFRec->ParentDir= NULL;                        // parent is root
+    PFRec->NextItem = NULL;
+    PFRec->PrevItem = PPrevFRec;
+    PFRec->IsVirtual= VIRTUAL_FOLDER;
+    if (PPrevFRec)
+      PPrevFRec->NextItem = PFRec;
+    if (! FileList)
+      FileList = PFRec;
+    FileListCount++;
+    PFSysDir=PPrevFRec=PFRec;
+// virtual file for boot sector access
+    if (ShowBootBin) {
+      LastItem = PFRec = malloc(sizeof(FileRec_t));                       /* alloc current dirrectory record */
+      strncpy(PFRec->FileName, BootBinFilename, sizeof(PFRec->FileName)-1);
+      PFRec->FileAttr=faSysFile;
+      PFRec->FileTime=udt.wdt;
+      PFRec->FileSize=512;                             //
+      PFRec->ParentDir= PFSysDir;                      // parent is root
+      PFRec->NextItem = NULL;
+      PFRec->PrevItem = PPrevFRec;
+      PFRec->IsVirtual= VIRTUAL_BOOTBIN;
+      if (PPrevFRec)
+        PPrevFRec->NextItem = PFRec;
+      if (! FileList)
+        FileList = PFRec;
+      FileListCount++;
+      PPrevFRec=PFRec;
+    }
+// virtual file for system tracks access
+    if (ShowSystemBin && (SystemRegSize>0)) {
+      LastItem = PFRec = malloc(sizeof(FileRec_t));                       /* alloc file record */
+      if (SystemBinValid) {
+        strncpy(PFRec->FileName, SystemBinRec.Name, sizeof(PFRec->FileName)-1);
+        PFRec->FileTime=SystemBinRec.Date;
+        PFRec->FileSize=SystemBinRec.Size;                             //
+      }
+      else {
+        PFRec->FileTime=udt.wdt;
+        strncpy(PFRec->FileName, SystemBin, sizeof(PFRec->FileName)-1);
+        PFRec->FileSize=SystemRegSize-sizeof(SystemBinRec);
+      }
+      PFRec->FileAttr=faSysFile;
+      PFRec->ParentDir= PFSysDir;
+      PFRec->NextItem = NULL;
+      PFRec->PrevItem = PPrevFRec;
+      PFRec->IsVirtual= VIRTUAL_SYSTEMBIN;
+      if (PPrevFRec)
+        PPrevFRec->NextItem = PFRec;
+      FileListCount++;
+      PPrevFRec=PFRec;
+    }
+  }
+  return res;
 }
 
-int UdiFileExtract(char* OdiArchiveName, PFileRec PFRec, char* OutName)
+int UdiFileExtract(char* UdiArchiveName, PFileRec PFRec, char* OutName)
 {
-  int res;
   HANDLE fh;
   FILETIME ft, lft;  /* NT filetime */
   time_t uft;   /* UZIX filetime */
+  void* fHandle=NULL;
+  unsigned char *fbuf=NULL;
+  int res = -1;
   cursize = 0;
-  res=xput(GetFullPath(FPath, PFRec, sizeof(FPath)-1, TRUE, '/'), OutName, 1);
+  switch (PFRec->IsVirtual) {
+   case VIRTUAL_BOOTBIN:
+   case VIRTUAL_SYSTEMBIN:
+    if (fseek(fdinfo[rdev].fHandle, PFRec->IsVirtual==VIRTUAL_BOOTBIN ? PartitionOffset : SystemRegOffset, SEEK_SET)) goto err;
+    if (! (fbuf=malloc(PFRec->FileSize))) goto err;
+    if (fread(fbuf, PFRec->FileSize, 1, fdinfo[rdev].fHandle)!=1) goto err;
+    if (! (fHandle=fopen(OutName, "wb"))) goto err;
+    res=(fwrite(fbuf, PFRec->FileSize, 1, fHandle) != 1);
+err:if (fHandle)
+      fclose(fHandle);
+    if (fbuf) free(fbuf);
+    break;
+   default:
+    res=xput(GetFullPath(FPath, PFRec, sizeof(FPath)-1, TRUE, '/'), OutName, 1);
+    break;
+  }
   if (!res) {  /* if succesfully extracted */
     *(LPDWORD)((void*)&uft)=PFRec->FileTime;
     DosDateTimeToFileTime(uft.t_date, uft.t_time, &lft);
@@ -702,20 +843,98 @@ char* ConvSlash(char* path) {
   return path;
 }
 
+char* CharUpperX(char* st)
+{
+  char* ss=st;
+  while (ss && *ss) {
+    *ss=toupper(*ss);
+    ss++;
+  }
+  return st;
+}
+
+char* ExtractFileName(char* st)
+{
+  char* ss=&st[strlen(st)];
+  while ((ss!=st) && (*ss!='\\')) { ss--; }
+  return ss==st ? ss : ++ss;
+}
+
+void GetFileUTime(char* FName, struct utimbuf *tms)
+{
+  HANDLE fh;
+  time_t uft;                  /* UZIX filetime */
+  FILETIME cft, aft, mft;      /* NT filetime */
+
+  fh = CreateFile(FName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL|FILE_FLAG_BACKUP_SEMANTICS, NULL);
+  GetFileTime(fh, &cft, &aft, &mft);
+  CloseHandle(fh);
+  FileTimeToLocalFileTime(&aft, &cft);                        // access time
+  FileTimeToDosDateTime(&cft, &uft.t_date, &uft.t_time);      // use cft as a buffer (UZIXutime not allow to change creation time)
+  tms->actime = uft;
+  FileTimeToLocalFileTime(&mft, &cft);                        // modify time
+  FileTimeToDosDateTime(&cft, &uft.t_date, &uft.t_time);
+  tms->modtime = uft;
+}
+
 int UdiFilePack(char* OdiArchiveName, char* SrcFileName, char* ArchFileName)
 {
   int res=-1;
-  HANDLE fh;
+  int readed;
   DWORD fa;
   int mode;
-  FILETIME cft, aft, mft;      /* NT filetime */
-  time_t uft;                  /* UZIX filetime */
   struct utimbuf times;
-  if ((SrcFileName[strlen(SrcFileName)-1]=='\\')&&(ArchFileName[strlen(ArchFileName)-1]=='\\')) {
+  void* fHandle=NULL;
+  unsigned char *fbuf=NULL;
+  strncpy(TmpBuf,ArchFileName,sizeof(TmpBuf));
+  TmpBuf[sizeof(TmpBuf)-1]=0;
+  strncpy(TmpBuf2, "\\" SystemTracks "\\" , sizeof(TmpBuf2));
+  TmpBuf2[sizeof(TmpBuf2)-1]=0;
+  strncat(TmpBuf2, BootBinFilename, sizeof(TmpBuf2));
+  TmpBuf2[sizeof(TmpBuf2)-1]=0;
+  if ((SrcFileName[strlen(SrcFileName)-1]=='\\')&&(ArchFileName[strlen(ArchFileName)-1]=='\\')) {          // "\\name\\" = create dirrectory
+    if (strstr(ArchFileName, "\\" SystemTracks "\\")==ArchFileName)
+      return -1;                                                                                           // no subdirs in virtual catalog
     mode = S_IFDIR;
     SrcFileName[strlen(SrcFileName)-1]=0;
     ArchFileName[strlen(ArchFileName)-1]=0;
-    res=xmkdir(ConvSlash(ArchFileName));                
+    res=xmkdir(ConvSlash(ArchFileName));
+  }
+  else if (strstr(CharUpperX(TmpBuf), CharUpperX(TmpBuf2))==TmpBuf) {                          // bootsector can be on any disk
+    if (! (fHandle=fopen(SrcFileName, "r+b"))) return -1;
+    if (! (fbuf=malloc(512*2))) goto er1;
+    if ((readed=fread(fbuf, 1, 512, fHandle))==0) goto er1;
+    fclose(fHandle); fHandle=NULL;
+    if (fseek(fdinfo[rdev].fHandle, PartitionOffset+30, SEEK_SET)) goto er1;                   //  fdinfo[rdev].fHandle  allready opened at xfs_init()
+    mode=(fbuf[510]==0x55)&&(fbuf[511]==0xaa) ? 512-30 : 512-32;
+    if (fwrite(&fbuf[30], 1, mode, fdinfo[rdev].fHandle) != mode) goto er1;
+    res=fflush(fdinfo[rdev].fHandle);                                                          //  fdinfo[rdev].fHandle  will closed at xfs_end()
+er1:if (fHandle) fclose(fHandle);
+    if (fbuf) free(fbuf);
+    return res;
+  }
+  else if ((strstr(ArchFileName, "\\" SystemTracks "\\")==ArchFileName)&&(SystemRegSize>0)) {  // system region is not on any disk but can have a filename if size allow
+    if (! (fHandle=fopen(SrcFileName, "r+b"))) return -1;
+    if (! (fbuf=malloc(SystemRegSize))) goto err;
+    if ((readed=fread(fbuf, 1, SystemRegSize, fHandle))==0) goto err;
+    fclose(fHandle); fHandle=NULL;
+    if (fseek(fdinfo[rdev].fHandle, SystemRegOffset, SEEK_SET)) goto err;                      //  fdinfo[rdev].fHandle  allready opened at xfs_init()
+    if (readed<=SystemRegSize-sizeof(SystemBinRec)) {
+      strncpy(SystemBinRec.Name, ExtractFileName(ArchFileName), sizeof(SystemBinRec.Name));
+      SystemBinRec.Name[sizeof(SystemBinRec.Name)-1]=0;
+      SystemBinRec.Size=min(readed,SystemRegSize);
+      GetFileUTime(SrcFileName, &times);
+      SystemBinRec.Date=*((DWORD*)(void*)&times.modtime);
+      SystemBinRec.CRC=crc66(&SystemBinRec);
+      SystemBinRec.SIGN1=0x55;
+      SystemBinRec.SIGN2=0xaa;
+      memcpy(&fbuf[SystemRegSize-sizeof(SystemBinRec)], &SystemBinRec, sizeof(SystemBinRec));
+    }
+    if (fwrite(fbuf, 1, SystemRegSize, fdinfo[rdev].fHandle) != SystemRegSize) goto err;       //  fdinfo[rdev].fHandle  will closed at xfs_end()
+    res=fflush(fdinfo[rdev].fHandle);
+err:if (fHandle) fclose(fHandle);
+    if (fbuf) free(fbuf);
+    return res;
   }
   else {
     mode = 0;
@@ -733,15 +952,7 @@ int UdiFilePack(char* OdiArchiveName, char* SrcFileName, char* ArchFileName)
        if (fa & FILE_ATTRIBUTE_HIDDEN)                              mode&= ~(S_IRWXG|S_IRWXO);        //  -rwx------
        UZIXchmod(ConvSlash(ArchFileName), mode);
     }
-    fh = CreateFile(SrcFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL|FILE_FLAG_BACKUP_SEMANTICS, NULL);
-    GetFileTime(fh, &cft, &aft, &mft);
-    CloseHandle(fh);
-    FileTimeToLocalFileTime(&aft, &cft);                        // access time
-    FileTimeToDosDateTime(&cft, &uft.t_date, &uft.t_time);      // use cft as a buffer (UZIXutime not allow to change creation time)
-    times.actime = uft;
-    FileTimeToLocalFileTime(&mft, &cft);                        // modify time
-    FileTimeToDosDateTime(&cft, &uft.t_date, &uft.t_time);
-    times.modtime = uft;
+    GetFileUTime(SrcFileName, &times);
     UZIXutime(ConvSlash(ArchFileName), &times);
   }
   return res;
@@ -813,8 +1024,8 @@ char* UdiGetInfo(char* ArcNm)
 HANDLE __export WINAPI OpenArchivePart(char *ArcName, DWORD PartOffset, DWORD PartN)    // PartOffset in sectors (not a byte)
 {
   int res=-1;
-  PartitionOffset=PartOffset*512;
   FileListPos = 0;
+  PartitionOffset=PartOffset*512;
   FileListItem=PrevFileListItem=NULL;
   ArcFileName[0]=0;
   PartitionN = PartN;
