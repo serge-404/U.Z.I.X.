@@ -147,10 +147,11 @@ int xunlink __P((char *path));
 int xrmdir __P((char *path));
 //
 int FileListPos = 0;
-char TmpBuf[MAX_PATH], TmpBuf2[MAX_PATH], FPath[MAX_PATH], FPath2[MAX_PATH];
+char TmpBuf[MAX_PATH], TmpBuf1[MAX_PATH], TmpBuf2[MAX_PATH], FPath[MAX_PATH], FPath2[MAX_PATH];
 char ArcFileName[MAX_PATH];
 char IniFileName[MAX_PATH];
 char BootBinFilename[MAX_PATH];
+char SystemFolder[MAX_PATH];
 DWORD PartitionOffset = 0;
 DWORD PartitionN = 0;
 int Panic = 0;
@@ -172,6 +173,7 @@ void GetIniSettings(char *IniName)
   ShowBootBin=GetPrivateProfileInt("PARAMS", "ShowBootBin", 1, IniName);
   ShowSystemBin=GetPrivateProfileInt("PARAMS", "ShowSystemBin", 1, IniName);
   GetPrivateProfileString("PARAMS", "BootBinFilename", "boot.bin", BootBinFilename, sizeof(BootBinFilename)-1 , IniName);
+  GetPrivateProfileString("PARAMS", "SystemFolder", SystemTracks, SystemFolder, sizeof(SystemFolder)-1 , IniName);
 }
 
 void SetIniSettings(char *IniName)
@@ -181,6 +183,7 @@ void SetIniSettings(char *IniName)
   sprintf(FPath2, "%d", ShowSystemBin);
   WritePrivateProfileString("PARAMS", "ShowSystemBin", FPath2, IniName);
   WritePrivateProfileString("PARAMS", "BootBinFilename", BootBinFilename, IniName);
+  WritePrivateProfileString("PARAMS", "SystemFolder", SystemFolder, IniName);
 }
 
 void DisposeFileList(PFileRec FirstMember)
@@ -724,7 +727,7 @@ int UdiGetCatalog(char* fname)
 // virtual folder for system tracks access
   if (ShowBootBin || (ShowSystemBin && (SystemRegSize>0))) {
     LastItem = PFRec = malloc(sizeof(FileRec_t));                       /* alloc current dirrectory record */
-    strncpy(PFRec->FileName, SystemTracks, sizeof(PFRec->FileName)-1);
+    strncpy(PFRec->FileName, SystemFolder, sizeof(PFRec->FileName)-1);
     PFRec->FileAttr=faDirectory+faReadOnly;
     PFRec->FileTime=udt.wdt;
     PFRec->FileSize=0;                             //
@@ -888,12 +891,11 @@ int UdiFilePack(char* OdiArchiveName, char* SrcFileName, char* ArchFileName)
   unsigned char *fbuf=NULL;
   strncpy(TmpBuf,ArchFileName,sizeof(TmpBuf));
   TmpBuf[sizeof(TmpBuf)-1]=0;
-  strncpy(TmpBuf2, "\\" SystemTracks "\\" , sizeof(TmpBuf2));
-  TmpBuf2[sizeof(TmpBuf2)-1]=0;
-  strncat(TmpBuf2, BootBinFilename, sizeof(TmpBuf2));
+  snprintf(TmpBuf1, sizeof(TmpBuf1), "\\%s\\" , SystemFolder);
+  snprintf(TmpBuf2, sizeof(TmpBuf2), "%s%s" , TmpBuf1, BootBinFilename);
   TmpBuf2[sizeof(TmpBuf2)-1]=0;
   if ((SrcFileName[strlen(SrcFileName)-1]=='\\')&&(ArchFileName[strlen(ArchFileName)-1]=='\\')) {          // "\\name\\" = create dirrectory
-    if (strstr(ArchFileName, "\\" SystemTracks "\\")==ArchFileName)
+    if (strstr(ArchFileName, TmpBuf1)==ArchFileName)
       return -1;                                                                                           // no subdirs in virtual catalog
     mode = S_IFDIR;
     SrcFileName[strlen(SrcFileName)-1]=0;
@@ -913,7 +915,7 @@ er1:if (fHandle) fclose(fHandle);
     if (fbuf) free(fbuf);
     return res;
   }
-  else if ((strstr(ArchFileName, "\\" SystemTracks "\\")==ArchFileName)&&(SystemRegSize>0)) {  // system region is not on any disk but can have a filename if size allow
+  else if ((strstr(ArchFileName, TmpBuf1)==ArchFileName)&&(SystemRegSize>0)) {  // system region is not on any disk but can have a filename if size allow
     if (! (fHandle=fopen(SrcFileName, "r+b"))) return -1;
     if (! (fbuf=malloc(SystemRegSize))) goto err;
     if ((readed=fread(fbuf, 1, SystemRegSize, fHandle))==0) goto err;
