@@ -892,6 +892,7 @@ int UdiFilePack(char* OdiArchiveName, char* SrcFileName, char* ArchFileName)
   strncpy(TmpBuf,ArchFileName,sizeof(TmpBuf));
   TmpBuf[sizeof(TmpBuf)-1]=0;
   snprintf(TmpBuf1, sizeof(TmpBuf1), "\\%s\\" , SystemFolder);
+  TmpBuf1[sizeof(TmpBuf1)-1]=0;
   snprintf(TmpBuf2, sizeof(TmpBuf2), "%s%s" , TmpBuf1, BootBinFilename);
   TmpBuf2[sizeof(TmpBuf2)-1]=0;
   if ((SrcFileName[strlen(SrcFileName)-1]=='\\')&&(ArchFileName[strlen(ArchFileName)-1]=='\\')) {          // "\\name\\" = create dirrectory
