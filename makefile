@@ -113,6 +113,7 @@ cleanf :
 	$(RM) $(OBJ_FDSK)
 
 help :
+	@echo ""
 	@echo "Usage: make [<mode>]"
 	@echo "Available modes:"
 	@echo "  kernel  - rebuild EMU.COM,IDEBDOS.COM,UZIX.COM with existing OBJs"
@@ -123,4 +124,5 @@ help :
 	@echo "  cutils  - clean&rebuild OBJs, build BD.COM,FSCK.COM,MKFS.COM,UCP.COM"	
 	@echo "  all     - clean all OBJs and rebuild all the above COM files"
 	@echo "  clean   - clean all OBJs and RELs"
+	@echo ""
 
