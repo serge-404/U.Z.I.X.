@@ -1,42 +1,38 @@
 # Makefile for UZIX modules 
 
-.SUFFIXES:	.c .obj .as .lib
-
-#DEFINES  = -DORI_UTIL
-DEFINES  = -DORI_UZIX
-#DEFINES  = -DORI_FDISK
-
-CPM      = cpm -h
-CC       = cpm -h c
-AS       = cpm -h zas
-LINK     = cpm -h link
-LIBR     = cpm -h libr
-OBJHEX   = cpm -h objtohex
-M80      = cpm m80n
-L80      = cpm l80m
-RM       = rm
+CPM      = cpm -C -h
+CC       = cpm -C -h C
+AS       = cpm -C -h zas
+LINK     = cpm -C -h link
+LIBR     = cpm -C -h libr
+OBJHEX   = cpm -C -h objtohex
+M80      = cpm -C m80n
+L80      = cpm -C l80m
 CFLAGS	 = -O -x
 ASFLAGS	 = -N
-OBJ_MKFS = md.obj fs.obj dmisc.obj dsk.obj dio.obj dfd.obj dtty.obj sc1.obj data.obj
-OBJ_BD   = md.obj fs.obj dmisc.obj dsk.obj dio.obj dfd.obj dtty.obj sc1.obj data.obj
-OBJ_FSCK = md.obj fs.obj dmisc.obj dsk.obj dio.obj dfd.obj dtty.obj sc1.obj data.obj 
-OBJ_UCP  = md.obj fs.obj dmisc.obj dsk.obj dio.obj dfd.obj dtty.obj sc1.obj sc2.obj XFS.obj ucs.obj data.obj 
-OBJ_UZIX = md.obj fs.obj dmisc.obj dsk.obj dio.obj dfd.obj dtty.obj sc1.obj sc2.obj sc3.obj pr1.obj pr2.obj swp.obj
-OBJ_FDSK = fdisk2.obj fdisk1.obj f_mkfs.obj dsk.obj
+OBJ_MKFS = MD.OBJ FS.OBJ DMISC.OBJ DSK.OBJ DIO.OBJ DFD.OBJ DTTY.OBJ SC1.OBJ DATA.OBJ
+OBJ_BD   = MD.OBJ FS.OBJ DMISC.OBJ DSK.OBJ DIO.OBJ DFD.OBJ DTTY.OBJ SC1.OBJ DATA.OBJ
+OBJ_FSCK = MD.OBJ FS.OBJ DMISC.OBJ DSK.OBJ DIO.OBJ DFD.OBJ DTTY.OBJ SC1.OBJ DATA.OBJ 
+OBJ_UCP  = MD.OBJ FS.OBJ DMISC.OBJ DSK.OBJ DIO.OBJ DFD.OBJ DTTY.OBJ SC1.OBJ SC2.OBJ XFS.OBJ UCS.OBJ DATA.OBJ 
+OBJ_UZIX = MD.OBJ FS.OBJ DMISC.OBJ DSK.OBJ DIO.OBJ DFD.OBJ DTTY.OBJ SC1.OBJ SC2.OBJ SC3.OBJ PR1.OBJ PR2.OBJ SWP.OBJ
+OBJ_FDSK = FDISK2.OBJ FDISK1.OBJ F_MKFS.OBJ DSK.OBJ
 
-.c.obj :
+%.OBJ : %.C
+	$(CC) $(CFLAGS) $(DEFINES) -c $*.C
+
+%.OBJ : %.c
 	$(CC) $(CFLAGS) $(DEFINES) -c $*.c
 
-.as.obj : 
-	$(AS) $(ASFLAGS) -L$*.lst $*.as
+%.OBJ : %.AS 
+	$(AS) $(ASFLAGS) -L$*.LST $*.AS
 
 # compiled without optimization (-O) because optimizer spoiling #asm blocks :
-md.obj : md.c machdep.orn machdep2.orn
-	$(CC) $(DEFINES) -x -c md.c
+MD.OBJ :
+	$(CC) $(DEFINES) -x -c MD.C
 
 # corecompiled (step-by-step) because no memory for $$EXEC (sc1.c too big)
-sc1.obj : sc1.c 
-	$(CPM) CPP -DCPM -DHI_TECH_C -Dz80 $(DEFINES) -I sc1.c CTMP1.TMP
+SC1.OBJ : SC1.C 
+	$(CPM) CPP -DCPM -DHI_TECH_C -Dz80 $(DEFINES) -I SC1.C CTMP1.TMP
 	$(CPM) P1 CTMP1.TMP CTMP2.TMP CTMP3.TMP
 	$(CPM) CGEN CTMP2.TMP CTMP1.TMP
 	$(CPM) OPTIM CTMP1.TMP CTMP2.TMP
@@ -44,45 +40,87 @@ sc1.obj : sc1.c
 	$(RM) CTMP1.TMP CTMP2.TMP 
 
 # corecompiled (step-by-step) because no memory for $$EXEC (sc2.c too big)
-sc2.obj : sc2.c 
-	$(CPM) CPP -DCPM -DHI_TECH_C -Dz80 $(DEFINES) -I sc2.c CTMP1.TMP
+SC2.OBJ : SC2.C
+	$(CPM) CPP -DCPM -DHI_TECH_C -Dz80 $(DEFINES) -I SC2.C CTMP1.TMP
 	$(CPM) P1 CTMP1.TMP CTMP2.TMP CTMP3.TMP
 	$(CPM) CGEN CTMP2.TMP CTMP1.TMP
 	$(CPM) OPTIM CTMP1.TMP CTMP2.TMP
 	$(CPM) ZAS -X -J -N -osc2.obj CTMP2.TMP
 	$(RM) CTMP1.TMP CTMP2.TMP 
 
-idebdos.com : idebdos.mac
+idebdos.com :
 	$(M80) idebdos,=idebdos
 	$(L80) /p:100,idebdos,idebdos/n/e
 	
-emu.com : emu.mac
+emu.com : 
 	$(M80) emu,=emu
 	$(L80) /p:100,emu,emu/n/e
-	
-bd.com : $(OBJ_BD) bd.c
-	$(CC) $(CFLAGS) $(DEFINES) bd.c $(OBJ_BD)
 
-fsck.com : $(OBJ_FSCK) fsck.c
-	$(CC) $(CFLAGS) $(DEFINES) fsck.c $(OBJ_FSCK)
+bd.com : DEFINES = -DORI_UTIL
+bd.com : BD.C $(OBJ_BD)
+	$(CC) $(CFLAGS) $(DEFINES) BD.C $(OBJ_BD)
 
-mkfs.com : $(OBJ_MKFS) mkfs.c
-	$(CC) $(CFLAGS) $(DEFINES) mkfs.c $(OBJ_MKFS)
+fsck.com : DEFINES = -DORI_UTIL
+fsck.com : FSCK.C $(OBJ_FSCK)
+	$(CC) $(CFLAGS) $(DEFINES) FSCK.C $(OBJ_FSCK)
 
-ucp.com : $(OBJ_UCP) ucp.c 
-	$(CC) $(CFLAGS) $(DEFINES) ucp.c $(OBJ_UCP)
+mkfs.com : DEFINES = -DORI_UTIL
+mkfs.com : MKFS.C $(OBJ_MKFS)
+	$(CC) $(CFLAGS) $(DEFINES) MKFS.C $(OBJ_MKFS)
 
-uzix.com : $(OBJ_UZIX) uzix.c dispatch.c
-	$(CC) -x $(DEFINES) uzix.c $(OBJ_UZIX)
+ucp.com : DEFINES = -DORI_UTIL
+ucp.com : UCP.C $(OBJ_UCP)
+	$(CC) $(CFLAGS) $(DEFINES) UCP.C $(OBJ_UCP)
 
-fdisk.com : $(OBJ_FDSK) fdisk.c
-	$(CC) $(CFLAGS) fdisk.c $(OBJ_FDSK)
+uzix.com : DEFINES = -DORI_UZIX
+uzix.com : $(OBJ_UZIX)
+	$(CC) -x $(DEFINES) UZIX.C $(OBJ_UZIX)
 
-# set "DEFINES" to "-DORI_UTIL" and do "make clean" before doing "make utils" !
+fdisk.com : DEFINES = -DORI_FDISK
+fdisk.com : FDISK.C $(OBJ_FDSK)
+	$(CC) $(CFLAGS) FDISK.C $(OBJ_FDSK)
+
+.PHONY : help utils cutils kernel ckernel fdisk cfdisk all clean cleank cleanu cleanf
+
+# set "DEFINES" to "-DORI_UTIL" and clean common OBJs before doing "make utils"
 utils : idebdos.com bd.com fsck.com mkfs.com ucp.com 
 
-# set "DEFINES" to "-DORI_UZIX" and do "make clean" before doing "make kernel" !
-kernel : emu.com idebdos.com uzix.com
+# set "DEFINES" to "-DORI_UZIX" and clean common OBJs before doing "make kernel"
+kernel : idebdos.com emu.com uzix.com
 
-clean :
-	$(RM) $(OBJ_UZIX) data.obj XFS.obj ucs.obj bd.obj fsck.obj mkfs.obj ucp.obj uzix.obj F_MKFS.OBJ FDISK.OBJ FDISK1.OBJ FDISK2.OBJ
+ckernel : cleank kernel
+
+cutils : cleanu utils 
+
+fdisk : fdisk.com
+
+cfdisk : cleanf fdisk.com
+
+# $(MAKE) used because originally `make` confuses with rebuild again the same sources
+all : ckernel
+	$(MAKE) cutils
+	$(MAKE) cfdisk
+
+clean : cleank cleanu cleanf
+
+cleank :
+	$(RM) $(OBJ_UZIX)
+
+cleanu :
+	$(RM) $(OBJ_UCP)
+
+cleanf :
+	$(RM) $(OBJ_FDSK)
+
+help :
+	@echo "Usage: make [<mode>]"
+	@echo "Available modes:"
+	@echo "  kernel  - rebuild EMU.COM,IDEBDOS.COM,UZIX.COM with existing OBJs"
+	@echo "  ckernel - clean&rebuild OBJs, build uzix.com"
+	@echo "  fdisk   - rebuild FDISK.COM with existing OBJs"
+	@echo "  cfdisk  - clean&rebuild OBJs, build fdisk.com"
+	@echo "  utils   - rebuild IDEBDOS.COM,BD.COM,FSCK.COM,MKFS.COM,UCP.COM"
+	@echo "  cutils  - clean&rebuild OBJs, build BD.COM,FSCK.COM,MKFS.COM,UCP.COM"	
+	@echo "  all     - clean all OBJs and rebuild all the above COM files"
+	@echo "  clean   - clean all OBJs and RELs"
+
