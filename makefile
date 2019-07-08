@@ -1,13 +1,13 @@
 # Makefile for UZIX modules 
 
-CPM      = cpm -C -h
-CC       = cpm -C -h C
-AS       = cpm -C -h zas
-LINK     = cpm -C -h link
-LIBR     = cpm -C -h libr
-OBJHEX   = cpm -C -h objtohex
-M80      = cpm -C m80n
-L80      = cpm -C l80m
+CPM     := cpm -C -h
+CC       = $(CPM) C
+AS       = $(CPM) zas
+LINK     = $(CPM) link
+LIBR     = $(CPM) libr
+OBJHEX   = $(CPM) objtohex
+M80      = $(CPM) m80n
+L80      = $(CPM) l80m
 CFLAGS	 = -O -x
 ASFLAGS	 = -N
 OBJ_MKFS = MD.OBJ FS.OBJ DMISC.OBJ DSK.OBJ DIO.OBJ DFD.OBJ DTTY.OBJ SC1.OBJ DATA.OBJ
@@ -88,15 +88,17 @@ utils : idebdos.com bd.com fsck.com mkfs.com ucp.com
 # set "DEFINES" to "-DORI_UZIX" and clean common OBJs before doing "make kernel"
 kernel : idebdos.com emu.com uzix.com
 
+# set "DEFINES" to "-DORI_FDISK" and clean common OBJs before doing "make fdisk"
+fdisk : fdisk.com
+
+# build with cleanup
 ckernel : cleank kernel
 
 cutils : cleanu utils 
 
-fdisk : fdisk.com
-
 cfdisk : cleanf fdisk.com
 
-# $(MAKE) used because originally `make` confuses with rebuild again the same sources
+# nested $(MAKE) used because main MAKE confuses with rebuild the same sources (other DEFINEs)
 all : ckernel
 	$(MAKE) cutils
 	$(MAKE) cfdisk
@@ -117,7 +119,7 @@ help :
 	@echo "Usage: make [<mode>]"
 	@echo "Available modes:"
 	@echo "  kernel  - rebuild EMU.COM,IDEBDOS.COM,UZIX.COM with existing OBJs"
-	@echo "  ckernel - clean&rebuild OBJs, build uzix.com"
+	@echo "  ckernel - clean&rebuild OBJs, build EMU.COM,IDEBDOS.COM,UZIX.COM"
 	@echo "  fdisk   - rebuild FDISK.COM with existing OBJs"
 	@echo "  cfdisk  - clean&rebuild OBJs, build fdisk.com"
 	@echo "  utils   - rebuild IDEBDOS.COM,BD.COM,FSCK.COM,MKFS.COM,UCP.COM"
