@@ -4,7 +4,7 @@
 //   Orion/Z (Orion-128 + Z80-CARD-II) emulator, version 1.08 files.   //
 //                                                                     //
 //   Addon: TotalCommander archiver (WCX) plugin for serving OHI files //
-// [ohi.wcx](https://github.com/serge-404/OriZEmu/tree/master/UTILS/OdiWcx-OhiWcx): (Orion HDD Image files). Allow copy/extract files to/from  //
+// ohi.wcx: (Orion HDD Image files). Allow copy/extract files to/from  //
 //          any supported image MBR-partitions such simple as serving  //
 //          any archives in TotalCommander interface. It is a wrapper  //
 //          for wcx-plugins: ODI,UDI,FDI & compatible - allow use that //
@@ -15,7 +15,7 @@
 //          "FAT,20M", "CPM 6553600",...               Version 1.0.7.x //
 //                                                                     //
 //   Addon: TotalCommander archiver (WCX) plugin for serving ODI files //
-// [odi.wcx](https://github.com/serge-404/OriZEmu/tree/master/UTILS/OdiWcx-OhiWcx): (Orion Disk Image files). Allow copy/extract CP/M files    //
+// odi.wcx: (Orion Disk Image files). Allow copy/extract CP/M files    //
 //          to/from ODI file "diskette" such simple as processing any  //
 //          archives in TotalCommander interface.    Version 1.0.6.x   //
 //                                                                     //
