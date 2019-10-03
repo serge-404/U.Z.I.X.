@@ -4,7 +4,7 @@
 //   Orion/Z (Orion-128 + Z80-CARD-II) emulator, version 1.08 files.   //
 //                                                                     //
 //   Addon: TotalCommander archiver (WCX) plugin for serving OHI files //
-// ohi.wcx: (Orion HDD Image files). Allow copy/extract files to/from  //
+// [ohi.wcx](https://github.com/serge-404/OriZEmu/tree/master/UTILS/OdiWcx-OhiWcx): (Orion HDD Image files). Allow copy/extract files to/from  //
 //          any supported image MBR-partitions such simple as serving  //
 //          any archives in TotalCommander interface. It is a wrapper  //
 //          for wcx-plugins: ODI,UDI,FDI & compatible - allow use that //
@@ -15,7 +15,7 @@
 //          "FAT,20M", "CPM 6553600",...               Version 1.0.7.x //
 //                                                                     //
 //   Addon: TotalCommander archiver (WCX) plugin for serving ODI files //
-// odi.wcx: (Orion Disk Image files). Allow copy/extract CP/M files    //
+// [odi.wcx](https://github.com/serge-404/OriZEmu/tree/master/UTILS/OdiWcx-OhiWcx): (Orion Disk Image files). Allow copy/extract CP/M files    //
 //          to/from ODI file "diskette" such simple as processing any  //
 //          archives in TotalCommander interface.    Version 1.0.6.x   //
 //                                                                     //
@@ -89,7 +89,7 @@
 Russian:
 ## О программе
 
-ODI.WCX - плагин для работы с простой посекторной копией дискет с файловой
+[ODI.WCX](https://github.com/serge-404/OriZEmu/tree/master/UTILS/OdiWcx-OhiWcx) - плагин для работы с простой посекторной копией дискет с файловой
 системой CP/M 80. Работает со юзерами (0..15), умеет удалять CP/M-файлы,
 создавать файловую систему, т.е. "Все в одном" - удобный интерфейc
 Total Commander (или его бесплатного аналога для Windows/Linux Double Commander)
@@ -123,7 +123,7 @@ system.bin (при последующей перезаписи если запи
 причем более интеллектуально), это тоже обрабатывается через виртуальный файл,
 но уже соответственно в ODI.WCX.
 
-OHI.WCX имеет возможность инициализации образа (создать запись MBR, доступ к
+[OHI.WCX](https://github.com/serge-404/OriZEmu/tree/master/UTILS/OdiWcx-OhiWcx) имеет возможность инициализации образа (создать запись MBR, доступ к
 его коду позже аналогично есть через специальный файл в корне архива), а также
 создания и удаления primary MBR партиций типа CPM, FAT и UZIX (создаются вместе
 с файловой системой). Работа тут как с подкаталогами (создать-F7, удалить F8),
