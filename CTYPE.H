@@ -50,8 +50,8 @@ extern unsigned char __ctype[];
 #define __CT_a	(__CT_u|__CT_l) /* alpha */
 
 /* always functions ! */
-extern int toupper __P((int));
-extern int tolower __P((int));
+extern int toupper(int);
+extern int tolower(int);
 
 #define _toupper(c)	(islower(c) ? (c)^0x20 : (c))
 #define _tolower(c)	(isupper(c) ? (c)^0x20 : (c))

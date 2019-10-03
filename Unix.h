@@ -30,8 +30,8 @@
 #include "SIGNAL.H"
 #include "errno.h"
 #include "fcntl.h"
-#include "..\..\lib\include\sys\stat.h"
-#include "..\..\lib\include\sys\ioctl.h"
+#include "stat.h"
+#include "ioctl.h"
 #else
 #include "types.h"
 #include "SIGNAL.H"
@@ -327,8 +327,8 @@ typedef struct s_ptab {
 	void	*p_udata;	/* back pointer to saved udata */			/* obsolete for ORION */
 	uint	p_alarm;	/* Seconds until alarm goes off */
 	void	*p_wait;	/* Address of thing waited for */
-	sigset_t p_pending;	/* Pending signals */
-	sigset_t p_ignored;	/* Ignored signals */
+	uint /*sigset_t*/ p_pending;	/* Pending signals */
+	uint /*sigset_t*/ p_ignored;	/* Ignored signals */
 	uchar	p_intr; 	/* !0 if awakened by signal */
 } ptab_t, *ptptr;
 

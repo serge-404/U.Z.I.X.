@@ -28,9 +28,15 @@
 /* #include "extern.h" */
 
 extern char *stringerr[];
-
+#ifdef PC_UTILS_TARGET
+void bufinit(void);
+char* CheckFN(char* name);
+extern int xfs_init __P((dev_t bootdev, uchar waitfordisk, int Panic, char* fname));
+extern void xfs_end __P((dev_t bootdev));
+#else
 extern void xfs_init __P((dev_t bootdev, uchar waitfordisk));
 extern void xfs_end __P((void));
+#endif
 extern int UZIXopen __P((char *name, int flag/*, ...*/));
 extern int UZIXclose __P((int uindex));
 extern int UZIXcreat __P((char *name, mode_t mode));
@@ -48,6 +54,7 @@ extern int UZIXmknod __P((char *name, mode_t mode, int dev));
 extern void UZIXsync __P((void));
 #endif
 extern int UZIXaccess __P((char *path, int mode));
+extern int UZIXutime __P((char *path, struct utimbuf *buf));
 extern int UZIXchmod __P((char *path, mode_t mode));
 extern int UZIXchown __P((char *path, int owner, int group));
 extern int UZIXstat __P((char *path, void *buf));

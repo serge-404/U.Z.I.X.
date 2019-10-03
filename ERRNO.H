@@ -4,6 +4,7 @@
 #include <types.h>
 #endif
 
+
 /* Error codes */		/*- if not used */
 #define EPERM		1		/* 1 Operation not permitted */
 #define ENOENT		2		/* 2 No such file or directory */
@@ -63,4 +64,5 @@ extern int errno;
 extern char *strerror __P((int _errno));
 
 #endif
+
 

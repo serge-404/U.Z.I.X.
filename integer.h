@@ -1,5 +1,5 @@
 #ifndef _INTEGER
-
+#ifndef UDIWCX
 typedef int		INT;
 typedef unsigned int	UINT;
 
@@ -22,6 +22,7 @@ typedef unsigned long	DWORD;
 #undef BOOL
 #endif
 typedef unsigned char	BOOL;
+#endif /*UDIWCX*/
 
 #define FALSE	0
 #define TRUE	1

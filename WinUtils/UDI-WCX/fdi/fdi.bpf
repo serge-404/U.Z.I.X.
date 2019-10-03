@@ -1,11 +1,0 @@
-USEUNIT("uPackFdi.c");
-USE("..\..\..\..\..\..\..\..\..\CBuilder5\Include\Vcl\sysutils.hpp", File);
-USERES("fdi.res");
-USEUNIT("ff.c");
-USEUNIT("ffsystem.c");
-USEUNIT("ffunicode.c");
-USEUNIT("diskio.c");
-//---------------------------------------------------------------------------
-This file is used by the project manager only and should be treated like the project file
-
-DllEntryPoint
