@@ -1,0 +1,207 @@
+/*
+ * UZIX - UNIX Implementation for MSX
+ * (c) 1997-2001 Arcady Schekochikhin
+ *		 Adriano C. R. da Cunha
+ *
+ * UZIX is based on UZI (UNIX Zilog Implementation)
+ * UZI is a UNIX kernel clone written for Z-80 systems.
+ * All code is public domain, not being based on any AT&T code.
+ *
+ * The author, Douglas Braun, can be reached at:
+ *	7696 West Zayante Rd.
+ *	Felton, CA 95018
+ *	oliveb!intelca!mipos3!cadev4!dbraun
+ *
+ * This program is under GNU GPL, read COPYING for details
+ *
+ */
+
+/**********************************************************
+ PC floppy disk device driver
+**********************************************************/
+#ifdef BCB_COMPILER
+extern unsigned long PartitionOffset;
+#endif /* BCB_COMPILER */
+
+/* If the __ONFILE is defined then we use the
+ * conventional DOS file with the floppy image
+ */
+#ifdef __ONFILE
+/* low-level onfile floppy seek procedure */
+/* !! ONLY existent sectors must be mentioned */
+static int seek(VOID) {
+#ifdef UDIWCX
+	long dist = ((long)firstblk << BUFSIZELOG)+PartitionOffset; /*2019*/
+#else
+	long dist = ((long)firstblk+fdinfo[fdrive].fOffset) << BUFSIZELOG;
+#endif  /* UDIWCX */
+#ifndef BCB_COMPILER
+	uint dh = (uint)(dist >> 16), dl = (uint)dist;
+
+	_BX = fdrive;
+	_CX = dh; _DX = dl;
+	_AX = 0x4200;
+	geninterrupt(0x21);
+	return _FLAGS & 1;
+#else  /* BCB_COMPILER */
+        if ((fdinfo[fdrive].fOffset>0 )&& (firstblk>fdinfo[fdrive].fParSize))
+                return 1;
+        return fseek(fdinfo[fdrive].fHandle, dist, SEEK_SET);
+#endif /* BCB_COMPILER */
+}
+
+/* low-level onfile floppy read procedure */
+/* !! ONLY existens sectors must be mentioned */
+static int dskread(VOID) {
+	if (seek())
+		return -1;
+#ifndef BCB_COMPILER
+	_BX = fdrive;
+	_CX = nbytes;
+	_DX = (uint)fbuf;
+	_AX = 0x3F00;
+	geninterrupt(0x21);
+	return _FLAGS & 1;
+#else  /* BCB_COMPILER */
+        return (fread(fbuf, nbytes, 1, fdinfo[fdrive].fHandle)==1 ? 0 : 1);
+#endif /* BCB_COMPILER */
+}
+
+/* low-level onfile floppy write procedure */
+/* !! ONLY existent sectors must be mentioned */
+static int dskwrite(VOID) {
+	if (seek())
+		return -1;
+#ifndef BCB_COMPILER
+	_BX = fdrive;
+	_CX = nbytes;
+	_DX = (uint)fbuf;
+	_AX = 0x4000;
+	geninterrupt(0x21);
+	return _FLAGS & 1;
+#else  /* BCB_COMPILER */
+        return (fwrite(fbuf, nbytes, 1, fdinfo[fdrive].fHandle)==1 ? 0 : 1);
+#endif /* BCB_COMPILER */
+}
+
+/* low-level onfile floppy close procedure */
+static int closeonfile(VOID) {
+#ifndef BCB_COMPILER
+	_BX = fdrive;
+	_AX = 0x3E00;
+	geninterrupt(0x21);
+	return _FLAGS & 1;
+#else  /* BCB_COMPILER */
+        return (fclose(fdinfo[fdrive].fHandle)==0 ? 0 : 1);
+#endif /* BCB_COMPILER */
+}
+
+/* file open procedure - separated because machine dependent
+ * This function returns the file size in BUFSIZE or -1 if error
+ */
+static int openonfile(char *name, int minor) {
+	unsigned long lsize;
+#ifndef BCB_COMPILER
+	unsigned int fd;
+
+	fdinfo[minor].mediaid = -1;
+	_DX = (unsigned)name;
+	_AX = 0x3D02;		/* open file */
+	geninterrupt(0x21);
+	_DX = _AX;
+	if (_FLAGS & 1)
+		return -1;
+	fd = _BX = _DX;		/* DOS file descriptor */
+	_CX = _DX = 0;
+	_AX = 0x4202;		/* lseek to end */
+	geninterrupt(0x21);
+	if (_FLAGS & 1)
+		return -1;
+	((int *)&lsize)[0] = _AX;
+	((int *)&lsize)[1] = _DX;
+	fdinfo[minor].mediaid = fd;
+#else  /* BCB_COMPILER */
+        int shft=0, partN=-1;                                           /* MBR partition N = 0..3 */
+        if ( (strlen(name)>2) && (name[1]==':') && isdigit(*name) ) {   /* filespec: partN:disk:\path\fname.ext */
+          shft=2;
+          partN=*name-'0';
+          if (partN>3) return -1;
+        }
+        if (! (fdinfo[minor].fHandle = fopen(&name[shft], "r+b")) )
+		return -1;
+        if (partN>=0) {                                                            /* if partition Number specified in image filespec */
+          fdinfo[fdrive].fOffset=fdinfo[fdrive].fParSize=0;
+          if (fread(fBuff, 512, 1, fdinfo[fdrive].fHandle)!=1) {                   /* read MBR */
+                fclose(fdinfo[fdrive].fHandle);
+		return -1;
+          }
+          if (/*(fBuff[0]!=0xC3) || */(*((unsigned short*)&fBuff[510])!=0xAA55)) {     /* 0xC3 - Orion_specific, 0xAA55 - standard MBR marker */
+                fclose(fdinfo[fdrive].fHandle);
+		return -1;
+          }
+          for (shft=446; shft<510, partN>0; shft+=16, partN--);                    /* 446 bytes - Partition table offset in MBR sector */
+          if ((partN) || (fBuff[shft+4]!='\0x21')) {                               /* Partition type 0x21 = UZIX */
+            fdinfo[fdrive].fOffset=*((unsigned long*)&fBuff[shft+8]);
+            if (fdinfo[fdrive].fOffset==0) {                                       /* partition can not begin at LBA=0 */
+                fclose(fdinfo[fdrive].fHandle);
+		return -1;
+            }
+            fdinfo[fdrive].fParSize=*((unsigned long*)&fBuff[shft+12]);
+          }
+        }
+        fseek(fdinfo[minor].fHandle, 0L, SEEK_END);
+        lsize = ftell(fdinfo[minor].fHandle);
+        if (fdinfo[fdrive].fOffset+fdinfo[fdrive].fParSize>(lsize>>BUFSIZELOG)) {  /* check for partition start/size within image */
+                fdinfo[fdrive].fOffset=fdinfo[fdrive].fParSize=0;
+                fclose(fdinfo[fdrive].fHandle);
+		return -1;
+        }
+        if (fdinfo[fdrive].fOffset)
+          lsize = fdinfo[fdrive].fParSize << BUFSIZELOG;
+	fdinfo[minor].mediaid = minor;
+#endif /* BCB_COMPILER */
+	fdinfo[minor].size = (uint)(lsize >> BUFSIZELOG);
+        return 0;
+}
+
+#else	/* __ONFILE */
+
+#define FLOP(fn)	_DL = fdrive, _AH = fn; geninterrupt(0x13)
+
+/* low-level floppy read procedure - only one sector per time */
+/* !! ONLY existent sectors must be mentioned */
+static int dskread(VOID) {
+	uchar err;
+	_ES = _DS;
+	_BX = (unsigned)fbuf;
+	_CH = ftrack;
+	_CL = ((ftrack >> 2) & 0xC0) | fsector;
+	_DH = fhead;
+	_AL = 1;	/* 1 sector */
+	FLOP(2);
+	err = _AH;
+	return _FLAGS & 1 ? err | 0x8000 : 0;
+}
+
+/* low-level floppy write procedure - only one sector per time */
+/* !! ONLY existent sectors must be mentioned */
+static int dskwrite(VOID) {
+	uchar err;
+
+	_ES = _DS;
+	_BX = (unsigned)fbuf;
+	_CH = ftrack;
+	_CL = ((ftrack >> 2) & 0xC0) | fsector;
+	_DH = fhead;
+	_AL = 1;	/* 1 sector */
+	FLOP(3);
+	err = _AH;
+	return _FLAGS & 1 ? err | 0x8000 : 0;
+}
+
+/* low-level floppy reset procedure */
+static void reset(VOID) {
+	FLOP(0);
+}
+#endif	/* __ONFILE */
+

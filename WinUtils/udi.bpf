@@ -1,0 +1,16 @@
+USEUNIT("uPackUdi.c");
+USEUNIT("KERNEL\DEVIO.C");
+USEUNIT("KERNEL\FILESYS.C");
+USEUNIT("KERNEL\DEVFLOP.C");
+USEUNIT("KERNEL\DEVMISC.C");
+USEUNIT("KERNEL\SCALL1.C");
+USEUNIT("KERNEL\SCALL2.C");
+USEUNIT("XFS.C");
+USE("sysutils.hpp", File);
+USERES("udi.res");
+USEUNIT("kernel\MACHDEP.C");
+//---------------------------------------------------------------------------
+This file is used by the project manager only and should be treated like the project file
+
+
+DllEntryPoint

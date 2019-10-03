@@ -1,0 +1,13 @@
+USEUNIT("MKFS.C");
+USERES("mkfs.res");
+USEUNIT(".\KERNEL\MACHDEP.C");
+USEUNIT(".\KERNEL\DEVIO.C");
+USEUNIT(".\KERNEL\FILESYS.C");
+USEUNIT(".\KERNEL\DEVFLOP.C");
+USEUNIT(".\KERNEL\DEVMISC.C");
+USEUNIT("UTILDOS.C");
+//---------------------------------------------------------------------------
+This file is used by the project manager only and should be treated like the project file
+
+
+main
